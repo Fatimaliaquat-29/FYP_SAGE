@@ -1,0 +1,75 @@
+====================================================================
+Pose Estimation & Fall Detection System - Project Context
+====================================================================
+
+## Overview
+This repository contains a vision-based posture classification and fall detection pipeline. It is designed to process camera feeds (or videos/images), extract human body keypoints using Google's MediaPipe, and classify the person's posture (Standing, Sitting, Lying) while detecting fall events.
+
+## What We Have Done So Far
+The project has evolved through several distinct phases:
+
+### Phase 1: Camera & Core Setup
+- Set up the environment and established the core repository structure.
+- Implemented `src/camera/camera_test.py` to interface with the local webcam using OpenCV.
+
+### Phase 2: Pose Keypoint Extraction
+- Integrated `MediaPipe PoseLandmarker` (Tasks API) to extract 33 3D body landmarks.
+- Developed `src/pose/pose_test.py` to overlay a visual skeleton on the live video feed.
+- Created `src/pose/save_keypoints.py` to log real-time pose sequences to CSV (`data/pose_keypoints.csv`).
+
+### Phase 3 & 4: Heuristic Posture Classification & Fall Detection
+- Implemented a rule-based heuristic pipeline in `src/posture/`.
+- `posture_features.py`: Computes spatial features (body height, torso angle, hip height, knee angle) and velocity over a rolling window.
+- `posture_classifier.py`: Evaluates these features against physiological thresholds to assign a posture label (`Standing`, `Sitting`, `Lying`).
+- Implemented fall detection logic in `pipeline_utils.py`, which flags a fall if the hip-center velocity exceeds a threshold for several consecutive frames followed by a transition to a "Lying" state.
+- Integrated logging to `data/posture_output.csv` and created a robust unit test suite (`tests/test_posture_pipeline.py`).
+
+### Phase 4.5: LSTM Neural Network Pipeline
+- Introduced a deep learning path to the system to replace or augment the heuristic rules.
+- Created `src/posture/lstm/` subpackage.
+- Designed an LSTM architecture (`lstm_trainer.py`) that operates on sliding windows of 66 raw spatial keypoints rather than hand-crafted features.
+- Created `lstm_classifier.py` for inference, designed to gracefully fall back to the heuristic classifier if the model is absent.
+- Intercepted the main `classify_posture_and_fall` function in `pipeline_utils.py` to route predictions to the LSTM when available.
+
+### Phase 4.6: Real-World Dataset Integration
+- Integrated raw image sequences containing Activities of Daily Living (`adl_activities`) and falls (`fall_events`) located in `data/raw/`.
+- Created `src/data_processing/extract_raw_dataset.py` to run MediaPipe over these images, automatically label them (using the heuristic as a baseline and enforcing "Fall" for fall sequences), and generate `real_pose_keypoints.csv` and `real_posture_output.csv`.
+- Upgraded the `lstm_dataset.py` builder to ingest these new datasets, carefully preventing sliding windows from crossing over boundaries between different video sequences.
+- Successfully built `data/lstm_dataset.npz` with 5,000+ sliding window samples spanning Fall, Lying, Sitting, and Standing.
+
+## Directory Hierarchy & Structure
+The current structure is logically separated by concern:
+
+/ (Root)
+|-- data/                  # Datasets and logs
+|   |-- raw/               # Raw ADL and Fall image sequences
+|   |-- processed_keypoints/ # Extracted keypoints (webcam & raw images)
+|   |   |-- pose_keypoints.csv 
+|   |   `-- real_pose_keypoints.csv
+|   `-- datasets/          # Final compiled dataset for LSTM training
+|       `-- lstm_dataset.npz
+|
+|-- docs/                  # Documentation and reference diagrams
+|
+|-- models/                # Model artifacts
+|   `-- pose_landmarker_full.task # MediaPipe model weights
+|
+|-- src/                   # Main source code
+|   |-- camera/            # Video input modules
+|   |-- pose/              # MediaPipe integration & visualisation
+|   |-- posture/           # Heuristic classification & LSTM inference
+|   |   `-- lstm/          # LSTM architecture, dataset builders, & training scripts
+|   `-- data_processing/   # Scripts to process raw files into usable datasets
+|
+|-- tests/                 # Unit and integration tests
+|   |-- test_posture_pipeline.py
+|   `-- test_lstm_pipeline.py
+|
+|-- requirements.txt       # Project dependencies
+|-- task.md                # Task tracker and phase checklist
+`-- context.txt            # (This file)
+
+## Next Steps
+- Enable Windows Long Paths to permit the installation of `tensorflow-cpu`.
+- Run `lstm_trainer.py` to actually train the LSTM using the newly processed dataset.
+- Move towards Phase 5: Building a web-based caregiver dashboard UI.

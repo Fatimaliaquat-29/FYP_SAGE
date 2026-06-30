@@ -1,8 +1,23 @@
-import cv2
-import time
-import sys
 import argparse
+import sys
+import time
+from pathlib import Path
+
+import cv2
 import mediapipe as mp
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.posture.pipeline_utils import (
+    POSE_KEYPOINTS_CSV,
+    POSTURE_OUTPUT_CSV,
+    append_detection_log,
+    build_pose_row,
+    classify_posture_and_fall,
+    write_pose_outputs,
+)
 
 # Define standard MediaPipe Pose Connections (33 landmarks)
 POSE_CONNECTIONS = [
@@ -106,6 +121,7 @@ def main():
     
     prev_time = time.time()
     frame_count = 0
+    previous_rows = []
 
     try:
         while True:
@@ -129,12 +145,23 @@ def main():
 
             # Perform detection
             detection_result = detector.detect(mp_image)
-
-            # Draw skeleton overlays if pose landmarks are found
+            landmark_pairs = []
             if detection_result.pose_landmarks:
                 for landmarks in detection_result.pose_landmarks:
                     draw_skeleton(frame, landmarks, POSE_CONNECTIONS)
-            
+                    landmark_pairs = [(lm.x, lm.y) for lm in landmarks]
+
+            row = build_pose_row(
+                timestamp=str(current_time),
+                frame=frame_count,
+                landmarks=landmark_pairs,
+            )
+            result = classify_posture_and_fall(row, previous_rows=previous_rows)
+            row.update(result)
+            previous_rows.append(row)
+            append_detection_log(row, result)
+            write_pose_outputs([row], pose_path=POSE_KEYPOINTS_CSV, posture_path=POSTURE_OUTPUT_CSV)
+
             # Overlays for FPS and landmarks count
             fps_text = f"FPS: {fps:.1f}"
             detected_text = "Pose Detected" if detection_result.pose_landmarks else "No Pose"
@@ -144,17 +171,11 @@ def main():
                 print(f"Frame {frame_count} | {fps_text} | Status: {detected_text}")
 
             # Draw overlays
+            label_text = f"Posture: {row.get('posture_label', 'Unknown')}"
+            fall_text = "FALL" if row.get('fall_detected') else ""
             cv2.putText(frame, fps_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
-            cv2.putText(
-                frame, 
-                detected_text, 
-                (10, 60), 
-                cv2.FONT_HERSHEY_SIMPLEX, 
-                0.8, 
-                (0, 255, 0) if detection_result.pose_landmarks else (0, 0, 255), 
-                2, 
-                cv2.LINE_AA
-            )
+            cv2.putText(frame, label_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
+            cv2.putText(frame, fall_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
 
             try:
                 cv2.imshow("SAGE Pose Estimation Test", frame)
@@ -173,6 +194,7 @@ def main():
         detector.close()
         cap.release()
         cv2.destroyAllWindows()
+        print(f"Results written to {POSE_KEYPOINTS_CSV} and {POSTURE_OUTPUT_CSV}")
         print("Resources clean-up finished.")
 
 if __name__ == '__main__':

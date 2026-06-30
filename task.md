@@ -34,6 +34,22 @@ This file tracks the project lifecycle milestones and phases.
 - [ ] Train/calibrate ML classifiers on extracted feature sets
 - [ ] Implement fall detection heuristics/temporal thresholds (e.g., rapid vertical height change followed by continuous lying down)
 
+## Phase 4.5: LSTM Pipeline (Completed)
+- [x] Create `src/posture/lstm/__init__.py` (package init)
+- [x] Create `src/posture/lstm/lstm_dataset.py` — sliding-window builder from raw 66-dim keypoints
+- [x] Create `src/posture/lstm/lstm_trainer.py` — Keras LSTM training script with early stopping
+- [x] Create `src/posture/lstm/lstm_classifier.py` — `LSTMPostureClassifier` inference API
+- [x] Modify `src/posture/pipeline_utils.py` — optional `lstm_classifier` param (backward compatible)
+- [x] Create `tests/test_lstm_pipeline.py` — dataset, classifier, and integration tests
+- [x] Update `requirements.txt` — added `tensorflow-cpu`, `scikit-learn`
+- [x] Create `src/data_processing/extract_raw_dataset.py` to process `data/raw/*` sequences
+- [x] Modify `lstm_dataset.py` to group by `sequence_id` to avoid cross-sequence windows
+- [x] Run `python src/data_processing/extract_raw_dataset.py`
+- [x] Install LSTM dependencies (`pip install tensorflow-cpu scikit-learn`)
+- [x] Run `python src/posture/lstm/lstm_dataset.py` to build training dataset
+- [ ] Run `python src/posture/lstm/lstm_trainer.py` to train and save model
+
+
 ## Phase 5: Caregiver Dashboard & Integration (Upcoming)
 - [ ] Implement web dashboard UI using modern premium styling
 - [ ] Integrate local real-time feed with state classifications overlays

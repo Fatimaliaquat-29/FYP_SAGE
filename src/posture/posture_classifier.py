@@ -1,12 +1,20 @@
-import pandas as pd
-import numpy as np
 import os
 import sys
+from pathlib import Path
+
+import pandas as pd
+import numpy as np
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.posture.pipeline_utils import DATA_DIR, POSTURE_OUTPUT_CSV
+
 
 def main():
-    input_csv = 'data/processed_keypoints/posture_features.csv'
-    output_csv = 'data/processed_keypoints/posture_output.csv'
-    root_output_csv = 'posture_output.csv'
+    input_csv = os.path.join(str(DATA_DIR), 'posture_features.csv')
+    output_csv = str(POSTURE_OUTPUT_CSV)
 
     print(f"Reading posture features from: {input_csv}")
     if not os.path.exists(input_csv):
@@ -14,6 +22,7 @@ def main():
         sys.exit(1)
 
     try:
+        # Load and compute vertical span helper
         df = pd.read_csv(input_csv)
     except Exception as e:
         print(f"Error: Could not read {input_csv}: {e}")
@@ -25,55 +34,114 @@ def main():
 
     print("Classifying postures frame-by-frame...")
 
-    # Calculate calibration metrics from data to adapt to different camera setups
-    # If the user only performs one posture, we handle small variations gracefully
+    # Calculate calibration metrics from data
     max_body_height = df['body_height'].dropna().max() if not df['body_height'].dropna().empty else 1.0
-    min_body_height = df['body_height'].dropna().min() if not df['body_height'].dropna().empty else 0.0
     
-    max_hip_height = df['hip_height'].dropna().max() if not df['hip_height'].dropna().empty else 1.0
-    min_hip_height = df['hip_height'].dropna().min() if not df['hip_height'].dropna().empty else 0.0
+    # We estimate vertical span from average shoulder and ankle Y coordinates:
+    # vertical_span = abs(avg_shoulder_y - avg_ankle_y)
+    df['vertical_span'] = np.abs(df['avg_shoulder_y'] - df['avg_ankle_y'])
+    max_span = df['vertical_span'].dropna().max() if not df['vertical_span'].dropna().empty else 1.0
 
-    print(f"Calibration - Max Body Height: {max_body_height:.3f}, Max Hip Height: {max_hip_height:.3f}")
+    print(f"Calibration - Max Body Height: {max_body_height:.3f}, Max Vertical Span: {max_span:.3f}")
 
     postures = []
+    fall_detected_list = []
+    confidences = []
+    other_labels_list = []
+
+    previous_rows = []
+
+    # Fallbacks
+    effective_max_bh = max(max_body_height, 0.50)
+    effective_max_span = max(max_span, 0.50)
 
     for idx, row in df.iterrows():
         body_height = row['body_height']
+        vertical_span = row['vertical_span']
         torso_angle = row['torso_angle']
         hip_height = row['hip_height']
 
         # 1. Unknown classification: core values are missing or NaN
         if pd.isna(body_height) or pd.isna(torso_angle) or pd.isna(hip_height):
-            postures.append('Unknown')
-            continue
-
-        # 2. Lying classification: large torso inclination (near horizontal)
-        # Typically when laying down, torso angle is extreme (e.g. > 50 degrees)
-        if abs(torso_angle) > 50.0:
-            postures.append('Lying')
-            
-        # 3. Sitting classification:
-        # Body height is compressed (knees bent, distance shoulder-to-ankle drops below 82% of max height)
-        # AND hips are low (below 65% mark of the hip height range)
-        elif body_height < 0.82 * max_body_height and hip_height < (min_hip_height + 0.65 * (max_hip_height - min_hip_height)):
-            postures.append('Sitting')
-            
-        # 4. Standing classification:
-        # Upright torso, high body height and high hip position (includes walking)
+            posture_label = 'Unknown'
+            fall_detected = False
+            confidence = 0.0
+            other_labels = 'missing_keypoints'
         else:
-            postures.append('Standing')
+            # 2. Lying classification: large torso inclination OR extremely compressed vertical span
+            if torso_angle >= 45.0 or vertical_span < 0.40 * effective_max_span:
+                posture_label = 'Lying'
+                other_labels = 'horizontal_torso' if torso_angle >= 45.0 else 'horizontal_span'
+            # 3. Standing classification: close to max height
+            elif body_height >= 0.92 * effective_max_bh:
+                posture_label = 'Standing'
+                other_labels = 'upright_max_height'
+            # 4. Sitting classification: compressed body height
+            elif body_height < 0.88 * effective_max_bh:
+                posture_label = 'Sitting'
+                other_labels = 'compressed_sitting'
+            # 5. Default standing fallback
+            else:
+                posture_label = 'Standing'
+                other_labels = 'upright'
 
-    df['posture'] = postures
+            # Fall detection logic based on velocity (change of hip height)
+            fall_detected = False
+            confidence = 0.55
+            velocity = 0.0
 
-    # Save output to data/processed_keypoints/posture_output.csv
+            if previous_rows:
+                prev_row = previous_rows[-1]
+                velocity = abs(hip_height - prev_row['hip_height'])
+
+                if posture_label == 'Lying':
+                    recent_non_lying = [r for r in previous_rows[-10:] if r['posture_label'] not in ['Lying', 'Unknown']]
+                    if recent_non_lying:
+                        recent_velocities = [r.get('velocity', 0.0) for r in previous_rows[-5:]] + [velocity]
+                        max_recent_velocity = max(recent_velocities) if recent_velocities else 0.0
+
+                        if max_recent_velocity > 0.07:
+                            fall_detected = True
+                            confidence = 0.95
+                            other_labels += ',rapid_fall'
+                        else:
+                            confidence = 0.70
+                            other_labels += ',slow_lie'
+                    else:
+                        confidence = 0.60
+                        other_labels += ',lying_static'
+                else:
+                    confidence = 0.62
+            else:
+                if posture_label == 'Lying':
+                    confidence = 0.60
+                    other_labels += ',lying_static'
+
+        curr_dict = {
+            'body_height': body_height,
+            'torso_angle': torso_angle,
+            'hip_height': hip_height,
+            'posture_label': posture_label,
+            'velocity': velocity
+        }
+        previous_rows.append(curr_dict)
+
+        postures.append(posture_label)
+        fall_detected_list.append(fall_detected)
+        confidences.append(confidence)
+        other_labels_list.append(other_labels)
+
+    df['posture_label'] = postures
+    df['posture'] = postures  # backward compatibility
+    df['fall_detected'] = fall_detected_list
+    df['confidence'] = confidences
+    df['other_labels'] = other_labels_list
+    df['frame'] = df['frame_number']  # align column name
+
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
-    df_output = df[['timestamp', 'frame_number', 'body_height', 'torso_angle', 'hip_height', 'posture']]
+    df_output = df[['timestamp', 'frame', 'frame_number', 'body_height', 'torso_angle', 'hip_height', 'posture_label', 'posture', 'fall_detected', 'confidence', 'other_labels']]
     df_output.to_csv(output_csv, index=False)
-    print(f"Postures saved to processed folder: {output_csv}")
-
-    # Save copy to root posture_output.csv
-    df_output.to_csv(root_output_csv, index=False)
-    print(f"Postures saved to workspace root: {root_output_csv}")
+    print(f"Postures saved to: {output_csv}")
 
     # Calculate summary statistics
     counts = df_output['posture'].value_counts()
@@ -114,6 +182,7 @@ def main():
         duration = end - start + 1
         print(f"  Frames {start:>4} - {end:>4} [{duration:>4} frames] : {state}")
     print("="*50 + "\n")
+
 
 if __name__ == '__main__':
     main()

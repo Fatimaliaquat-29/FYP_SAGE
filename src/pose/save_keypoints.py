@@ -23,8 +23,8 @@ def main():
     parser.add_argument(
         '--output', 
         type=str, 
-        default='pose_keypoints.csv', 
-        help="Path to output CSV file (default: 'pose_keypoints.csv')"
+        default='data/pose_keypoints.csv', 
+        help="Path to output CSV file (default: 'data/pose_keypoints.csv')"
     )
     args = parser.parse_args()
 
