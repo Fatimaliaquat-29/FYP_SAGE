@@ -27,17 +27,23 @@ OUTPUT_CSV = POSTURE_OUTPUT_CSV
 VALIDATION_LOG = REPO_ROOT / "validation_log.csv"
 SUMMARY_REPORT = REPO_ROOT / "summary_report.md"
 
+FRAME_INTERVAL = 1.0 / 15.0  # simulate ~15 FPS capture
+
+
+def _scale_coords(x, y, scale, cx=0.5, cy=0.5):
+    return cx + (x - cx) * scale, cy + (y - cy) * scale
+
 
 def build_synthetic_dataset(scenario_name, frame_count=12):
-    """Create a lightweight synthetic pose dataset for each validation scenario with physically correct coordinates."""
+    """Create a lightweight synthetic pose dataset for each validation scenario."""
     rows = []
+    base_time = time.time()
 
     for idx in range(frame_count):
         row = {
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": base_time + idx * FRAME_INTERVAL,
             "frame": idx + 1,
         }
-        # Initialize all 33 landmark columns as NaN
         for j in range(1, 34):
             row[f"x{j}"] = np.nan
             row[f"y{j}"] = np.nan
@@ -48,71 +54,121 @@ def build_synthetic_dataset(scenario_name, frame_count=12):
             rows.append(row)
             continue
 
-        # Set center positions for shoulder, hip, ankle
-        if scenario_name == "Standing":
-            sh_x, sh_y = 0.50, 0.22
-            hp_x, hp_y = 0.50, 0.52
-            ak_x, ak_y = 0.50, 0.80
-        elif scenario_name == "Sitting":
-            sh_x, sh_y = 0.50, 0.35
-            hp_x, hp_y = 0.50, 0.50
-            ak_x, ak_y = 0.50, 0.70
+        # Base coordinate sets for each posture
+        # In normalized image coords: y=0 is top, y=1 is bottom.
+        # Standing: shoulder(top) -> hip(mid) -> knee(below hip) -> ankle(bottom)
+        #   hip_angle ~ 180° (straight), knee_angle ~ 180° (straight)
+        # Sitting: shoulder(top) -> hip(mid) -> knee(same y as hip, displaced forward) -> ankle(below knee)
+        #   hip_angle ~ 90° (bent), knee_angle ~ 90° (bent)
+        standing_coords = {
+            "sh": (0.50, 0.22), "hp": (0.50, 0.52),
+            "kn": (0.50, 0.66), "ak": (0.50, 0.85),
+        }
+        sitting_coords = {
+            "sh": (0.50, 0.35), "hp": (0.50, 0.55),
+            "kn": (0.65, 0.55), "ak": (0.65, 0.75),
+        }
+
+        # Determine scale factor for distance variants
+        scale = 1.0
+        if scenario_name.endswith("_near"):
+            scale = 1.3
+        elif scenario_name.endswith("_far"):
+            scale = 0.5
+
+        base_name = scenario_name.replace("_near", "").replace("_far", "")
+
+        if base_name == "Standing":
+            sh_x, sh_y = standing_coords["sh"]
+            hp_x, hp_y = standing_coords["hp"]
+            kn_x, kn_y = standing_coords["kn"]
+            ak_x, ak_y = standing_coords["ak"]
+        elif base_name == "Sitting":
+            sh_x, sh_y = sitting_coords["sh"]
+            hp_x, hp_y = sitting_coords["hp"]
+            kn_x, kn_y = sitting_coords["kn"]
+            ak_x, ak_y = sitting_coords["ak"]
         elif scenario_name == "Walking":
-            # Slight movement in hip/ankle height
-            sh_x, sh_y = 0.50, 0.22
-            hp_x, hp_y = 0.50, 0.50
-            ak_x, ak_y = 0.50, 0.80
+            sh_x, sh_y = standing_coords["sh"]
+            hp_x, hp_y = standing_coords["hp"]
+            kn_x, kn_y = standing_coords["kn"]
+            ak_x, ak_y = standing_coords["ak"]
         elif scenario_name == "Slow lying":
-            # Leans down slowly over the scenario frames
             t = min(1.0, idx / 9.0)
             sh_x = 0.50 - 0.30 * t
             sh_y = 0.22 + 0.53 * t
             hp_x = 0.50
             hp_y = 0.52 + 0.23 * t
+            kn_x = 0.50 + 0.15 * t
+            kn_y = 0.66 + 0.09 * t
             ak_x = 0.50 + 0.30 * t
-            ak_y = 0.80 - 0.05 * t
+            ak_y = 0.85 - 0.10 * t
         elif scenario_name == "Fake fall":
-            # Crouch down quickly on frame 3 and 4 (sitting posture), then stand up
             if idx in [2, 3]:
-                sh_x, sh_y = 0.50, 0.40
-                hp_x, hp_y = 0.50, 0.60
-                ak_x, ak_y = 0.50, 0.80
+                sh_x, sh_y = sitting_coords["sh"]
+                hp_x, hp_y = sitting_coords["hp"]
+                kn_x, kn_y = sitting_coords["kn"]
+                ak_x, ak_y = sitting_coords["ak"]
             else:
-                sh_x, sh_y = 0.50, 0.22
-                hp_x, hp_y = 0.50, 0.52
-                ak_x, ak_y = 0.50, 0.80
-        elif scenario_name == "Fall":
-            # Stand for frame 1, fall on frame 2, remain lying on floor
+                sh_x, sh_y = standing_coords["sh"]
+                hp_x, hp_y = standing_coords["hp"]
+                kn_x, kn_y = standing_coords["kn"]
+                ak_x, ak_y = standing_coords["ak"]
+        elif scenario_name == "Standing_drift":
+            if idx < 6:
+                scale = 1.3
+            else:
+                scale = 0.5
+            sh_x, sh_y = standing_coords["sh"]
+            hp_x, hp_y = standing_coords["hp"]
+            kn_x, kn_y = standing_coords["kn"]
+            ak_x, ak_y = standing_coords["ak"]
+        elif base_name == "Fall":
             if idx == 0:
-                sh_x, sh_y = 0.50, 0.22
-                hp_x, hp_y = 0.50, 0.52
-                ak_x, ak_y = 0.50, 0.80
+                sh_x, sh_y = standing_coords["sh"]
+                hp_x, hp_y = standing_coords["hp"]
+                kn_x, kn_y = standing_coords["kn"]
+                ak_x, ak_y = standing_coords["ak"]
             elif idx == 1:
                 sh_x, sh_y = 0.35, 0.45
                 hp_x, hp_y = 0.50, 0.62
+                kn_x, kn_y = 0.58, 0.70
                 ak_x, ak_y = 0.65, 0.78
             else:
                 sh_x, sh_y = 0.20, 0.75
                 hp_x, hp_y = 0.50, 0.75
+                kn_x, kn_y = 0.65, 0.75
                 ak_x, ak_y = 0.80, 0.75
         else:
-            sh_x, sh_y = 0.50, 0.22
-            hp_x, hp_y = 0.50, 0.52
-            ak_x, ak_y = 0.50, 0.80
+            sh_x, sh_y = standing_coords["sh"]
+            hp_x, hp_y = standing_coords["hp"]
+            kn_x, kn_y = standing_coords["kn"]
+            ak_x, ak_y = standing_coords["ak"]
 
-        # Set specific landmarks for shoulder (11/12), hip (23/24), ankle (27/28)
-        row["x12"] = sh_x - 0.02
-        row["x13"] = sh_x + 0.02
+        # Apply distance scale
+        sh_x, sh_y = _scale_coords(sh_x, sh_y, scale)
+        kn_x, kn_y = _scale_coords(kn_x, kn_y, scale)
+        hp_x, hp_y = _scale_coords(hp_x, hp_y, scale)
+        ak_x, ak_y = _scale_coords(ak_x, ak_y, scale)
+
+        # Set landmarks: shoulders (11/12), knees (25/26), hips (23/24), ankles (27/28)
+        row["x12"] = sh_x - 0.02 * scale
+        row["x13"] = sh_x + 0.02 * scale
         row["y12"] = sh_y
         row["y13"] = sh_y
 
-        row["x24"] = hp_x - 0.01
-        row["x25"] = hp_x + 0.01
+        row["x26"] = kn_x - 0.01 * scale
+        row["x27"] = kn_x + 0.01 * scale
+        row["y26"] = kn_y
+        row["y27"] = kn_y
+
+        row["x24"] = hp_x - 0.01 * scale
+        row["x25"] = hp_x + 0.01 * scale
         row["y24"] = hp_y
         row["y25"] = hp_y
 
-        row["x28"] = ak_x - 0.01
-        row["x29"] = ak_x + 0.01
+        row["x28"] = ak_x - 0.01 * scale
+        row["x29"] = ak_x + 0.01 * scale
         row["y28"] = ak_y
         row["y29"] = ak_y
 
@@ -149,7 +205,7 @@ def run_realtime_pipeline_in_memory(dataset_df) -> list:
     return output_rows
 
 
-def evaluate_scenario(scenario_name, output_df, expected_fall=False):
+def evaluate_scenario(scenario_name, output_df, expected_fall=False, expected_posture=None):
     posture_col = "posture_label" if "posture_label" in output_df.columns else ("posture" if "posture" in output_df.columns else None)
     
     posture_counts = output_df[posture_col].value_counts().to_dict() if posture_col else {}
@@ -191,6 +247,14 @@ def evaluate_scenario(scenario_name, output_df, expected_fall=False):
     else:
         confidence = 0.50
 
+    # Posture accuracy: fraction of non-Unknown frames matching expected_posture
+    posture_accuracy = None
+    if expected_posture and posture_col:
+        non_unknown = output_df[output_df[posture_col] != "Unknown"]
+        if len(non_unknown) > 0:
+            matching = int((non_unknown[posture_col] == expected_posture).sum())
+            posture_accuracy = round(matching / len(non_unknown), 3)
+
     notes = []
     notes.append(f"Predominant posture: {most_common_posture}")
     notes.append(f"Standing={standing_frames}, Sitting={sitting_frames}, Lying={lying_frames}, Unknown={unknown_frames}")
@@ -201,6 +265,8 @@ def evaluate_scenario(scenario_name, output_df, expected_fall=False):
     if mean_hip_height is not None:
         notes.append(f"Mean hip height={mean_hip_height:.3f}")
     notes.append(f"Transitions={transition_count}")
+    if posture_accuracy is not None:
+        notes.append(f"Posture accuracy={posture_accuracy:.1%}")
 
     return {
         "scenario": scenario_name,
@@ -212,6 +278,8 @@ def evaluate_scenario(scenario_name, output_df, expected_fall=False):
         "result": "PASS" if passed else "FAIL",
         "notes": " | ".join(notes),
         "predominant_posture": most_common_posture,
+        "expected_posture": expected_posture or "",
+        "posture_accuracy": posture_accuracy,
         "lying_frames": lying_frames,
         "transition_count": transition_count,
         "mean_body_height": mean_body_height,
@@ -232,6 +300,8 @@ def write_validation_log(rows):
         "result",
         "notes",
         "predominant_posture",
+        "expected_posture",
+        "posture_accuracy",
         "lying_frames",
         "transition_count",
         "mean_body_height",
@@ -271,26 +341,43 @@ def write_summary_report(rows, generated_at):
     ]
 
     for row in rows:
+        accuracy_str = f"{row['posture_accuracy']:.1%}" if row.get("posture_accuracy") is not None else "N/A"
         sections.extend(
             [
                 f"### {row['scenario']}",
                 f"- Outcome: {row['result']}",
                 f"- Detection: {row['detection']}",
+                f"- Expected posture: {row.get('expected_posture') or 'N/A'}",
+                f"- Posture accuracy: {accuracy_str}",
                 f"- Important observations: {row['notes']}",
                 f"- Possible reasons for failure: {'None' if row['result'] == 'PASS' else 'Threshold mismatch or missing posture evidence'}",
                 "",
             ]
         )
 
+    # Distance-variant posture accuracy breakdown
+    distance_rows = [r for r in rows if any(tag in r["scenario"] for tag in ["_near", "_far", "_drift"])]
+    if distance_rows:
+        sections.extend([
+            "## Distance Variant Posture Accuracy",
+            "",
+            "| Scenario | Expected Posture | Posture Accuracy | Result |",
+            "|---|---|---|---|",
+        ])
+        for r in distance_rows:
+            acc = f"{r['posture_accuracy']:.1%}" if r.get("posture_accuracy") is not None else "N/A"
+            sections.append(f"| {r['scenario']} | {r.get('expected_posture', 'N/A')} | {acc} | {r['result']} |")
+        sections.append("")
+
     sections.extend(
         [
             "## Overall Analysis",
             "",
-            "- Strengths: The pipeline accurately performs real-time in-memory fall detection and posture classification.",
+            "- Strengths: The pipeline uses scale-invariant joint angles as the primary classification signal and time/scale-normalized velocity for fall detection.",
             "- Weaknesses: Heuristics are tuned to temporal sequences and depend on consistent landmark availability.",
             f"- False positives: {sum(1 for row in rows if row['result'] == 'FAIL' and row['detection'] == 'Fall')}",
             f"- False negatives: {sum(1 for row in rows if row['result'] == 'FAIL' and row['detection'] == 'No fall')}",
-            "- Recommended threshold adjustments: Default thresholds produce stable, correct results under realistic scenarios.",
+            "- Recommended threshold adjustments: Tune ANGLE_STANDING_MIN, ANGLE_SITTING_MAX, FALL_AVG_VELOCITY_FLOOR, and FALL_ANGULAR_VELOCITY_FLOOR against recorded validation clips.",
         ]
     )
 
@@ -303,20 +390,27 @@ def write_summary_report(rows, generated_at):
 def main():
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    # (scenario_name, expected_fall, expected_posture)
     scenarios = [
-        ("Standing", False),
-        ("Sitting", False),
-        ("Walking", False),
-        ("Slow lying", False),
-        ("Fake fall", False),
-        ("Empty room", False),
-        ("Fall", True),
+        ("Standing", False, "Standing"),
+        ("Standing_near", False, "Standing"),
+        ("Standing_far", False, "Standing"),
+        ("Standing_drift", False, "Standing"),
+        ("Sitting", False, "Sitting"),
+        ("Sitting_near", False, "Sitting"),
+        ("Sitting_far", False, "Sitting"),
+        ("Walking", False, "Standing"),
+        ("Slow lying", False, None),
+        ("Fake fall", False, None),
+        ("Empty room", False, None),
+        ("Fall", True, None),
+        ("Fall_far", True, None),
     ]
     rows = []
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    for scenario_name, expected_fall in scenarios:
+    for scenario_name, expected_fall, expected_posture in scenarios:
         print(f"\n=== Validating scenario: {scenario_name} ===")
         
         # Clear existing output files to avoid appending scenario data together
@@ -342,12 +436,13 @@ def main():
         # Build output DataFrame from in-memory results if CSV is locked
         output_df = pd.DataFrame(output_rows)
 
-        evaluation = evaluate_scenario(scenario_name, output_df, expected_fall=expected_fall)
+        evaluation = evaluate_scenario(scenario_name, output_df, expected_fall=expected_fall, expected_posture=expected_posture)
         evaluation["timestamp"] = generated_at
         evaluation["processing_time_ms"] = elapsed_ms
         rows.append(evaluation)
 
-        print(f"Scenario {scenario_name}: {evaluation['result']} | detection={evaluation['detection']} | confidence={evaluation['confidence']}")
+        acc_str = f" | posture_acc={evaluation['posture_accuracy']:.1%}" if evaluation.get("posture_accuracy") is not None else ""
+        print(f"Scenario {scenario_name}: {evaluation['result']} | detection={evaluation['detection']} | confidence={evaluation['confidence']}{acc_str}")
 
     write_validation_log(rows)
     write_summary_report(rows, generated_at)

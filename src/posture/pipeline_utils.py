@@ -157,27 +157,60 @@ def _compute_knee_angle(hip, knee, ankle):
     return float(np.degrees(np.arccos(cos_theta)))
 
 
-def _compute_velocity(previous_row: dict, current_row: dict) -> float:
-    """Return the hip-center displacement between two consecutive frames.
+def _compute_hip_angle(shoulder, hip, knee):
+    """Angle at the hip joint: shoulder -> hip -> knee.
+    ~170-180 deg when standing upright (torso in line with legs).
+    ~70-110 deg when sitting (torso folded over thighs)."""
+    if shoulder is None or hip is None or knee is None:
+        return np.nan
+    if any(np.isnan(v) for v in shoulder) or any(np.isnan(v) for v in hip) or any(np.isnan(v) for v in knee):
+        return np.nan
+    v1 = np.array(shoulder, dtype=float) - np.array(hip, dtype=float)
+    v2 = np.array(knee, dtype=float) - np.array(hip, dtype=float)
+    n1, n2 = np.linalg.norm(v1), np.linalg.norm(v2)
+    if n1 < 1e-6 or n2 < 1e-6:
+        return np.nan
+    cos_theta = np.clip(np.dot(v1, v2) / (n1 * n2), -1.0, 1.0)
+    return float(np.degrees(np.arccos(cos_theta)))
 
-    Hip-center velocity is the most reliable signal for fall detection because
-    the hips are the body's centre of mass.  Shoulder velocity was previously
-    included but it picks up too much noise from upper-body adjustments during
-    slow, deliberate movements (e.g. slowly lying down on a bed)."""
+
+def _compute_velocity(previous_row: dict, current_row: dict) -> float:
+    """Hip-center speed, normalized by elapsed time and by body scale.
+
+    Returns speed in units of (body_height fractions) per second, so the
+    same real-world fall speed reads the same regardless of camera distance
+    or frame rate."""
     prev_pairs = _extract_keypoint_pairs(previous_row)
     curr_pairs = _extract_keypoint_pairs(current_row)
     if not prev_pairs or not curr_pairs:
         return 0.0
 
-    if len(prev_pairs) > 24 and len(curr_pairs) > 24:
-        prev_hip = ((prev_pairs[23][0] + prev_pairs[24][0]) / 2.0,
-                    (prev_pairs[23][1] + prev_pairs[24][1]) / 2.0)
-        curr_hip = ((curr_pairs[23][0] + curr_pairs[24][0]) / 2.0,
-                    (curr_pairs[23][1] + curr_pairs[24][1]) / 2.0)
-        if not (any(np.isnan(v) for v in prev_hip) or any(np.isnan(v) for v in curr_hip)):
-            return float(np.linalg.norm(
-                np.array(curr_hip, dtype=float) - np.array(prev_hip, dtype=float)))
-    return 0.0
+    if len(prev_pairs) <= 24 or len(curr_pairs) <= 24:
+        return 0.0
+
+    prev_hip = ((prev_pairs[23][0] + prev_pairs[24][0]) / 2.0,
+                (prev_pairs[23][1] + prev_pairs[24][1]) / 2.0)
+    curr_hip = ((curr_pairs[23][0] + curr_pairs[24][0]) / 2.0,
+                (curr_pairs[23][1] + curr_pairs[24][1]) / 2.0)
+    if any(np.isnan(v) for v in prev_hip) or any(np.isnan(v) for v in curr_hip):
+        return 0.0
+
+    raw_disp = float(np.linalg.norm(np.array(curr_hip) - np.array(prev_hip)))
+
+    try:
+        dt = float(current_row.get("timestamp", 0)) - float(previous_row.get("timestamp", 0))
+    except (TypeError, ValueError):
+        dt = 0.0
+    if dt <= 0:
+        dt = 1.0 / 30.0  # fallback: assume ~30 FPS
+
+    speed_per_sec = raw_disp / dt
+
+    body_scale = current_row.get("body_height", np.nan)
+    if body_scale is None or np.isnan(body_scale) or body_scale < 1e-3:
+        body_scale = 1.0
+
+    return speed_per_sec / body_scale
 
 
 def classify_posture_and_fall(
@@ -308,11 +341,21 @@ def classify_posture_and_fall(
     else:
         knee_angle = np.nan
 
+    # Calculate hip angle if hips and knees are visible (does not need ankles)
+    if hp_ok and kn_ok:
+        hl_angle = _compute_hip_angle(sh_l, hp_l, kn_l)
+        hr_angle = _compute_hip_angle(sh_r, hp_r, kn_r)
+        valid_hip_angles = [a for a in [hl_angle, hr_angle] if not np.isnan(a)]
+        hip_angle = float(np.mean(valid_hip_angles)) if valid_hip_angles else np.nan
+    else:
+        hip_angle = np.nan
+
     row["body_height"] = body_height
     row["vertical_span"] = vertical_span
     row["torso_angle"] = torso_angle
     row["hip_height"] = hip_height
     row["knee_angle"] = knee_angle
+    row["hip_angle"] = hip_angle
 
     # 2. Dynamic calibration from rolling history
     history_body_heights = [r.get("body_height") for r in (previous_rows or []) if r.get("body_height") is not None and not np.isnan(r.get("body_height"))]
@@ -326,50 +369,53 @@ def classify_posture_and_fall(
     effective_max_bh = max(max_body_height, 0.50)
     effective_max_span = max(max_span, 0.50)
 
-    # 3. Classify raw posture label using scale-invariant vertical spans and body heights
+    # 3. Classify raw posture label using scale-invariant angles as primary signal
+    ANGLE_STANDING_MIN = 155.0  # TODO-tune-with-real-footage
+    ANGLE_SITTING_MAX = 125.0   # TODO-tune-with-real-footage
+
     raw_posture_label = "Unknown"
     other_labels = []
+    angles_available = not np.isnan(knee_angle) and not np.isnan(hip_angle)
+    angle_says_standing = (angles_available
+                           and knee_angle >= ANGLE_STANDING_MIN
+                           and hip_angle >= ANGLE_STANDING_MIN)
 
     if np.isnan(torso_angle):
         raw_posture_label = "Unknown"
         other_labels.append("invalid_angle")
     # Rule 1: Lying – large torso inclination (applies even without lower-body visibility)
-    elif torso_angle >= 45.0 or (not lower_body_occluded and vertical_span < 0.40 * effective_max_span):
+    # Guard: if joint angles clearly say Standing, skip the vertical_span Lying heuristic
+    #        (prevents false Lying when camera distance changes mid-session).
+    elif torso_angle >= 45.0 or (not lower_body_occluded
+                                  and not angle_says_standing
+                                  and vertical_span < 0.40 * effective_max_span):
         raw_posture_label = "Lying"
         other_labels.append("horizontal_torso" if torso_angle >= 45.0 else "horizontal_span")
     elif lower_body_occluded:
         # ── Torso-only path (e.g. sitting on a bed with legs not visible) ──
-        # Without full-body height we cannot use the body_height ratio reliably.
-        # Instead, rely on hip_height: a person sitting upright on a bed has their
-        # hips at a mid-frame height (roughly 0.3–0.6 from the bottom), while a
-        # standing person has hips higher in the frame (hip_height > 0.55).
-        # The torso angle is also <45° for both, so we use hip_height as the
-        # primary discriminator.
         if hip_height > 0.55:
-            # Hips are high in the frame → most likely Standing
             raw_posture_label = "Standing"
             other_labels.append("torso_only_standing")
         else:
-            # Hips are at mid or low frame height → most likely Sitting
             raw_posture_label = "Sitting"
             other_labels.append("torso_only_sitting")
-    # Rule 2: Standing (high relative body height)
+    # Rule 2 (PRIMARY): Joint-angle classification — scale-invariant
+    elif angles_available and knee_angle >= ANGLE_STANDING_MIN and hip_angle >= ANGLE_STANDING_MIN:
+        raw_posture_label = "Standing"
+        other_labels.append("angle_standing")
+    elif angles_available and (knee_angle <= ANGLE_SITTING_MAX or hip_angle <= ANGLE_SITTING_MAX):
+        raw_posture_label = "Sitting"
+        other_labels.append("angle_sitting")
+    # Rule 3 (FALLBACK): Ambiguous angles or angles unavailable — body_height ratio heuristic
     elif body_height >= 0.92 * effective_max_bh:
-        # Check knee angle if available to ensure leg is not bent (sitting on high surface)
-        if not np.isnan(knee_angle) and knee_angle < 135.0:
-            raw_posture_label = "Sitting"
-            other_labels.append("compressed_sitting_knees")
-        else:
-            raw_posture_label = "Standing"
-            other_labels.append("upright_max_height")
-    # Rule 3: Sitting
+        raw_posture_label = "Standing"
+        other_labels.append("fallback_height_standing")
     elif body_height < 0.88 * effective_max_bh:
         raw_posture_label = "Sitting"
-        other_labels.append("compressed_sitting")
-    # Rule 4: Default Standing fallback
+        other_labels.append("fallback_height_sitting")
     else:
         raw_posture_label = "Standing"
-        other_labels.append("upright")
+        other_labels.append("fallback_default")
 
     row["raw_posture_label"] = raw_posture_label
 
@@ -391,24 +437,36 @@ def classify_posture_and_fall(
         posture_label = raw_posture_label
 
     # 5. Fall detection logic
-    # ── Constants ──────────────────────────────────────────────────────────────
-    FALL_VELOCITY_THRESHOLD  = 0.05   # per-frame hip velocity to count as a "fast frame"
-    FALL_SUSTAINED_COUNT     = 3      # minimum fast frames in the window to qualify as a fall
-    FALL_AVG_VELOCITY_FLOOR  = 0.03   # average velocity over the window must also exceed this
-    FALL_LOOK_BACK_FRAMES    = 10     # how many recent frames to scan
-    FALL_NON_LYING_WINDOW    = 15     # how far back to look for a non-Lying posture
-    # ────────────────────────────────────────────────────────────────────────────
+    # ── Constants (units: body-heights/sec and deg/sec) ────────────────────────
+    FALL_VELOCITY_THRESHOLD      = 2.0    # body-heights/sec per frame to count as "fast"  # TODO-tune
+    FALL_SUSTAINED_COUNT         = 2      # minimum fast frames in the window                # TODO-tune
+    FALL_AVG_VELOCITY_FLOOR      = 1.5    # avg velocity over window (body-heights/sec)    # TODO-tune
+    FALL_ANGULAR_VELOCITY_FLOOR  = 200.0  # torso angular velocity floor (deg/sec)         # TODO-tune
+    FALL_LOOK_BACK_FRAMES        = 10     # how many recent frames to scan
+    FALL_NON_LYING_WINDOW        = 15     # how far back to look for a non-Lying posture
+    # ──────────────────────────────────────────────────────────────────────────────
 
     fall_detected = False
     confidence = 0.55
     velocity = 0.0
 
-    # Store torso angle delta so future frames can use it
+    # Compute torso angle delta and time-normalize to deg/sec
     prev_torso_angle = previous_rows[-1].get("torso_angle", np.nan) if previous_rows else np.nan
     torso_angle_delta = 0.0
     if not np.isnan(torso_angle) and not np.isnan(prev_torso_angle):
         torso_angle_delta = abs(torso_angle - prev_torso_angle)
     row["torso_angle_delta"] = torso_angle_delta
+
+    dt_for_angle = 1.0 / 30.0
+    if previous_rows:
+        try:
+            dt_for_angle = float(row.get("timestamp", 0)) - float(previous_rows[-1].get("timestamp", 0))
+        except (TypeError, ValueError):
+            pass
+        if dt_for_angle <= 0:
+            dt_for_angle = 1.0 / 30.0
+    torso_angular_velocity = torso_angle_delta / dt_for_angle
+    row["torso_angular_velocity"] = torso_angular_velocity
 
     if previous_rows:
         previous_row = previous_rows[-1]
@@ -419,14 +477,8 @@ def classify_posture_and_fall(
         look_back = previous_rows[-FALL_LOOK_BACK_FRAMES:]
         recent_velocities = [r.get("velocity", 0.0) for r in look_back] + [velocity]
 
-        # Sustained-burst check: count frames that individually exceeded the
-        # threshold.  A real fall produces many consecutive fast frames; a slow
-        # lie-down produces at most one or two borderline spikes.
         fast_frame_count = sum(1 for v in recent_velocities if v > FALL_VELOCITY_THRESHOLD)
 
-        # Average velocity over the window.  A fall has high average (the whole
-        # body is accelerating); a slow lie-down has low average (smooth,
-        # controlled movement with occasional small peaks).
         avg_recent_velocity = (
             sum(recent_velocities) / len(recent_velocities)
         ) if recent_velocities else 0.0
@@ -438,12 +490,19 @@ def classify_posture_and_fall(
         ]
         had_upright_recently = len(recent_non_lying) > 0
 
-        # The primary fall signal: sustained rapid hip movement with a high
-        # average velocity.  Both conditions must be true — this is what
-        # separates a genuine fall from a slow deliberate lie-down.
+        # Max angular velocity in the lookback window (the torso rotation happens
+        # during the fall but is zero once the person is on the ground).
+        recent_angular_velocities = (
+            [r.get("torso_angular_velocity", 0.0) for r in look_back]
+            + [torso_angular_velocity]
+        )
+        max_recent_angular_velocity = max(recent_angular_velocities) if recent_angular_velocities else 0.0
+
+        # Fall signal: sustained rapid hip movement AND rapid torso rotation
         is_fall_motion = (
             fast_frame_count >= FALL_SUSTAINED_COUNT
             and avg_recent_velocity > FALL_AVG_VELOCITY_FLOOR
+            and max_recent_angular_velocity > FALL_ANGULAR_VELOCITY_FLOOR
         )
 
         if posture_label == "Lying":
@@ -457,10 +516,10 @@ def classify_posture_and_fall(
 
         else:
             # ── Pre-Lying fall trigger ─────────────────────────────────────────
-            # Fires only when sustained rapid motion is detected AND the person
-            # was recently upright.  Requires a higher sustained count to avoid
-            # false positives when the person is just moving normally.
-            if had_upright_recently and fast_frame_count >= (FALL_SUSTAINED_COUNT + 1) and avg_recent_velocity > FALL_AVG_VELOCITY_FLOOR:
+            if (had_upright_recently
+                    and fast_frame_count >= (FALL_SUSTAINED_COUNT + 1)
+                    and avg_recent_velocity > FALL_AVG_VELOCITY_FLOOR
+                    and max_recent_angular_velocity > FALL_ANGULAR_VELOCITY_FLOOR):
                 fall_detected = True
                 confidence = 0.85
                 other_labels.append("pre_lying_fall")
@@ -474,6 +533,7 @@ def classify_posture_and_fall(
     else:
         row["velocity"] = 0.0
         row["torso_angle_delta"] = 0.0
+        row["torso_angular_velocity"] = 0.0
         if posture_label == "Lying":
             confidence = 0.60
             other_labels.append("lying_static")
