@@ -1,0 +1,18 @@
+{
+  "classes": [
+    "Fall",
+    "Lying",
+    "Sitting",
+    "Standing",
+    "Unknown"
+  ],
+  "class_to_idx": {
+    "Fall": 0,
+    "Lying": 1,
+    "Sitting": 2,
+    "Standing": 3,
+    "Unknown": 4
+  },
+  "window_size": 30,
+  "n_features": 66
+}

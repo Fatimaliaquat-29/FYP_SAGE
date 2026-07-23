@@ -216,3 +216,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+ 
+# Ignore large video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# Ignore datasets folder
+datasets/

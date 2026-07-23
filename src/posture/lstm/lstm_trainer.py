@@ -79,7 +79,7 @@ def train(
     try:
         import tensorflow as tf
         from tensorflow import keras
-        from sklearn.model_selection import train_test_split
+        from sklearn.model_selection import StratifiedGroupKFold
         from sklearn.metrics import classification_report
     except ImportError as e:
         raise ImportError(
@@ -98,21 +98,50 @@ def train(
     data = np.load(str(dataset_path), allow_pickle=True)
     X = data["X"].astype(np.float32)   # (N, window_size, 66)
     y = data["y"].astype(np.int32)     # (N,)
-    classes = data["classes"]          # ['Fall', 'Lying', 'Sitting', 'Standing']
+    groups = data["groups"]            # (N,)
+    classes = data["classes"]          # ['Fall', 'Lying', 'Sitting', 'Standing', 'Unknown']
 
-    print(f"  Dataset shape : X={X.shape}, y={y.shape}")
+    print(f"  Dataset shape : X={X.shape}, y={y.shape}, groups={groups.shape}")
     print(f"  Classes       : {list(classes)}")
 
     window_size = X.shape[1]
     n_features = X.shape[2]
     n_classes = len(classes)
 
-    # ── Train / validation split ──────────────────────────────────────────────
-    X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=val_split, random_state=42, stratify=y
-    )
-    print(f"  Train samples : {len(X_train)}")
-    print(f"  Val samples   : {len(X_val)}")
+    # ── Strict grouped split on REAL data only ────────────────────────────────
+    sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+    train_idx, val_idx = next(sgkf.split(X, y, groups))
+
+    X_val,   y_val,   g_val   = X[val_idx],   y[val_idx],   groups[val_idx]
+    X_train, y_train, g_train = X[train_idx], y[train_idx], groups[train_idx]
+
+    # ── Post-split synthetic injection (train fold only) ──────────────────────
+    from src.posture.lstm.lstm_dataset import generate_synthetic_windows, impute_nan
+    print("  Generating synthetic windows for training fold...")
+    X_syn, y_syn, _ = generate_synthetic_windows(window_size=window_size, n_per_class=800)
+    X_syn = impute_nan(X_syn.astype(np.float32))
+    X_train = np.concatenate([X_train, X_syn], axis=0).astype(np.float32)
+    y_train = np.concatenate([y_train, y_syn], axis=0).astype(np.int32)
+    # Re-shuffle augmented train fold
+    rng = np.random.default_rng(seed=1)
+    shuf = rng.permutation(len(X_train))
+    X_train, y_train = X_train[shuf], y_train[shuf]
+
+    print(f"\n  Split Results (val = 100% real, no synthetic):")
+    print(f"  Train windows : {len(X_train)}  (real + synthetic)")
+    print(f"  Val windows   : {len(X_val)}   (real ONLY)\n")
+
+    print("  Train Balance (Windows):")
+    for i, cls in enumerate(classes):
+        mask = (y_train == i)
+        print(f"    {cls:<10}: {mask.sum():>6} windows")
+
+    print("\n  Val Balance (Windows / Unique Real Sequences):")
+    for i, cls in enumerate(classes):
+        mask = (y_val == i)
+        n_seq = int(np.unique(g_val[mask]).shape[0]) if mask.sum() > 0 else 0
+        print(f"    {cls:<10}: {mask.sum():>6} windows / {n_seq:>3} real sequences")
+
 
     # ── Build model ───────────────────────────────────────────────────────────
     model = build_model(window_size, n_features, n_classes)
@@ -157,7 +186,7 @@ def train(
     # ── Save model ────────────────────────────────────────────────────────────
     model_out.parent.mkdir(parents=True, exist_ok=True)
     model.save(str(model_out))
-    print(f"Model saved → {model_out}")
+    print(f"Model saved -> {model_out}")
 
     # ── Save label encoder ────────────────────────────────────────────────────
     encoder = {
@@ -168,7 +197,7 @@ def train(
     }
     encoder_out.parent.mkdir(parents=True, exist_ok=True)
     encoder_out.write_text(json.dumps(encoder, indent=2), encoding="utf-8")
-    print(f"Label encoder saved → {encoder_out}")
+    print(f"Label encoder saved -> {encoder_out}")
 
     return model, history
 

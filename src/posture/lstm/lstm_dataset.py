@@ -33,13 +33,13 @@ if str(REPO_ROOT) not in sys.path:
 DATA_DIR = REPO_ROOT / "data"
 POSE_KEYPOINTS_CSV = DATA_DIR / "processed_keypoints" / "pose_keypoints.csv"
 POSTURE_OUTPUT_CSV = DATA_DIR / "processed_keypoints" / "posture_output.csv"
-LSTM_DATASET_NPZ = DATA_DIR / "datasets" / "lstm_dataset.npz"
+LSTM_DATASET_NPZ = DATA_DIR / "lstm_dataset.npz"
 
 LANDMARK_COUNT = 33
 FEATURE_DIM = LANDMARK_COUNT * 2  # 66: x1,y1 ... x33,y33
 
 # Class labels (alphabetically sorted for reproducibility)
-CLASSES = np.array(["Fall", "Lying", "Sitting", "Standing"])
+CLASSES = np.array(["Fall", "Lying", "Sitting", "Standing", "Unknown"])
 CLASS_TO_IDX = {c: i for i, c in enumerate(CLASSES)}
 
 
@@ -138,9 +138,10 @@ def generate_synthetic_windows(
     -------
     X : np.ndarray of shape (n_per_class * 4, window_size, 66)
     y : np.ndarray of shape (n_per_class * 4,)  integer labels
+    g : np.ndarray of shape (n_per_class * 4,)  string sequence ids
     """
     np.random.seed(rng_seed)
-    X_parts, y_parts = [], []
+    X_parts, y_parts, g_parts = [], [], []
 
     # ── Standing ──────────────────────────────────────────────────────────────
     windows = np.array(
@@ -148,6 +149,7 @@ def generate_synthetic_windows(
     )
     X_parts.append(windows)
     y_parts.append(np.full(n_per_class, CLASS_TO_IDX["Standing"]))
+    g_parts.append(np.array([f"syn_stand_{i}" for i in range(n_per_class)]))
 
     # ── Sitting ───────────────────────────────────────────────────────────────
     windows = np.array(
@@ -155,6 +157,7 @@ def generate_synthetic_windows(
     )
     X_parts.append(windows)
     y_parts.append(np.full(n_per_class, CLASS_TO_IDX["Sitting"]))
+    g_parts.append(np.array([f"syn_sit_{i}" for i in range(n_per_class)]))
 
     # ── Lying ─────────────────────────────────────────────────────────────────
     windows = np.array(
@@ -162,15 +165,18 @@ def generate_synthetic_windows(
     )
     X_parts.append(windows)
     y_parts.append(np.full(n_per_class, CLASS_TO_IDX["Lying"]))
+    g_parts.append(np.array([f"syn_lie_{i}" for i in range(n_per_class)]))
 
     # ── Fall ──────────────────────────────────────────────────────────────────
     windows = np.array([_make_fall_sequence(window_size) for _ in range(n_per_class)])
     X_parts.append(windows)
     y_parts.append(np.full(n_per_class, CLASS_TO_IDX["Fall"]))
+    g_parts.append(np.array([f"syn_fall_{i}" for i in range(n_per_class)]))
 
     X = np.concatenate(X_parts, axis=0)
     y = np.concatenate(y_parts, axis=0)
-    return X, y
+    g = np.concatenate(g_parts, axis=0)
+    return X, y, g
 
 
 # ---------------------------------------------------------------------------
@@ -219,21 +225,22 @@ def build_windows_from_real_data(
     -------
     X : np.ndarray of shape (N_windows, window_size, 66)  or empty
     y : np.ndarray of shape (N_windows,)
+    g : np.ndarray of shape (N_windows,) string sequence ids
     """
     if not kp_csv.exists():
         print(f"  [dataset] {kp_csv} not found – skipping this real data source.")
-        return np.empty((0, window_size, FEATURE_DIM), dtype=np.float32), np.empty(0, dtype=np.int32)
+        return np.empty((0, window_size, FEATURE_DIM), dtype=np.float32), np.empty(0, dtype=np.int32), np.empty(0, dtype=object)
 
     try:
-        kp_df = pd.read_csv(kp_csv)
+        kp_df = pd.read_csv(kp_csv, low_memory=False)
     except Exception as e:
         print(f"  [dataset] Could not read {kp_csv}: {e}")
-        return np.empty((0, window_size, FEATURE_DIM), dtype=np.float32), np.empty(0, dtype=np.int32)
+        return np.empty((0, window_size, FEATURE_DIM), dtype=np.float32), np.empty(0, dtype=np.int32), np.empty(0, dtype=object)
 
     frame_col = "frame" if "frame" in kp_df.columns else ("frame_number" if "frame_number" in kp_df.columns else None)
     if frame_col is None:
         print("  [dataset] No frame column found in CSV – skipping.")
-        return np.empty((0, window_size, FEATURE_DIM), dtype=np.float32), np.empty(0, dtype=np.int32)
+        return np.empty((0, window_size, FEATURE_DIM), dtype=np.float32), np.empty(0, dtype=np.int32), np.empty(0, dtype=object)
     kp_df = kp_df.rename(columns={frame_col: "frame"})
 
     # Check for sequence_id, default to 'single_sequence' if not present
@@ -269,7 +276,7 @@ def build_windows_from_real_data(
     if "fall_detected" not in kp_df.columns:
         kp_df["fall_detected"] = False
 
-    X_list, y_list = [], []
+    X_list, y_list, g_list = [], [], []
     
     # Process sliding windows per sequence to prevent cross-sequence bleeding
     for seq_id, seq_df in kp_df.groupby("sequence_id"):
@@ -288,18 +295,19 @@ def build_windows_from_real_data(
             label = labels[start + window_size - 1]
             X_list.append(window)
             y_list.append(label)
+            g_list.append(str(seq_id))
 
     X = np.array(X_list, dtype=np.float32) if X_list else np.empty((0, window_size, FEATURE_DIM), dtype=np.float32)
     y = np.array(y_list, dtype=np.int32) if y_list else np.empty(0, dtype=np.int32)
+    g = np.array(g_list, dtype=object) if g_list else np.empty(0, dtype=object)
     
     print(f"  [dataset] Source ({kp_csv.name}): {len(X)} windows from {len(kp_df)} frames across {kp_df['sequence_id'].nunique()} sequences.")
-    return X, y
+    return X, y, g
 
 
 # ---------------------------------------------------------------------------
 # NaN imputation
 # ---------------------------------------------------------------------------
-
 def impute_nan(X: np.ndarray) -> np.ndarray:
     """
     Replace NaN values in X (N, window_size, 66) with per-feature column median.
@@ -323,100 +331,94 @@ def impute_nan(X: np.ndarray) -> np.ndarray:
 def build_dataset(
     window_size: int = 30,
     step: int = 1,
-    n_synthetic: int = 800,
     output_path: Path = LSTM_DATASET_NPZ,
 ) -> tuple:
     """
-    Full dataset build:
-      1. Load real keypoint data (if available)
-      2. Append synthetic windows
-      3. Impute NaNs
-      4. Shuffle and save
+    Build the REAL-ONLY sliding-window dataset from all available keypoint CSVs.
 
-    Returns X, y, CLASSES
+    Synthetic augmentation is intentionally excluded here so that the
+    train/val split in lstm_trainer.py operates on a 100% real-world proxy
+    before any synthetic windows are injected into the training fold.
+
+    Outputs
+    -------
+    X_real  : (N, window_size, 66)  float32
+    y_real  : (N,)                  int32
+    groups  : (N,)                  object  (sequence_id strings)
     """
     print("=" * 55)
-    print("  LSTM Dataset Builder")
+    print("  LSTM Dataset Builder  [real data only]")
     print("=" * 55)
     print(f"  Window size  : {window_size} frames")
     print(f"  Step size    : {step}")
-    print(f"  Synthetic/cls: {n_synthetic}")
+    print(f"  Synthetic    : injected post-split in trainer (not here)")
 
     # Real data
-    X_real_list, y_real_list = [], []
+    X_real_list, y_real_list, g_real_list = [], [], []
     real_sources = [
-        (DATA_DIR / "processed_keypoints" / "real_pose_keypoints.csv", DATA_DIR / "processed_keypoints" / "real_posture_output.csv"),
-        (DATA_DIR / "processed_keypoints" / "pose_keypoints.csv", DATA_DIR / "processed_keypoints" / "posture_output.csv")
+        (DATA_DIR / "processed_keypoints" / "real_pose_keypoints.csv",  DATA_DIR / "processed_keypoints" / "real_posture_output.csv"),
+        (DATA_DIR / "processed_keypoints" / "pose_keypoints.csv",       DATA_DIR / "processed_keypoints" / "posture_output.csv")
     ]
-    
+
     for kp_csv, out_csv in real_sources:
-        X_r, y_r = build_windows_from_real_data(
-            kp_csv=kp_csv, 
-            out_csv=out_csv, 
-            window_size=window_size, 
+        X_r, y_r, g_r = build_windows_from_real_data(
+            kp_csv=kp_csv,
+            out_csv=out_csv,
+            window_size=window_size,
             step=step
         )
         if len(X_r) > 0:
             X_real_list.append(X_r)
             y_real_list.append(y_r)
-            
+            g_real_list.append(g_r)
+
     if X_real_list:
         X_real = np.concatenate(X_real_list, axis=0)
         y_real = np.concatenate(y_real_list, axis=0)
+        g_real = np.concatenate(g_real_list, axis=0)
     else:
         X_real = np.empty((0, window_size, FEATURE_DIM), dtype=np.float32)
         y_real = np.empty(0, dtype=np.int32)
+        g_real = np.empty(0, dtype=object)
 
-    # Synthetic data
-    print("  Generating synthetic windows…")
-    X_syn, y_syn = generate_synthetic_windows(window_size=window_size, n_per_class=n_synthetic)
+    # Impute NaNs on real data only
+    print("  Imputing NaN values...")
+    X_real = impute_nan(X_real)
 
-    # Combine
-    if len(X_real) > 0:
-        X = np.concatenate([X_real, X_syn], axis=0).astype(np.float32)
-        y = np.concatenate([y_real, y_syn], axis=0).astype(np.int32)
-        print(f"  Combined     : {len(X_real)} real + {len(X_syn)} synthetic = {len(X)} total windows")
-    else:
-        X = X_syn.astype(np.float32)
-        y = y_syn.astype(np.int32)
-        print(f"  Synthetic only: {len(X)} total windows")
-
-    # Impute NaNs
-    print("  Imputing NaN values…")
-    X = impute_nan(X)
-
-    # Shuffle
+    # Shuffle (preserves group integrity; trainer re-shuffles within train fold)
     rng = np.random.default_rng(seed=0)
-    idx = rng.permutation(len(X))
-    X, y = X[idx], y[idx]
+    idx = rng.permutation(len(X_real))
+    X_real, y_real, g_real = X_real[idx], y_real[idx], g_real[idx]
 
     # Class distribution
-    print("\n  Class distribution:")
+    n = len(y_real)
+    print(f"\n  Real-data windows : {n}")
+    print("  Class distribution (real only):")
     for i, cls in enumerate(CLASSES):
-        count = int((y == i).sum())
-        print(f"    {cls:<10}: {count:>6} windows ({100*count/len(y):.1f}%)")
+        count = int((y_real == i).sum())
+        n_seqs = int(np.unique(g_real[y_real == i]).shape[0]) if count > 0 else 0
+        pct = 100 * count / n if n > 0 else 0.0
+        print(f"    {cls:<10}: {count:>6} windows  {n_seqs:>4} seqs  ({pct:.1f}%)")
 
     # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(str(output_path), X=X, y=y, classes=CLASSES)
+    np.savez_compressed(str(output_path), X=X_real, y=y_real, groups=g_real, classes=CLASSES)
     print(f"\n  Saved -> {output_path}")
     print("=" * 55)
 
-    return X, y, CLASSES
+    return X_real, y_real, CLASSES
 
 
 def main():
     parser = argparse.ArgumentParser(description="LSTM Posture Dataset Builder")
     parser.add_argument("--window-size", type=int, default=30, help="Sliding window length in frames (default: 30)")
     parser.add_argument("--step", type=int, default=1, help="Sliding window step (default: 1)")
-    parser.add_argument("--synthetic", type=int, default=800, help="Synthetic samples per class (default: 800)")
     parser.add_argument("--output", type=str, default=str(LSTM_DATASET_NPZ), help="Output .npz path")
     args = parser.parse_args()
 
     build_dataset(
         window_size=args.window_size,
         step=args.step,
-        n_synthetic=args.synthetic,
         output_path=Path(args.output),
     )
 
