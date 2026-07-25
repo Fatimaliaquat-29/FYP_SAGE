@@ -96,10 +96,11 @@ def train(
 
     print(f"Loading dataset from {dataset_path}…")
     data = np.load(str(dataset_path), allow_pickle=True)
-    X = data["X"].astype(np.float32)   # (N, window_size, 66)
+    X = data["X"].astype(np.float32)   # (N, window_size, 132)
     y = data["y"].astype(np.int32)     # (N,)
     groups = data["groups"]            # (N,)
     classes = data["classes"]          # ['Fall', 'Lying', 'Sitting', 'Standing', 'Unknown']
+    col_medians = data["col_medians"].astype(np.float32) if "col_medians" in data else None
 
     print(f"  Dataset shape : X={X.shape}, y={y.shape}, groups={groups.shape}")
     print(f"  Classes       : {list(classes)}")
@@ -189,11 +190,15 @@ def train(
     print(f"Model saved -> {model_out}")
 
     # ── Save label encoder ────────────────────────────────────────────────────
+    # col_medians travels with the encoder so lstm_classifier.py imputes
+    # missing landmarks at inference time with the SAME per-feature medians
+    # used during training, instead of an arbitrary constant fill value.
     encoder = {
         "classes": list(classes),
         "class_to_idx": {c: int(i) for i, c in enumerate(classes)},
         "window_size": int(window_size),
         "n_features": int(n_features),
+        "col_medians": col_medians.tolist() if col_medians is not None else None,
     }
     encoder_out.parent.mkdir(parents=True, exist_ok=True)
     encoder_out.write_text(json.dumps(encoder, indent=2), encoding="utf-8")

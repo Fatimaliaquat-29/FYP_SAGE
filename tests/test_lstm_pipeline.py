@@ -25,9 +25,9 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.posture.pipeline_utils import build_pose_row, classify_posture_and_fall
 from src.posture.lstm.lstm_dataset import (
-    CLASSES,
     CLASS_TO_IDX,
     FEATURE_DIM,
+    RAW_FEATURE_DIM,
     generate_synthetic_windows,
     build_windows_from_real_data,
     impute_nan,
@@ -47,31 +47,38 @@ class TestLSTMDataset(unittest.TestCase):
 
     WINDOW_SIZE = 10  # small for fast tests
 
+    # generate_synthetic_windows only ever synthesizes 4 of the 5 classes:
+    # Standing/Sitting/Lying/Fall. "Unknown" (missing/unclear landmark data)
+    # has no distinct body-shape template, so it's intentionally absent here
+    # and only ever comes from real data.
+    SYNTHETIC_CLASSES = ("Standing", "Sitting", "Lying", "Fall")
+
     def test_synthetic_window_shape(self):
-        X, y = generate_synthetic_windows(
+        X, y, g = generate_synthetic_windows(
             window_size=self.WINDOW_SIZE, n_per_class=20, rng_seed=0
         )
-        n_classes = len(CLASSES)
+        n_classes = len(self.SYNTHETIC_CLASSES)
         self.assertEqual(X.shape, (20 * n_classes, self.WINDOW_SIZE, FEATURE_DIM))
         self.assertEqual(y.shape, (20 * n_classes,))
 
     def test_synthetic_all_classes_present(self):
-        X, y = generate_synthetic_windows(
+        X, y, g = generate_synthetic_windows(
             window_size=self.WINDOW_SIZE, n_per_class=10, rng_seed=1
         )
-        for cls_name, cls_idx in CLASS_TO_IDX.items():
+        for cls_name in self.SYNTHETIC_CLASSES:
+            cls_idx = CLASS_TO_IDX[cls_name]
             count = (y == cls_idx).sum()
             self.assertEqual(count, 10, f"Expected 10 samples for class '{cls_name}'")
 
     def test_synthetic_feature_dim(self):
-        X, y = generate_synthetic_windows(
+        X, y, g = generate_synthetic_windows(
             window_size=self.WINDOW_SIZE, n_per_class=5, rng_seed=2
         )
-        self.assertEqual(X.shape[2], FEATURE_DIM)  # must be 66
+        self.assertEqual(X.shape[2], FEATURE_DIM)  # must be 132: normalized position + velocity
 
     def test_fall_sequence_shape(self):
         fall_win = _make_fall_sequence(self.WINDOW_SIZE)
-        self.assertEqual(fall_win.shape, (self.WINDOW_SIZE, FEATURE_DIM))
+        self.assertEqual(fall_win.shape, (self.WINDOW_SIZE, RAW_FEATURE_DIM))
 
     def test_standing_kps_has_non_nan(self):
         kps = _make_standing_kps(noise=0.0)
@@ -83,7 +90,8 @@ class TestLSTMDataset(unittest.TestCase):
 
     def test_lying_kps_horizontal(self):
         kps = _make_lying_kps(noise=0.0)
-        # Shoulders and hips and ankles should be at similar y values (~0.75)
+        # In normalized (hip-centered) space, a lying pose extends sideways
+        # (large x offsets) with shoulders/hips/ankles all near the same y.
         sh_y = kps[23]   # left shoulder y
         hp_y = kps[47]   # left hip y
         ak_y = kps[55]   # left ankle y
@@ -91,7 +99,7 @@ class TestLSTMDataset(unittest.TestCase):
         self.assertAlmostEqual(hp_y, ak_y, places=1)
 
     def test_nan_imputation_removes_nans(self):
-        X, _ = generate_synthetic_windows(
+        X, _, _ = generate_synthetic_windows(
             window_size=self.WINDOW_SIZE, n_per_class=10, rng_seed=3
         )
         # Inject some NaNs
@@ -109,7 +117,7 @@ class TestLSTMDataset(unittest.TestCase):
 
     def test_build_windows_from_missing_csv(self):
         """Should return empty arrays gracefully when CSV is absent."""
-        X, y = build_windows_from_real_data(
+        X, y, g = build_windows_from_real_data(
             kp_csv=Path("/nonexistent/pose_keypoints.csv"),
             out_csv=Path("/nonexistent/posture_output.csv"),
             window_size=self.WINDOW_SIZE,
@@ -142,7 +150,7 @@ class TestLSTMDataset(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             kp_csv = Path(tmpdir) / "pose_keypoints.csv"
             df.to_csv(kp_csv, index=False)
-            X, y = build_windows_from_real_data(
+            X, y, g = build_windows_from_real_data(
                 kp_csv=kp_csv,
                 out_csv=Path(tmpdir) / "posture_output.csv",
                 window_size=window_size,
@@ -215,20 +223,20 @@ class TestLSTMClassifier(unittest.TestCase):
         kps = list(_make_standing_kps())
         row = {"keypoints": kps}
         arr = _extract_raw_keypoints(row)
-        self.assertEqual(arr.shape, (FEATURE_DIM,))
+        self.assertEqual(arr.shape, (RAW_FEATURE_DIM,))
 
     def test_extract_raw_keypoints_pads_short_list(self):
-        """Short keypoints lists should be padded with NaN to FEATURE_DIM."""
+        """Short keypoints lists should be padded with NaN to RAW_FEATURE_DIM."""
         row = {"keypoints": [0.5, 0.5]}  # only 2 values
         arr = _extract_raw_keypoints(row)
-        self.assertEqual(arr.shape, (FEATURE_DIM,))
+        self.assertEqual(arr.shape, (RAW_FEATURE_DIM,))
         self.assertTrue(np.isnan(arr[2:]).all())
 
     def test_extract_raw_keypoints_empty(self):
         """Empty keypoints → all NaN (66,) array."""
         row = {"keypoints": []}
         arr = _extract_raw_keypoints(row)
-        self.assertEqual(arr.shape, (FEATURE_DIM,))
+        self.assertEqual(arr.shape, (RAW_FEATURE_DIM,))
         self.assertTrue(np.isnan(arr).all())
 
 
@@ -312,7 +320,7 @@ class TestLSTMWithTrainedModel(unittest.TestCase):
             encoder_path=self.ENCODER_PATH,
         )
         self.assertTrue(clf.is_available)
-        window = [{"keypoints": list(_make_standing_kps())} for _ in range(clf.window_size)]
+        window = [{"keypoints": list(_make_standing_kps())} for _ in range(clf.raw_history_needed)]
         res = clf.predict(window)
         self.assertIn(res["posture_label"], ["Standing", "Sitting", "Lying", "Unknown"])
         self.assertIn("fall_detected", res)
@@ -324,7 +332,7 @@ class TestLSTMWithTrainedModel(unittest.TestCase):
             model_path=self.MODEL_PATH,
             encoder_path=self.ENCODER_PATH,
         )
-        fall_frames = _make_fall_sequence(clf.window_size)
+        fall_frames = _make_fall_sequence(clf.raw_history_needed)
         window = [{"keypoints": list(f)} for f in fall_frames]
         res = clf.predict(window)
         # For a fall window, we expect either fall_detected=True or Lying posture

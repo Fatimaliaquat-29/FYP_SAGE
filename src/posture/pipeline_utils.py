@@ -230,7 +230,7 @@ NAN_AFTER_FALL_THRESHOLD = 10  # consecutive all-NaN frames that infer Lying (af
 LYING_PERSIST_WINDOW = 20      # Fix B: frames over which a prior Lying label persists through NaN
 VELOCITY_UPTICK_FACTOR = 0.5  # Fix C: fraction of FALL_AVG_VELOCITY_FLOOR to arm NaN inference
 ANGULAR_VELOCITY_CAP = 720.0  # deg/sec hard implausibility cap
-ANGVEL_SUSTAIN_FRAMES = 5     # Fix D: consecutive frames above floor needed to confirm fall (slow path)
+ANGVEL_SUSTAIN_FRAMES = 3     # consecutive frames above the (150 deg/sec) angular-velocity floor to confirm rotation (was 5); lower = less detection latency, still filters single-frame landmark jitter
 LYING_PERSISTENCE_FRAMES = 40 # Sustained Lying: frames of Lying needed to infer a fall without velocity triggers
 
 
@@ -274,12 +274,21 @@ def classify_posture_and_fall(
         pipeline is used instead of the rule-based heuristic.  Pass None
         (the default) to always use the heuristic.
     """
+    # Declared here (rather than only in the heuristic section below) because
+    # the LSTM branch also reads/writes it, and a name can only be declared
+    # global once an assignment to it hasn't already occurred earlier in the
+    # function body.
+    global _has_been_upright_this_session
+
     # ── LSTM path ──────────────────────────────────────────────────────────────
     # When a pre-loaded LSTMPostureClassifier is supplied and the rolling
     # history contains enough frames to fill one window, defer to the LSTM.
     # The heuristic path (below) remains the default when lstm_classifier=None.
     if lstm_classifier is not None and lstm_classifier.is_available:
-        required = lstm_classifier.window_size - 1
+        # raw_history_needed = window_size + 1: one extra leading raw frame so
+        # the LSTM can compute a genuine (not zero-padded) velocity for every
+        # frame in its window, including the oldest one. See lstm_features.py.
+        required = lstm_classifier.raw_history_needed - 1
         if previous_rows is not None and len(previous_rows) >= required:
             window = list(previous_rows[-required:]) + [row]
             try:
@@ -290,7 +299,27 @@ def classify_posture_and_fall(
                 row.setdefault("hip_height", np.nan)
                 row.setdefault("velocity", 0.0)
                 row["posture_label"] = lstm_result["posture_label"]
-                row["fall_detected"] = lstm_result["fall_detected"]
+
+                fall_detected = lstm_result["fall_detected"]
+                if lstm_result["posture_label"] in ("Standing", "Sitting"):
+                    _has_been_upright_this_session = True
+                elif not _has_been_upright_this_session:
+                    # No genuine upright -> lying transition has been
+                    # observed yet this session, so a "Fall" claim is
+                    # indistinguishable from "already lying when tracking
+                    # started" -- a single window has no way to tell those
+                    # apart. Suppress it, mirroring the heuristic's own
+                    # _has_been_upright_this_session guard on sustained-lying
+                    # detection. Diagnostic evidence: Lying_straight.mov and
+                    # Lying_legs_straight.mov (subject lying for the entire
+                    # clip, posture_label=="Lying" throughout) went from 0
+                    # false Fall frames to ~57% of frames flagged once the
+                    # LSTM's raw-coordinate shortcut was removed -- this gate
+                    # closes that gap without needing the shortcut back.
+                    fall_detected = False
+
+                row["fall_detected"] = fall_detected
+                lstm_result = dict(lstm_result, fall_detected=fall_detected)
                 return lstm_result
             except Exception as exc:
                 logger.warning(f"LSTM prediction failed (frame {row.get('frame', '?')}): {exc}. "
@@ -298,7 +327,7 @@ def classify_posture_and_fall(
     # ── Heuristic path ─────────────────────────────────────────────────────────
     global _frames_since_fall, _consecutive_nan_frames, _recent_angular_velocities
     global _frames_angvel_above_floor, _last_confirmed_label, _frames_since_confirmed
-    global _last_valid_velocity, _lying_run_length, _has_been_upright_this_session
+    global _last_valid_velocity, _lying_run_length
 
     pairs = _extract_keypoint_pairs(row)
 
@@ -515,18 +544,31 @@ def classify_posture_and_fall(
     row["raw_posture_label"] = raw_posture_label
 
     # 4. Temporal Smoothing (5-Frame Persistence Filter)
+    #
+    # Transitioning INTO "Lying" is allowed to bypass the full 5-frame majority
+    # vote so a genuine fall isn't flagged several frames late. But a SINGLE
+    # isolated raw-Lying frame must NOT latch: during a fast sit-down the
+    # projected torso_angle can spike past the horizontal threshold for one
+    # frame, and the "keep previous label" rule below would otherwise stick that
+    # transient at Lying for several frames -- long enough for the (now
+    # recall-biased) fall-motion gate to fire a false positive. Requiring TWO
+    # consecutive raw-Lying frames to enter Lying rejects those 1-frame spikes
+    # while costing a genuine fall only a single extra frame of latency (a real
+    # collapse produces many consecutive horizontal frames).
     SMOOTHING_WINDOW = 5
+    prev_raw = previous_rows[-1].get("raw_posture_label", "Unknown") if previous_rows else "Unknown"
+    lying_confirmed = raw_posture_label == "Lying" and prev_raw == "Lying"
     if previous_rows and len(previous_rows) >= (SMOOTHING_WINDOW - 1):
         recent_raw = [r.get("raw_posture_label", "Unknown") for r in previous_rows[-(SMOOTHING_WINDOW - 1):]] + [raw_posture_label]
         if len(set(recent_raw)) == 1:
             posture_label = raw_posture_label
-        elif raw_posture_label == "Lying":
-            # Direct transition to Lying to prevent fall detection delay
+        elif lying_confirmed:
+            # Two consecutive raw-Lying frames -> fast-track into Lying.
             posture_label = "Lying"
         else:
             posture_label = previous_rows[-1].get("posture_label", "Unknown")
     elif previous_rows:
-        if raw_posture_label == "Lying":
+        if lying_confirmed:
             posture_label = "Lying"
         else:
             posture_label = previous_rows[-1].get("posture_label", "Unknown")
@@ -543,13 +585,48 @@ def classify_posture_and_fall(
 
     # 5. Fall detection logic
     # ── Constants (units: body-heights/sec and deg/sec) ────────────────────────
-    FALL_VELOCITY_THRESHOLD      = 2.0    # body-heights/sec per frame to count as "fast"  # TODO-tune
-    FALL_SUSTAINED_COUNT         = 2      # minimum fast frames in the window                # TODO-tune
-    FALL_AVG_VELOCITY_FLOOR      = 1.5    # avg velocity over window (body-heights/sec)    # TODO-tune
-    FALL_PEAK_VELOCITY_FLOOR     = 15.0   # peak velocity over window (body-heights/sec)   # TODO-tune
-    FALL_ANGULAR_VELOCITY_FLOOR  = 200.0  # torso angular velocity floor (deg/sec)         # TODO-tune
+    # Re-derived July 2026 from the peak-motion distribution of 96 real
+    # annotated LeFD falls vs 34 pure-ADL clips, cross-checked against the
+    # fall-detection literature: a real fall's trunk angular velocity peaks
+    # ~178 deg/sec (== 3.1 rad/sec, the classic wearable-gyro fall threshold),
+    # and our data's 5th-percentile of real-fall peak angular velocity was
+    # 177 deg/sec -- near-identical convergence.
+    #
+    # Design rationale (this is what broke the month-long tuning loop):
+    #  - Hip velocity is a WEAK discriminator. Real-fall peak velocity has a
+    #    MEDIAN of 5.1 body-heights/sec (25th pct 3.1) and pure-ADL peak has a
+    #    median of 4.1 -- they overlap heavily. The old FALL_PEAK_VELOCITY_FLOOR
+    #    of 15.0 (hand-fit to 2 clips) caught only ~17% of real falls, forcing
+    #    the other 83% to wait for the slow sustained-lying fallback (the source
+    #    of the 76-/81-/114-frame detection latencies). Velocity is now only a
+    #    mild "real motion happened" floor, not a hard gate.
+    #  - The STRONG discriminator is "did the rapid motion END IN LYING." Fast
+    #    sit-downs and bends also spike velocity/angular-velocity but leave the
+    #    person seated/upright, not lying on the floor. So the recall-biased
+    #    thresholds below are safe because the rapid_fall trigger additionally
+    #    requires posture_label == "Lying".
+    #  - Biased toward RECALL: this is an elderly-safety system, where a missed
+    #    fall (person left injured on the floor) is far worse than a false alarm.
+    FALL_VELOCITY_THRESHOLD      = 1.5    # was 2.0  — "fast frame" counter floor
+    FALL_SUSTAINED_COUNT         = 2      # minimum fast frames in the window
+    FALL_AVG_VELOCITY_FLOOR      = 1.0    # was 1.5
+    FALL_PEAK_VELOCITY_FLOOR     = 3.0    # was 15.0 (caught only ~17% of real falls!)
+    FALL_ANGULAR_VELOCITY_FLOOR  = 150.0  # was 200.0 — catches ~97% of real falls (lit. ~178)
     FALL_LOOK_BACK_FRAMES        = 10     # how many recent frames to scan
     FALL_NON_LYING_WINDOW        = 15     # how far back to look for a non-Lying posture
+    # A genuine fall drops the hips toward the floor. A person who merely
+    # reclines (e.g. leans back in a chair/recliner) has their trunk pitch past
+    # horizontal -- reading as "Lying" -- while their HIPS stay at roughly
+    # constant seat height. Requiring a real downward hip displacement over the
+    # fall window separates "collapsed to the floor" from "reclined in a seat".
+    # Units: fraction of frame height (normalized image y).
+    FALL_HIP_DESCENT_MIN         = 0.06
+    # Pre-Lying trigger fires BEFORE a Lying posture is confirmed, so it has no
+    # posture gate to suppress fast-ADL false positives -> it keeps a
+    # deliberately HIGHER, unambiguous-fast-fall bar than the lying-confirmed
+    # path above.
+    FALL_PRELYING_ANGVEL_FLOOR   = 250.0  # deg/sec peak — well above typical fast sit/bend
+    FALL_PRELYING_SUSTAIN        = 4      # consecutive frames of angular velocity > floor
     # ──────────────────────────────────────────────────────────────────────────────
 
     fall_detected = False
@@ -599,9 +676,15 @@ def classify_posture_and_fall(
         row["velocity"] = velocity
         _last_valid_velocity = velocity  # Fix C: track velocity of last frame with landmarks
 
-        # Collect metrics over the recent look-back window
+        # Collect metrics over the recent look-back window.
+        # Frames that hit the missing-landmark branch never had "velocity" set
+        # at all (rather than being genuinely 0.0) -- treating a tracking-loss
+        # frame as 0.0 velocity would dilute the average/peak/fast-frame-count
+        # exactly during the motion blur a fast real fall tends to cause,
+        # making genuine falls look slower than they were. Exclude them
+        # instead of silently zero-filling.
         look_back = previous_rows[-FALL_LOOK_BACK_FRAMES:]
-        recent_velocities = [r.get("velocity", 0.0) for r in look_back] + [velocity]
+        recent_velocities = [r["velocity"] for r in look_back if "velocity" in r] + [velocity]
         max_recent_velocity = max(recent_velocities) if recent_velocities else 0.0
 
         fast_frame_count = sum(1 for v in recent_velocities if v > FALL_VELOCITY_THRESHOLD)
@@ -617,6 +700,22 @@ def classify_posture_and_fall(
         ]
         had_upright_recently = len(recent_non_lying) > 0
 
+        # Net downward hip displacement over the fall window: current hip_y minus
+        # the HIGHEST hip position (smallest y) seen recently. Large positive =>
+        # the hips dropped toward the floor, the signature of a real collapse.
+        # (Reclining keeps the hips at a near-constant height -> ~0 descent.)
+        hip_descended = False
+        if not np.isnan(hip[1]):
+            recent_hip_ys = []
+            for r in look_back:
+                p = _extract_keypoint_pairs(r)
+                if p and len(p) > 24 and not np.isnan(p[23][1]) and not np.isnan(p[24][1]):
+                    recent_hip_ys.append((p[23][1] + p[24][1]) / 2.0)
+            if recent_hip_ys:
+                hip_descent = hip[1] - min(recent_hip_ys)  # y grows downward
+                hip_descended = hip_descent >= FALL_HIP_DESCENT_MIN
+        row["hip_descent_ok"] = hip_descended
+
         # Fix D: track how many consecutive frames smoothed or raw angular velocity exceeds the floor
         if max(smoothed_angular_velocity, torso_angular_velocity) > FALL_ANGULAR_VELOCITY_FLOOR:
             _frames_angvel_above_floor += 1
@@ -629,16 +728,17 @@ def classify_posture_and_fall(
         # Use the stored (already-capped) values from history; compare against the
         # smoothed reading for the current frame to suppress single-frame jitter.
         recent_angular_velocities = (
-            [r.get("torso_angular_velocity", 0.0) for r in look_back]
+            [r["torso_angular_velocity"] for r in look_back if "torso_angular_velocity" in r]
             + [smoothed_angular_velocity]
         )
         max_recent_angular_velocity = max(recent_angular_velocities) if recent_angular_velocities else 0.0
 
-        # Fall signal: sustained rapid hip movement AND sustained rapid torso rotation
-        # AND a peak velocity spike that exceeds the fall-specific floor.
-        # FALL_PEAK_VELOCITY_FLOOR (15.0 bh/sec) cleanly separates real falls (NF1 peak=26.36)
-        # from rapid-but-benign motion like Sit_3's fast sit-down (peak=11.09).
-        # Calibrated across all 13 clips; 7.6 bh/sec margin on both sides.
+        # Fall signal: rapid torso rotation (the strong signal) sustained over
+        # a few frames, accompanied by real (but not necessarily large) hip
+        # motion. This is only ever consumed inside the posture_label=="Lying"
+        # branch below, so the "ends in Lying" gate -- not the motion magnitude
+        # -- is what separates a real fall from a fast-but-benign ADL motion.
+        # That is why these floors are recall-biased (see the constant block).
         is_fall_motion = (
             fast_frame_count >= FALL_SUSTAINED_COUNT
             and avg_recent_velocity > FALL_AVG_VELOCITY_FLOOR
@@ -648,12 +748,12 @@ def classify_posture_and_fall(
         )
 
         if posture_label == "Lying":
-            if had_upright_recently and is_fall_motion:
+            if had_upright_recently and is_fall_motion and hip_descended:
                 fall_detected = True
                 confidence = 0.95
                 other_labels.append("rapid_fall")
                 _frames_since_fall = 0
-            elif _has_been_upright_this_session and _lying_run_length == LYING_PERSISTENCE_FRAMES:
+            elif _has_been_upright_this_session and _lying_run_length >= LYING_PERSISTENCE_FRAMES:
                 fall_detected = True
                 confidence = 0.90
                 other_labels.append("sustained_lying")
@@ -665,11 +765,30 @@ def classify_posture_and_fall(
 
         else:
             # ── Pre-Lying fall trigger ─────────────────────────────────────────
+            # Fires while the person is still mid-fall (not yet classified
+            # Lying), buying a few frames of earlier warning. Because there is
+            # no Lying posture to confirm a genuine fall here, it uses a
+            # HIGHER, unambiguous-fast-fall bar (peak angular velocity above
+            # FALL_PRELYING_ANGVEL_FLOOR sustained for FALL_PRELYING_SUSTAIN
+            # frames, plus real translational drop) so ordinary fast sit-downs
+            # and bends -- which spike angular velocity briefly but don't have
+            # a sustained high-speed body drop -- do not trip it.
+            prelying_angvel = (
+                max_recent_angular_velocity > FALL_PRELYING_ANGVEL_FLOOR
+                and _frames_angvel_above_floor >= FALL_PRELYING_SUSTAIN
+            )
+            # The torso must actually be pitching toward horizontal right now.
+            # A real fall in progress passes through a large trunk inclination;
+            # a fast sit-down spikes angular velocity while the trunk stays
+            # upright in the seat (torso_angle stays small). This single gate is
+            # what separates the two without a Lying posture to lean on.
+            torso_going_horizontal = (not np.isnan(torso_angle)) and torso_angle >= 45.0
             if (had_upright_recently
+                    and torso_going_horizontal
                     and fast_frame_count >= (FALL_SUSTAINED_COUNT + 1)
                     and avg_recent_velocity > FALL_AVG_VELOCITY_FLOOR
-                    and max_recent_angular_velocity > FALL_ANGULAR_VELOCITY_FLOOR
-                    and angvel_sustained):
+                    and max_recent_velocity > FALL_PEAK_VELOCITY_FLOOR
+                    and prelying_angvel):
                 fall_detected = True
                 confidence = 0.85
                 other_labels.append("pre_lying_fall")

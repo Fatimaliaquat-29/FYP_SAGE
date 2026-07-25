@@ -59,16 +59,48 @@ def _parse_mmss(time_str: str) -> float:
     raise ValueError(f"Unexpected time format: {time_str!r}")
 
 
+def _parse_time_any(time_str: str) -> float:
+    """M:SS (legacy dialects) or plain decimal seconds (state/label dialect)."""
+    time_str = time_str.strip()
+    if ":" in time_str:
+        return _parse_mmss(time_str)
+    return float(time_str)
+
+
 def _parse_bool(val: str) -> bool:
     return val.strip().upper() in ("TRUE", "1", "YES")
 
 
+# Maps the third-dialect "state" column to the Standing/Sitting/Lying/Unknown
+# vocabulary the scorer compares predictions against. "Fall" -> "Lying" because
+# by the time the state settles into "Fall" the person IS lying on the floor;
+# the actual falling motion lives in the "Transition State" segment, which is
+# excluded from posture-accuracy scoring the same way the other dialects
+# exclude their transition rows.
+_STATE_TO_LABEL = {
+    "standing": "Standing",
+    "sitting": "Sitting",
+    "lying": "Lying",
+    "fall": "Lying",
+}
+
+
 def load_ground_truth(gt_path: str) -> pd.DataFrame:
     """
-    Parse GT CSVs that appear in two formats:
+    Parse GT CSVs that appear in three dialects:
       (a) Each row is a single quoted string: "0:00, 0:05, Standing, FALSE"
       (b) Proper multi-column CSV with per-field quoting:
           "00:00,","00:06,","Standing,",FALSE
+      (c) Header + decimal-seconds + state/label columns:
+          start_time,end_time,state,label
+          0.00,1.20,Standing,Standing
+          1.20,2.30,Transition State,Falling (Backward)
+          2.30,3.71,Fall,Fallen / Lying
+    (a) and (b) use "M:SS" timestamps with an explicit ignore boolean in the
+    4th column; (c) uses decimal-second timestamps with a "state" (mapped via
+    _STATE_TO_LABEL) and a free-text descriptive "label" in the 4th column
+    instead of a boolean -- the dialect is told apart by whether the raw time
+    string contains ":".
     Uses csv.reader, then falls back to splitting on commas when the whole
     row was treated as one quoted string.
     """
@@ -93,10 +125,21 @@ def load_ground_truth(gt_path: str) -> pd.DataFrame:
             if len(parts) < 4:
                 continue
             try:
-                start  = _parse_mmss(parts[0])
-                end    = _parse_mmss(parts[1])
-                label  = parts[2]
-                ignore = _parse_bool(parts[3])
+                start = _parse_time_any(parts[0])
+                end   = _parse_time_any(parts[1])
+                if ":" in parts[0] or ":" in parts[1]:
+                    # Dialect (a)/(b): explicit posture label + ignore boolean.
+                    label  = parts[2]
+                    ignore = _parse_bool(parts[3])
+                else:
+                    # Dialect (c): state/label schema, decimal seconds.
+                    state_key = parts[2].strip().lower()
+                    if "transition" in state_key:
+                        label  = "Transition"
+                        ignore = True
+                    else:
+                        label  = _STATE_TO_LABEL.get(state_key, parts[2])
+                        ignore = False
             except (ValueError, IndexError):
                 continue
 
@@ -104,8 +147,8 @@ def load_ground_truth(gt_path: str) -> pd.DataFrame:
             fall_end   = np.nan
             if len(parts) >= 6:
                 try:
-                    fall_start = _parse_mmss(parts[4])
-                    fall_end   = _parse_mmss(parts[5])
+                    fall_start = _parse_time_any(parts[4])
+                    fall_end   = _parse_time_any(parts[5])
                 except ValueError:
                     pass
 
@@ -152,14 +195,31 @@ def get_fall_window(gt_df: pd.DataFrame, fps: float) -> Optional[Tuple[int, int]
         return (round(row["expected_fall_start"] * fps),
                 round(row["expected_fall_end"]   * fps))
 
-    non_ignore = gt_df[~gt_df["ignore"]]
+    ordered = gt_df.sort_values("start_time").reset_index(drop=True)
+    non_ignore = ordered[~ordered["ignore"]]
     lying_segs = non_ignore[non_ignore["label"].str.strip().str.lower() == "lying"]
     upright_segs = non_ignore[~non_ignore["label"].str.strip().str.lower().isin(["lying"])]
     # Only derive a fall window from the Lying segment when there is also an upright
     # segment in the GT — a clip that is Lying-only from the start has no fall event.
     if not lying_segs.empty and not upright_segs.empty:
-        for _, seg in lying_segs.iterrows():
-            return (round(seg["start_time"] * fps), round(seg["end_time"] * fps))
+        lying_pos = lying_segs.index[0]
+        window_start_time = ordered.loc[lying_pos, "start_time"]
+        window_end_time   = ordered.loc[lying_pos, "end_time"]
+
+        # Extend the window backward through any immediately preceding
+        # "ignored" segment(s) (a "Transition"/"Transition State" row marking
+        # the actual falling motion). Without this, a detector that correctly
+        # fires WHILE the person is falling -- the ideal early-warning
+        # behavior, especially for a slow crumple -- gets scored as a false
+        # positive purely because it landed before the person had finished
+        # settling onto the floor. See docs/sanity_check_clips.md and the
+        # Slow_fall.mp4 case this was found from.
+        i = lying_pos - 1
+        while i >= 0 and bool(ordered.loc[i, "ignore"]):
+            window_start_time = ordered.loc[i, "start_time"]
+            i -= 1
+
+        return (round(window_start_time * fps), round(window_end_time * fps))
 
     return None
 

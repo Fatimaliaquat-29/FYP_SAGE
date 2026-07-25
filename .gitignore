@@ -226,3 +226,15 @@ __marimo__/
 
 # Ignore datasets folder
 datasets/
+
+# Ignore generated keypoint/window data (large, fully regenerable via
+# src/data_processing/build_lstm_datasets.py + src/posture/lstm/lstm_dataset.py)
+data/
+
+# Ignore recorded test/validation footage and its ground truth (large video
+# files, some containing identifiable people; already covered for videos by
+# the *.mp4/*.mov/etc. rules above, but excluded wholesale here too)
+Testing/
+
+.venv2/
+.vscode/

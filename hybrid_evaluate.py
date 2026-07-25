@@ -40,6 +40,7 @@ from src.posture.pipeline_utils import (
     classify_posture_and_fall,
     reset_session_state,
 )
+from src.posture.lstm import lstm_features as lf
 
 # Re-use all GT helpers from the existing evaluator
 from evaluate_real_footage import (
@@ -56,7 +57,8 @@ MODEL_PATH         = str(REPO_ROOT / "models" / "pose_landmarker_full.task")
 LSTM_MODEL_PATH    = REPO_ROOT / "models" / "lstm_posture.keras"
 LSTM_ENCODER_PATH  = REPO_ROOT / "models" / "lstm_label_encoder.json"
 WINDOW_SIZE        = 30   # must match what the model was trained on
-FEATURE_DIM        = 66   # 33 landmarks x (x, y)
+RAW_FEATURE_DIM    = 66   # 33 landmarks x (x, y), raw screen-space
+RAW_HISTORY_NEEDED = WINDOW_SIZE + 1  # +1 so the oldest window row gets a real velocity, see lstm_features.py
 FALL_CLASS_NAME    = "Fall"
 
 FLAG_ACCURACY_THRESHOLD = 90.0
@@ -67,17 +69,17 @@ FLAG_ACCURACY_THRESHOLD = 90.0
 # ---------------------------------------------------------------------------
 
 def load_lstm_model():
-    """Load the trained LSTM model and its label encoder. Returns (model, fall_idx)."""
+    """Load the trained LSTM model and its label encoder. Returns (model, fall_idx, col_medians)."""
     try:
         import tensorflow as tf
         model = tf.keras.models.load_model(str(LSTM_MODEL_PATH))
     except Exception as e:
         print(f"  [LSTM] Could not load model: {e}")
-        return None, None
+        return None, None, None
 
     if not LSTM_ENCODER_PATH.exists():
         print(f"  [LSTM] Encoder not found at {LSTM_ENCODER_PATH}")
-        return None, None
+        return None, None, None
 
     with open(LSTM_ENCODER_PATH, "r", encoding="utf-8") as fh:
         encoder = json.load(fh)
@@ -86,24 +88,27 @@ def load_lstm_model():
     fall_idx = classes.index(FALL_CLASS_NAME) if FALL_CLASS_NAME in classes else None
     if fall_idx is None:
         print(f"  [LSTM] '{FALL_CLASS_NAME}' class not found in encoder: {classes}")
-        return None, None
+        return None, None, None
+
+    col_medians = encoder.get("col_medians")
+    col_medians = np.array(col_medians, dtype=np.float32) if col_medians is not None else None
 
     print(f"  [LSTM] Loaded model — classes: {classes}  fall_idx={fall_idx}")
-    return model, fall_idx
+    return model, fall_idx, col_medians
 
 
 # ---------------------------------------------------------------------------
 # Keypoint → feature vector
 # ---------------------------------------------------------------------------
 
-def _row_to_feature(kp_row: dict) -> np.ndarray:
-    """Extract the 66-element (x, y) feature vector from a landmark row."""
-    feat = np.full(FEATURE_DIM, np.nan, dtype=np.float32)
+def _row_to_raw_keypoints(kp_row: dict) -> np.ndarray:
+    """Extract the raw 66-element (x, y) keypoint vector from a landmark row.
+    NaNs are preserved -- normalization/imputation happens once the whole
+    window of raw frames is assembled, via lstm_features.py."""
+    feat = np.full(RAW_FEATURE_DIM, np.nan, dtype=np.float32)
     for i in range(LANDMARK_COUNT):
         feat[i * 2]     = kp_row.get(f"lm_{i}_x", np.nan)
         feat[i * 2 + 1] = kp_row.get(f"lm_{i}_y", np.nan)
-    # Impute NaN with 0 (same strategy as training)
-    feat = np.where(np.isnan(feat), 0.0, feat)
     return feat
 
 
@@ -115,6 +120,7 @@ def classify_frames_hybrid(
     kp_rows: List[dict],
     lstm_model,
     fall_idx: Optional[int],
+    col_medians: Optional[np.ndarray] = None,
     clip_name: Optional[str] = None,
     lstm_threshold: float = 0.50,
     lstm_warmup_frames: int = 45,
@@ -143,11 +149,18 @@ def classify_frames_hybrid(
     """
     reset_session_state()
     previous_rows: List[dict] = []
-    # Rolling buffer of feature vectors for the LSTM window
-    window_buffer: deque = deque(maxlen=WINDOW_SIZE)
+    # Rolling buffer of RAW keypoint vectors; +1 so the oldest frame in the
+    # model's window still gets a genuine (not zero-padded) velocity value.
+    window_buffer: deque = deque(maxlen=RAW_HISTORY_NEEDED)
     results = []
     lstm_available = lstm_model is not None and fall_idx is not None
     lstm_consecutive_count = 0
+    # Has the heuristic ever observed a Standing/Sitting posture this clip?
+    # A single 30-frame window can't tell "just fell" apart from "was already
+    # lying down when tracking started" -- both look identical once settled.
+    # Gate the LSTM's Fall signal on a genuine upright->lying history, same
+    # as the heuristic's own sustained-lying safeguard already does.
+    has_been_upright = False
 
     for kp_row in kp_rows:
         # ── Build heuristic keypoint row ─────────────────────────────────────
@@ -165,11 +178,14 @@ def classify_frames_hybrid(
         pose_row.update(classification)
         previous_rows.append(pose_row)
 
+        if pose_row.get("posture_label") in ("Standing", "Sitting"):
+            has_been_upright = True
+
         fall_heuristic = bool(pose_row.get("fall_detected", False))
 
         # ── Feed LSTM window buffer ───────────────────────────────────────────
-        feat = _row_to_feature(kp_row)
-        window_buffer.append(feat)
+        raw_kps = _row_to_raw_keypoints(kp_row)
+        window_buffer.append(raw_kps)
 
         lstm_fall_prob = 0.0
         fall_lstm      = False
@@ -177,17 +193,20 @@ def classify_frames_hybrid(
         frame_number = int(kp_row.get("frame_number", 0))
         in_warmup    = frame_number <= lstm_warmup_frames
 
-        if lstm_available and len(window_buffer) == WINDOW_SIZE and not in_warmup:
-            window_arr = np.array(window_buffer, dtype=np.float32)[np.newaxis]  # (1, 30, 66)
-            probs      = lstm_model.predict(window_arr, verbose=0)[0]           # (n_classes,)
+        if lstm_available and len(window_buffer) == RAW_HISTORY_NEEDED and not in_warmup:
+            raw_window = np.array(window_buffer, dtype=np.float32)       # (31, 66)
+            feat_window = lf.build_features_from_raw_window(raw_window)  # (30, 132)
+            feat_window = lf.impute_nan(feat_window, col_medians)
+            window_arr  = feat_window[np.newaxis, ...].astype(np.float32)  # (1, 30, 132)
+            probs      = lstm_model.predict(window_arr, verbose=0)[0]      # (n_classes,)
             lstm_fall_prob = float(probs[fall_idx])
-            
+
             if lstm_fall_prob >= lstm_threshold:
                 lstm_consecutive_count += 1
             else:
                 lstm_consecutive_count = 0
-                
-            fall_lstm = lstm_consecutive_count >= lstm_consecutive_frames
+
+            fall_lstm = (lstm_consecutive_count >= lstm_consecutive_frames) and has_been_upright
 
         # ── OR gate ──────────────────────────────────────────────────────────
         fall_hybrid = fall_heuristic or fall_lstm
@@ -245,6 +264,7 @@ def evaluate_clip_hybrid(
     output_dir: Path,
     lstm_model,
     fall_idx: Optional[int],
+    col_medians: Optional[np.ndarray] = None,
     lstm_threshold: float = 0.50,
     lstm_warmup_frames: int = 45,
     lstm_consecutive_frames: int = 6,
@@ -255,7 +275,7 @@ def evaluate_clip_hybrid(
 
     print(f"[{clip_name}] Running hybrid classification...")
     results = classify_frames_hybrid(
-        kp_rows, lstm_model, fall_idx, clip_name=clip_name,
+        kp_rows, lstm_model, fall_idx, col_medians=col_medians, clip_name=clip_name,
         lstm_threshold=lstm_threshold,
         lstm_warmup_frames=lstm_warmup_frames,
         lstm_consecutive_frames=lstm_consecutive_frames,
@@ -350,7 +370,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("Loading LSTM model...")
-    lstm_model, fall_idx = load_lstm_model()
+    lstm_model, fall_idx, col_medians = load_lstm_model()
     if lstm_model is None:
         print("WARNING: LSTM model unavailable — LSTM column will be all False.")
 
@@ -365,7 +385,7 @@ def main():
         for video_path, gt_path, clip_name in clips:
             row = evaluate_clip_hybrid(
                 video_path, gt_path, clip_name, output_dir,
-                lstm_model, fall_idx, args.lstm_threshold,
+                lstm_model, fall_idx, col_medians, args.lstm_threshold,
                 lstm_warmup_frames=args.lstm_warmup,
                 lstm_consecutive_frames=args.lstm_consecutive,
             )
@@ -378,7 +398,7 @@ def main():
         clip_name = Path(args.video).stem
         row = evaluate_clip_hybrid(
             args.video, args.ground_truth, clip_name, output_dir,
-            lstm_model, fall_idx, args.lstm_threshold,
+            lstm_model, fall_idx, col_medians, args.lstm_threshold,
             lstm_warmup_frames=args.lstm_warmup,
             lstm_consecutive_frames=args.lstm_consecutive,
         )

@@ -1,75 +1,244 @@
-====================================================================
-Pose Estimation & Fall Detection System - Project Context
-====================================================================
+# S.A.G.E. FYP — Full Technical History & Context
+**Branch:** new
+**Phase:** Real-time hybrid detection, data-driven threshold tuning, and multi-round validation on unseen footage
+**Last Updated:** July 2026 (major rewrite — see Section 12 for a changelog against the previous version of this file)
 
-## Overview
-This repository contains a vision-based posture classification and fall detection pipeline. It is designed to process camera feeds (or videos/images), extract human body keypoints using Google's MediaPipe, and classify the person's posture (Standing, Sitting, Lying) while detecting fall events.
+---
 
-## What We Have Done So Far
-The project has evolved through several distinct phases:
+## 1. System Architecture Overview
 
-### Phase 1: Camera & Core Setup
-- Set up the environment and established the core repository structure.
-- Implemented `src/camera/camera_test.py` to interface with the local webcam using OpenCV.
+The S.A.G.E. (Smart Automated Guardian & Evaluator) pipeline detects human falls from video footage. It has two parallel detection layers:
 
-### Phase 2: Pose Keypoint Extraction
-- Integrated `MediaPipe PoseLandmarker` (Tasks API) to extract 33 3D body landmarks.
-- Developed `src/pose/pose_test.py` to overlay a visual skeleton on the live video feed.
-- Created `src/pose/save_keypoints.py` to log real-time pose sequences to CSV (`data/pose_keypoints.csv`).
+1. **Pose Estimation:** MediaPipe Pose Landmarker (`pose_landmarker_full.task`) extracts 33 body landmarks (x, y coordinates, normalized 0–1) from each video frame.
+2. **Heuristic Layer (Rule-based, `src/posture/pipeline_utils.py`):** Analyzes geometry and velocity frame-by-frame using scale-invariant joint angles (torso, knee, hip) as the primary posture signal, with body-height-ratio as an occlusion fallback only.
+3. **LSTM Layer (Temporal, `models/lstm_posture.keras`):** Analyzes 30-frame rolling windows of **normalized, motion-aware** keypoints (see Section 3) for complex temporal patterns.
+4. **Hybrid Logic:** `fall_detected = Heuristic OR LSTM`. Implemented in `hybrid_evaluate.py` (batch evaluation harness) and natively in `pipeline_utils.classify_posture_and_fall(lstm_classifier=...)` (production path).
+5. **Real-time entry point:** `realtime_fall_detection.py` — live camera or video file → MediaPipe → hybrid → a **debounced** alert (requires the fall signal in ≥4 of the last 12 frames before alerting, then latches for 5s). This is the actual deployable/demoable script.
 
-### Phase 3 & 4: Heuristic Posture Classification & Fall Detection
-- Implemented a rule-based heuristic pipeline in `src/posture/`.
-- `posture_features.py`: Computes spatial features (body height, torso angle, hip height, knee angle) and velocity over a rolling window.
-- `posture_classifier.py`: Evaluates these features against physiological thresholds to assign a posture label (`Standing`, `Sitting`, `Lying`).
-- Implemented fall detection logic in `pipeline_utils.py`, which flags a fall if the hip-center velocity exceeds a threshold for several consecutive frames followed by a transition to a "Lying" state.
-- Integrated logging to `data/posture_output.csv` and created a robust unit test suite (`tests/test_posture_pipeline.py`).
+---
 
-### Phase 4.5: LSTM Neural Network Pipeline
-- Introduced a deep learning path to the system to replace or augment the heuristic rules.
-- Created `src/posture/lstm/` subpackage.
-- Designed an LSTM architecture (`lstm_trainer.py`) that operates on sliding windows of 66 raw spatial keypoints rather than hand-crafted features.
-- Created `lstm_classifier.py` for inference, designed to gracefully fall back to the heuristic classifier if the model is absent.
-- Intercepted the main `classify_posture_and_fall` function in `pipeline_utils.py` to route predictions to the LSTM when available.
+## 2. The Heuristic Layer (`pipeline_utils.py`)
 
-### Phase 4.6: Real-World Dataset Integration
-- Integrated raw image sequences containing Activities of Daily Living (`adl_activities`) and falls (`fall_events`) located in `data/raw/`.
-- Created `src/data_processing/extract_raw_dataset.py` to run MediaPipe over these images, automatically label them (using the heuristic as a baseline and enforcing "Fall" for fall sequences), and generate `real_pose_keypoints.csv` and `real_posture_output.csv`.
-- Upgraded the `lstm_dataset.py` builder to ingest these new datasets, carefully preventing sliding windows from crossing over boundaries between different video sequences.
-- Successfully built `data/lstm_dataset.npz` with 5,000+ sliding window samples spanning Fall, Lying, Sitting, and Standing.
+### How It Works
+- Extracts geometric features from MediaPipe landmarks every frame:
+  - **Torso Angle:** angle of the spine relative to vertical (0° = upright, 90° = horizontal)
+  - **Knee Angle / Hip Angle:** scale-invariant joint angles, the *primary* posture signal (not body-height ratio — that was the original distance-dependent bug, fixed long before this document's current revision)
+  - **Torso Angular Velocity:** rate of change of torso angle, time-normalized to deg/sec
+  - **Hip Velocity:** hip-center speed, normalized by elapsed time AND by body scale (body-heights/sec), so the same real-world speed reads the same regardless of camera distance or frame rate
+- **Posture classification** (angle-based, `ANGLE_STANDING_MIN=143°`, `ANGLE_SITTING_MAX=125°`, with a body-height-ratio fallback only when knees/hips are occluded).
+- **Temporal smoothing:** a posture must see 2 *consecutive* raw "Lying" frames before it latches (added to stop a single-frame torso-angle spike during a fast sit-down from sticking as "Lying" — see Section 5).
+- **Fall Detection Triggers (3 modes, current constants — re-derived from real data in Section 5, not hand-picked):**
+  - **`rapid_fall`** (posture already confirmed Lying): sustained hip velocity + sustained torso angular velocity + **real downward hip displacement** (`FALL_HIP_DESCENT_MIN=0.06` frame-heights) — the hip-descent requirement specifically distinguishes a genuine collapse-to-floor from someone reclining in a chair (torso pitches back, hips stay at seat height).
+  - **`pre_lying_fall`** (posture not yet Lying — earlier warning, higher bar since there's no Lying confirmation to lean on): requires the torso to actually be pitching toward horizontal (`torso_angle >= 45°`) AND a higher, dedicated angular-velocity floor (`FALL_PRELYING_ANGVEL_FLOOR=250°/sec` sustained `FALL_PRELYING_SUSTAIN=4` frames). This gate is what stops a fast sit-down (which spikes angular velocity while staying upright in the seat) from tripping a false alarm before Lying is even confirmed.
+  - **`sustained_lying`** (slow-fall fallback): if the person has been continuously Lying for `LYING_PERSISTENCE_FRAMES=40` frames and was upright at some point this session, flag a fall even with no velocity spike at all. This is what catches a genuine slow elderly crumple that never trips the velocity-based triggers.
 
-## Directory Hierarchy & Structure
-The current structure is logically separated by concern:
+### Current Fall-Detection Constants (`pipeline_utils.py`, re-derived July 2026 — see Section 5)
+```
+FALL_VELOCITY_THRESHOLD      = 1.5    # body-heights/sec, "fast frame" floor
+FALL_SUSTAINED_COUNT         = 2      # min fast frames in the lookback window
+FALL_AVG_VELOCITY_FLOOR      = 1.0    # body-heights/sec
+FALL_PEAK_VELOCITY_FLOOR     = 3.0    # body-heights/sec
+FALL_ANGULAR_VELOCITY_FLOOR  = 150.0  # deg/sec
+ANGVEL_SUSTAIN_FRAMES        = 3      # consecutive frames above the angvel floor
+FALL_PRELYING_ANGVEL_FLOOR   = 250.0  # deg/sec (pre-lying trigger only, higher bar)
+FALL_PRELYING_SUSTAIN        = 4
+FALL_HIP_DESCENT_MIN         = 0.06   # fraction of frame height
+LYING_PERSISTENCE_FRAMES     = 40     # frames of continuous Lying -> sustained_lying fallback
+```
 
-/ (Root)
-|-- data/                  # Datasets and logs
-|   |-- raw/               # Raw ADL and Fall image sequences
-|   |-- processed_keypoints/ # Extracted keypoints (webcam & raw images)
-|   |   |-- pose_keypoints.csv 
-|   |   `-- real_pose_keypoints.csv
-|   `-- datasets/          # Final compiled dataset for LSTM training
-|       `-- lstm_dataset.npz
-|
-|-- docs/                  # Documentation and reference diagrams
-|
-|-- models/                # Model artifacts
-|   `-- pose_landmarker_full.task # MediaPipe model weights
-|
-|-- src/                   # Main source code
-|   |-- camera/            # Video input modules
-|   |-- pose/              # MediaPipe integration & visualisation
-|   |-- posture/           # Heuristic classification & LSTM inference
-|   |   `-- lstm/          # LSTM architecture, dataset builders, & training scripts
-|   `-- data_processing/   # Scripts to process raw files into usable datasets
-|
-|-- tests/                 # Unit and integration tests
-|   |-- test_posture_pipeline.py
-|   `-- test_lstm_pipeline.py
-|
-|-- requirements.txt       # Project dependencies
-|-- task.md                # Task tracker and phase checklist
-`-- context.txt            # (This file)
+### Heuristic Strengths
+- **Zero false positives** across all of `Testing/Sanawar Testing 7-22-26/` (the original 16-clip set) both before and after every fix in this document — every change so far has been regression-tested against it.
+- Latency substantially improved after the July 2026 threshold re-derivation (e.g. `normal` clip: 81→43 frames) without introducing any new false positives, once three additional FP mechanisms the retune exposed were fixed (see Section 5).
 
-## Next Steps
-- Enable Windows Long Paths to permit the installation of `tensorflow-cpu`.
-- Run `lstm_trainer.py` to actually train the LSTM using the newly processed dataset.
-- Move towards Phase 5: Building a web-based caregiver dashboard UI.
+### Heuristic Weaknesses (known, unresolved)
+- **Falls whose direction runs along the camera's optical axis:** if a person falls toward/away from the camera rather than across its field of view, the body foreshortens in 2D instead of visibly rotating — `torso_angle` never registers "horizontal." Found via `Backward_fall.mp4` in the July 2026 unseen-footage validation (Section 8) — confirmed a **fundamental 2D single-camera limitation**, not a threshold problem (the LSTM misses it too, same reason: same underlying landmarks). Needs a product decision (camera placement guideline, or a secondary cue independent of trunk rotation), not more tuning.
+
+---
+
+## 3. The LSTM Layer
+
+### Goal
+Learn the temporal dynamics of falling across a 30-frame window to detect slow falls faster than the heuristic, and to independently corroborate the heuristic via the OR-gate.
+
+### Architecture (unchanged)
+```
+Input (30 frames × 132 features)
+  → LSTM(64 units) → Dropout(0.3)
+  → LSTM(32 units) → Dropout(0.3)
+  → Dense(5, softmax)
+```
+**Output classes:** Fall, Lying, Sitting, Standing, Unknown
+
+### Input Features — CHANGED, this was the single biggest fix in this document's history
+The model **used to** train directly on raw MediaPipe (x, y) screen coordinates, normalized only to the [0,1] image frame. This has **no scale or translation invariance**: a person standing far from the camera occupies the same small vertical extent in the frame as someone lying down, and the model had no structural way to tell those apart. Diagnostic proof: a clean, motionless Standing clip (torso ~2°, knee/hip angles ~170°, velocity ~0.2 body-heights/sec — unambiguous by every scale-invariant measure the heuristic computes) still scored ~66% "Fall" probability from the old model.
+
+**Fix:** new shared module `src/posture/lstm/lstm_features.py`, the single source of truth for the LSTM's input representation, used identically by training (`lstm_dataset.py`), production inference (`lstm_classifier.py`), and batch evaluation (`hybrid_evaluate.py`):
+- Every frame's 33 landmarks are re-expressed as **hip-centered, torso-length-scaled position** (66 dims) — invariant to camera distance/framing, but keeps full body shape (unlike reducing to just joint angles).
+- Plus **frame-to-frame velocity of that normalized position** (66 dims) — explicit motion signal.
+- Total: 132 input features (was 66).
+- A `col_medians` array (computed from real training data, saved into `models/lstm_label_encoder.json`) is used for NaN-imputation at inference time — previously training and inference used *different, inconsistent* imputation (a real train/inference skew bug, also fixed).
+- Synthetic training templates (`_make_standing_kps`/`_make_sitting_kps`/`_make_lying_kps`/`_make_fall_sequence` in `lstm_dataset.py`) are now expressed directly in this normalized space.
+- **Inference contract:** `LSTMPostureClassifier.predict()` now needs `window_size + 1` raw frames (`raw_history_needed` property), not `window_size` — the extra leading frame supplies a real (not zero-padded) velocity for the oldest frame in the window.
+
+### Training Data Sources
+1. **UR Fall Dataset** (real RGB videos): ~30 fall + ADL sequences.
+2. **UP-Fall Dataset** (3D skeleton data): 5 subjects × multiple fall activities.
+3. **LeFD (Le2i Fall Detection dataset)** — added July 2026, see Section 4: 130 real annotated videos (96 falls + 34 ADL) across Coffee_room/Home scenes.
+
+Total real frames: **62,202** (up from 20,136 before LeFD), across 282 sequences.
+
+### A second root cause, found after the feature fix: no gate on "just fell" vs. "already lying"
+After the feature-normalization fix, two clips regressed: `Lying_straight.mov` and `Lying_legs_straight.mov` (subject lying down for the *entire* clip, never seen Standing/Sitting) went from 0 false Fall frames to ~57-58% flagged. A single 30-frame window has no way to distinguish "just fell" from "was already lying when tracking started" — both look geometrically identical in isolation. The old raw-coordinate model avoided this by accident (a camera-specific shortcut), not genuine understanding.
+
+**Fix:** gate the LSTM's fall signal on "has a genuine Standing/Sitting posture been observed at any point this session" — mirrors the heuristic's own pre-existing `_has_been_upright_this_session` safeguard. Implemented in both `pipeline_utils.py`'s production LSTM branch and `hybrid_evaluate.py`'s independent eval-harness LSTM path. Fully eliminated both false positives with zero effect on any true-positive latency.
+
+### Original diagnostic tasks that led here (historical, kept for record)
+Before the scale-invariance root cause above was found, an earlier diagnostic pass (window-composition analysis, sitting-FP mechanism trace, geometric coordinate comparison) discovered that 95% of "Fall"-class training windows were static post-fall lying frames rather than actual falling motion, and that geometrically identical static poses had contradictory labels ("Fall" if sourced from the end of a fall video, "Lying" if sourced from a resting video). This led to the **window-labeling fix** still in effect today in `lstm_dataset.py: build_windows_from_real_data()`: a window is labeled `"Fall"` if and only if at least one frame inside it is labeled `"Fall"`; otherwise it takes its last frame's label. `verify_labels.py` checks this invariant holds (should always read 100% of Fall windows containing a real transition frame, 0% pure-static contamination). That fix was necessary but not sufficient — it stopped the training *labels* from being contradictory, but the model was still learning from unnormalized coordinates, which is the deeper root cause resolved above.
+
+---
+
+## 4. LeFD Dataset Integration (July 2026)
+
+Added `datasets/LeFD/` (Le2i Fall Detection dataset: Coffee_room_01/02, Home_01/02, Lecture_room, Office — 320×240 25FPS). Only Coffee_room_01/02 and Home_01/02 have per-frame fall annotations; Lecture_room and Office ship videos only with no ground truth, so they were excluded from ingestion.
+
+`process_lefd_video`/`process_lefd_dataset` in `src/data_processing/build_lstm_datasets.py` reads each annotated video via cv2, runs MediaPipe per frame, and applies a state machine from the annotation's (fall_start, fall_end) frame numbers: before start = trust the heuristic's own posture label, [start,end] = force "Fall", after end = force "Lying". For the ~34 pure-ADL clips, `fall_detected` is forcibly clamped to `False` for the whole clip — necessary because the heuristic's own flag would otherwise leak "Fall" labels onto genuine non-fall Lying/Sitting frames.
+
+**Result:** frames 20,136 → 62,202, Sitting class 1,235 → 5,395 frames (fixes the original class-imbalance problem). This dataset expansion was necessary but **not sufficient** — it fixed the Sitting-class confusion but the sustained false positives on Standing_1/Sit_3/Fast_Sit persisted until the feature-normalization fix (Section 3) was found afterward.
+
+---
+
+## 5. Fall-Threshold Re-Derivation From Data (July 2026)
+
+**The root of the month-long "add a new clip, something breaks, patch a threshold, repeat" cycle:** the fall-detection thresholds were hand-fit to just 2-3 specific test clips (old code comments literally referenced "NF1 peak=26.36" and "Sit_3's fast sit-down (peak=11.09)" as the calibration points). A threshold with zero statistical margin, fit to a handful of examples, cannot generalize to a new clip by construction.
+
+**Method:** replayed `classify_posture_and_fall` over all 130 real LeFD videos and compared peak hip-velocity + torso-angular-velocity between 96 annotated falls and 34 ADL clips.
+
+**Key findings:**
+1. The old `FALL_PEAK_VELOCITY_FLOOR=15.0` caught only **~17% of real falls** (real-fall peak velocity median is 5.1 body-heights/sec) — this single bug was forcing the majority of real falls to fall back on the slow 40-frame sustained-lying path, and was the direct cause of the 76-/81-/114-frame latencies seen before this fix.
+2. **Hip velocity is a weak discriminator** on its own (falls median 5.1 vs. ADL median 4.1 body-heights/sec — heavy overlap).
+3. **Torso angular velocity is the strong discriminator**, and it's cross-validated against the literature: our data's 5th-percentile of real-fall peak angular velocity is 177°/sec; the classic wearable-gyroscope fall-detection threshold in the literature is 3.1 rad/sec ≈ 178°/sec. Near-exact agreement.
+4. **The real fall-vs-ADL discriminator is "does the motion end in Lying,"** not motion magnitude — a fast sit-down has comparable velocity/angular-velocity spikes to a real fall but doesn't end with the person on the floor. This is why the thresholds could be made recall-biased (aggressive) for the Lying-confirmed `rapid_fall` trigger while keeping a higher bar on the earlier `pre_lying_fall` trigger, which fires before Lying is confirmed.
+
+New constants are listed in Section 2. Recall-biased by design: **for an elderly-safety system, a missed fall is far worse than a false alarm.**
+
+### Three new false-positive mechanisms the retune exposed, and their fixes
+Making the fall-motion floors more sensitive (as above) surfaced three new failure modes, each fixed with a physically-grounded gate rather than more threshold-nudging:
+1. **Sticky-smoothing amplification:** a single-frame `torso_angle` spike during a fast sit-down briefly latched "Lying," and the "keep previous label when votes aren't unanimous" smoothing rule stretched that one frame into ~5 frames of Lying — long enough to trip the now-sensitive `rapid_fall` trigger. **Fix:** require two *consecutive* raw-Lying frames before actually entering Lying (costs a real fall +1 frame of latency).
+2. **Pre-lying trigger fired on fast sit-downs:** these spike angular velocity while the trunk stays upright in the seat. **Fix:** gate `pre_lying_fall` on `torso_angle >= 45°` (the trunk must actually be pitching toward horizontal) plus its own higher, dedicated angular-velocity floor.
+3. **Reclining in a chair read as a fall:** torso pitches back (54–67°, reading as "Lying"), but the hips stay at seat height — this doesn't drop the hips to the floor the way a real fall does. **Fix:** `rapid_fall` also requires real downward hip displacement over the lookback window (`FALL_HIP_DESCENT_MIN`). Deliberately **not** applied to the LSTM path — a very slow elderly crumple can descend less than this per 10-frame window, and gating the LSTM the same way risks missing exactly the slow-fall case the system exists to catch.
+
+### Two other concrete (dormant) heuristic bugs fixed in the same pass
+- `_lying_run_length == LYING_PERSISTENCE_FRAMES` (exact equality) → changed to `>=`. The old check could silently and permanently disable the sustained-lying fallback for an entire session if the counter ever skipped past exactly 40.
+- The fall-detection lookback window used to silently treat any frame that lost landmark tracking as `velocity=0.0`, diluting the average/peak/fast-frame-count exactly during the motion blur a fast real fall tends to cause. Fixed to exclude those frames instead of zero-filling them.
+- Both fixes were confirmed zero-regression (heuristic-only evaluation was byte-identical before/after on the full 16-clip set) — these were dormant landmines, not active bugs on the existing test set, but real risks for future footage.
+
+---
+
+## 6. Real-Time Detection
+
+`realtime_fall_detection.py` (repo root) — live camera or video file → MediaPipe → the hybrid pipeline (heuristic OR LSTM, via `pipeline_utils.classify_posture_and_fall(lstm_classifier=...)`) → a **debounced** alert.
+
+- **Why debounce:** a single-frame fall trigger can come from a landmark glitch. Alerting on every frame-level trigger causes false alarms, and false alarms cause alarm fatigue — which is just as dangerous as missing a fall. An alert only fires once the fall signal is present in `ALERT_MIN_HITS=4` of the last `ALERT_WINDOW=12` frames, then latches for `ALERT_HOLD_SECONDS=5.0` before it can re-arm.
+- Uses wall-clock timestamps (correct `dt` for a live, variable-framerate feed).
+- Caps retained frame history at 320 for bounded memory in a long-running session.
+- Has an `on_alert(event: dict)` callback hook — wire in SMS/dashboard/email notification here.
+- CLI flags: `--input` (camera index or video file path, default `0`), `--no-lstm` (heuristic only), `--no-display` (headless), `--alert-window`, `--alert-min-hits`, `--alert-hold`.
+- See `INSTRUCTIONS.md` for exact run commands.
+
+---
+
+## 7. Ground-Truth Parser Now Supports 3 Dialects
+
+Different recording batches produced different GT CSV shapes. `evaluate_real_footage.py: load_ground_truth()` (shared by `hybrid_evaluate.py`) auto-detects all three by checking whether the time string contains `:`:
+1. `M:SS` + explicit label + `TRUE/FALSE` ignore flag.
+2. `M:SS` + label + ignore flag + optional trailing `expected_fall_start, expected_fall_end` columns (bypasses window-derivation entirely).
+3. Decimal-seconds + header row (`start_time,end_time,state,label`) — the format the team's recording tool exports. `state` values (`Standing`/`Sitting`/`Fall`/`Transition State`) are mapped to the Standing/Sitting/Lying/Unknown vocabulary the scorer expects (`Fall`→`Lying`, anything containing "transition" → ignored).
+
+---
+
+## 8. Validation Rounds (chronological)
+
+### 8a. `Testing/Sanawar Testing 7-22-26/` (originally `test_footage/`) — the original 16-clip regression set
+Used continuously throughout every fix above as the regression gate. Current state (post all fixes in this document): heuristic = 0 FP, 0 FN across all 16 clips. Hybrid = 6/6 real falls caught, 0 FN, small residual LSTM-only false positives on `Sit_1.mov` (17/157 frames) and `Sit_2.mov` (1/150 frames) — down from a pre-fix state where 8 of 10 true-no-fall clips had LSTM false positives, some sustained at 70–85% of the whole clip.
+
+### 8b. `Testing/Hussain Testing 7-23-26/` (originally `hussain testing/`)
+Contains `normal.mp4`/`old.mp4` — confirmed **byte-identical** (same file size, frame count, fps) to the `normal`/`old` clips in 8a. The only difference is the ground-truth annotation marks the fall window ~1 second tighter. Our detections are the exact same frames already validated as true positives against 8a's window; they simply land 4-55 frames after this folder's tighter cutoff. **A ground-truth annotation discrepancy between the two folders, not a pipeline regression.**
+
+### 8c. `Testing/Sanawar Testing 7-25-26/` (originally `New Test Footage/`) — genuinely unseen team-recorded footage
+The most trustworthy validation so far: 9 clips the pipeline had never been exposed to, covering the fall-variety list in `docs/sanity_check_clips.md` (forward/backward/side/slow/chair/far/off-axis/occluded falls). **Result: 8/9 caught, 0 false positives.**
+- **`Backward_fall.mp4` — genuine miss (FN), both heuristic and LSTM.** Root cause: a fundamental single-camera 2D-projection limitation (see Section 2's "Heuristic Weaknesses"). Unresolved, needs a product decision.
+- **`Chair_fall.mp4` — LSTM alone missed it (FN), heuristic caught it (TP), hybrid OR-gate worked as designed.** Likely an LSTM generalization gap (most fall training data is standing-height falls, not falling out of a seated position).
+- **`Slow_fall.mp4` — led to discovering the scoring-window bug** (Section 9): the LSTM fired confidently from frame 68–123, almost exactly the GT's "Transition" (slow-collapse) segment (66–126) — detecting the fall essentially the instant it began. The scorer originally counted this as a false positive.
+- Note: `Foward_fall.mp4` has a typo vs. `Forward_fall_gt.csv` in this folder — doesn't auto-pair via the batch-mode `*_gt.csv` stem-matching, needs a separate single-clip CLI invocation. Not renamed (left as the team recorded it).
+
+### 8d. `testVideo.mp4` (deleted from the repo since) — ad-hoc spot-check, no ground truth
+Reconstructed narrative: Standing→Sitting→Standing→Sitting→Lying (14.8s–22.5s)→Sitting→Standing. LSTM fired first (14.55s, just before posture even read Lying); heuristic's sustained-lying fallback confirmed almost exactly 40 frames after Lying began, matching `LYING_PERSISTENCE_FRAMES` precisely. A live debounced alert would have fired ~0.1s into the fall. **Caveat: this was the system's read of itself, never verified against an actual ground truth** — treat as circumstantial evidence of sane behavior, not confirmed accuracy.
+
+---
+
+## 9. Scoring-Window Fix
+
+Found via 8c's `Slow_fall.mp4`: `get_fall_window()`'s fallback derivation (used whenever a GT file has no explicit `expected_fall_start`/`expected_fall_end` columns) built the scored window from *only* the "Lying" segment's start/end — completely ignoring the "Transition" segment where the actual falling motion happens. A detector that correctly fires *while the person is falling* (the ideal early-warning behavior, especially for a slow elderly crumple) was being scored as a false positive purely for detecting before the person had finished settling onto the floor.
+
+**Fix:** the window's start now extends backward through any immediately-preceding GT segment marked `ignore=True` (a "Transition"/"Transition State" row). Only affects the fallback-derivation dialects — files with explicit `expected_fall_start`/`expected_fall_end` columns are untouched.
+
+**Validated effect** (re-ran all of 8a and 8c, heuristic + hybrid): **zero clips changed TP/FN/FP status** — this is a pure measurement fix, not a behavior change. `Slow_fall`'s LSTM row flipped FP → TP +2f as expected. Latency numbers moved in both directions, and both directions are informative: some got bigger (revealing the old numbers were flattering us, measuring from an already-late reference point), others got smaller (revealing the heuristic/LSTM was *already* firing earlier than previously credited, during the transition phase, and the old narrow window was throwing that credit away). Net effect: latency numbers now measure "time from actual fall onset to alert" (the number that matters for a real caregiver) instead of "time from settled-on-floor to alert."
+
+---
+
+## 10. Current Status & What Still Needs Doing
+
+### Done
+- [x] Data leakage fix (random split → StratifiedGroupKFold) — pre-dates this document's current revision, still in effect.
+- [x] LeFD dataset integration (Section 4).
+- [x] LSTM feature-normalization fix — the real root cause of the LSTM false-positive crisis (Section 3).
+- [x] Upright-gate fix for the "just fell vs. already lying" ambiguity (Section 3).
+- [x] Fall-threshold re-derivation from real data + literature cross-check (Section 5).
+- [x] Three FP-mechanism fixes exposed by the retune (Section 5).
+- [x] Two dormant heuristic bugs fixed (Section 5).
+- [x] Real-time detection entry point (Section 6).
+- [x] Scoring-window fix (Section 9).
+- [x] Validation across 4 rounds of footage, including genuinely unseen team-recorded clips (Section 8): 8/9 real falls caught with 0 false positives.
+- [x] Recording guide for future validation clips: `docs/sanity_check_clips.md`.
+- [x] Repo cleanup: removed one-off diagnostic scripts and superseded result snapshots whose findings are already captured in this document; `data/`, `datasets/`, and `Testing/` excluded from git via `.gitignore` (see `INSTRUCTIONS.md` for how to regenerate `data/` locally).
+
+### Pending / Open
+- [ ] **`Backward_fall.mp4`'s camera-axis miss** (Section 2/8c) — needs a product decision: camera-placement guideline, or a secondary detection cue independent of trunk rotation (e.g. rapid apparent-size/bounding-box shrinkage).
+- [ ] **No real elderly fall data.** Every fall in training (UR, UP-Fall, LeFD) is a fit adult *simulating* a fall — fast, athletic, often braced. Nothing resembles an actual frail/slow/unbraced elderly collapse, or someone using a cane/walker. This is judged the single highest-value gap remaining — higher priority than further tuning.
+- [ ] **Precision has only been validated on old footage, not new.** `Testing/Sanawar Testing 7-25-26/` was all fall clips — recall-only validation on new footage. The negative/ADL half of `docs/sanity_check_clips.md` (fast sit, recline, bend, walk) hasn't been recorded as genuinely new clips yet, so it's unconfirmed whether the false-positive fixes generalize the same way the recall did.
+- [ ] `Chair_fall.mp4`'s LSTM-alone miss — not urgent (heuristic covers it in the OR-gate) but worth more fall-from-seated training data if pursued.
+- [ ] Sit_1.mov / Sit_2.mov residual small LSTM false positives (17/157 and 1/150 frames) — low severity, not investigated further.
+- [ ] Chair_fall's posture-tracking *accuracy* (not fall detection) is shaky after landing in an unusual pose — doesn't affect alerting, not chased further.
+- [ ] Nothing has been pushed to the remote yet as of this writing — working tree is prepared (`.gitignore` updated, `data/` untracked) but the user has not yet confirmed the final push.
+
+---
+
+## 11. Key Files Reference
+
+| File | Purpose |
+|---|---|
+| `src/posture/pipeline_utils.py` | Heuristic detection logic — posture classification + all 3 fall triggers |
+| `src/posture/lstm/lstm_features.py` | **New.** Single source of truth for the LSTM's input feature representation (normalized position + velocity) |
+| `src/posture/lstm/lstm_dataset.py` | Builds sliding-window training data (real + synthetic) |
+| `src/posture/lstm/lstm_trainer.py` | Trains the LSTM, saves `col_medians` into the label encoder |
+| `src/posture/lstm/lstm_classifier.py` | Production inference wrapper (`LSTMPostureClassifier`) |
+| `src/data_processing/build_lstm_datasets.py` | Raw video/image datasets (UR, UP-Fall, LeFD) → keypoint CSVs |
+| `hybrid_evaluate.py` | Batch evaluation: heuristic vs. LSTM vs. hybrid, scored against ground truth |
+| `evaluate_real_footage.py` | Heuristic-only batch evaluator; also owns the ground-truth parser (`load_ground_truth`, `get_fall_window`) shared by `hybrid_evaluate.py` |
+| `realtime_fall_detection.py` | **New.** Live camera/video → hybrid pipeline → debounced alert |
+| `verify_labels.py` | Diagnostic — checks % of Fall training windows that contain a real transition frame (should always read 100%) |
+| `docs/sanity_check_clips.md` | **New.** Recording guide (camera setup, clip list, GT format) for validation footage |
+| `INSTRUCTIONS.md` | **New.** Setup + run instructions, including live-camera usage |
+| `tests/test_lstm_pipeline.py` | Unit tests for the LSTM pipeline (21 tests, all passing as of this revision) |
+| `models/lstm_posture.keras` / `lstm_label_encoder.json` | Current trained model + encoder (includes `col_medians`) |
+| `models/lstm_posture_before_lefd.keras` / `lstm_label_encoder_before_lefd.json` | Pre-LeFD, pre-feature-fix backup, kept for before/after comparison |
+| `data/processed_keypoints/pose_keypoints.csv` / `posture_output.csv` | Frame-level keypoints + labels (not committed to git — see `.gitignore`; regenerate via `build_lstm_datasets.py`) |
+| `data/lstm_dataset.npz` | Window-level training data (not committed; regenerate via `lstm_dataset.py`) |
+| `Testing/` | All recorded validation footage, organized by contributor+date (not committed to git — large video files) |
+| `context.txt` | This file |
+
+---
+
+## 12. Changelog Against the Previous Revision of This File
+
+The previous revision of this document predated the LeFD integration and described the LSTM false-positive crisis as actively unresolved ("Pending: Retrain LSTM on the new clean dataset"), with three diagnostic tasks (window composition, sitting FP mechanism, geometric coordinate comparison) as the most recent findings. Everything from Section 4 onward in this revision happened after that point. The original diagnostic tasks and the Flaw A relabeling fix they led to are still historically accurate and are the reason the dataset window-labeling logic looks the way it does in `lstm_dataset.py` today (see Section 3's "Original diagnostic tasks" subsection), but are no longer restated in full here — the root cause they were chasing (Flaw B, "absolute feature representation") is the same one fully resolved in Section 3.

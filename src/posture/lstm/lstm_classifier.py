@@ -24,12 +24,15 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.posture.lstm import lstm_features as lf
+
 MODELS_DIR = REPO_ROOT / "models"
 LSTM_MODEL_PATH = MODELS_DIR / "lstm_posture.keras"
 LSTM_ENCODER_PATH = MODELS_DIR / "lstm_label_encoder.json"
 
 LANDMARK_COUNT = 33
-FEATURE_DIM = LANDMARK_COUNT * 2  # 66
+RAW_FEATURE_DIM = LANDMARK_COUNT * 2  # 66: raw x/y landmark coordinates
+FEATURE_DIM = lf.FEATURE_DIM           # 132: normalized position + velocity (model input)
 
 
 # ---------------------------------------------------------------------------
@@ -46,21 +49,9 @@ def _extract_raw_keypoints(row: dict) -> np.ndarray:
     """
     kps = row.get("keypoints", [])
     arr = np.array(kps, dtype=np.float32)
-    if len(arr) < FEATURE_DIM:
-        arr = np.concatenate([arr, np.full(FEATURE_DIM - len(arr), np.nan, dtype=np.float32)])
-    return arr[:FEATURE_DIM]
-
-
-def _impute_row(arr: np.ndarray, col_medians: Optional[np.ndarray] = None) -> np.ndarray:
-    """Replace NaNs in a (66,) array using provided medians or 0.5 fallback."""
-    out = arr.copy()
-    nan_mask = np.isnan(out)
-    if nan_mask.any():
-        if col_medians is not None:
-            out[nan_mask] = col_medians[nan_mask]
-        else:
-            out[nan_mask] = 0.5  # neutral screen-space position
-    return out
+    if len(arr) < RAW_FEATURE_DIM:
+        arr = np.concatenate([arr, np.full(RAW_FEATURE_DIM - len(arr), np.nan, dtype=np.float32)])
+    return arr[:RAW_FEATURE_DIM]
 
 
 # ---------------------------------------------------------------------------
@@ -97,7 +88,7 @@ class LSTMPostureClassifier:
         self.encoder_path = Path(encoder_path or LSTM_ENCODER_PATH)
 
         self._model = None
-        self._classes: List[str] = ["Fall", "Lying", "Sitting", "Standing"]
+        self._classes: List[str] = ["Fall", "Lying", "Sitting", "Standing", "Unknown"]
         self._window_size: int = 30
         self._n_features: int = FEATURE_DIM
         self._col_medians: Optional[np.ndarray] = None
@@ -116,6 +107,9 @@ class LSTMPostureClassifier:
                 self._classes = enc.get("classes", self._classes)
                 self._window_size = int(enc.get("window_size", self._window_size))
                 self._n_features = int(enc.get("n_features", self._n_features))
+                col_medians = enc.get("col_medians")
+                if col_medians is not None:
+                    self._col_medians = np.array(col_medians, dtype=np.float32)
             except Exception as e:
                 print(f"[LSTMClassifier] Warning: could not load encoder: {e}")
 
@@ -147,6 +141,16 @@ class LSTMPostureClassifier:
         return self._window_size
 
     @property
+    def raw_history_needed(self) -> int:
+        """
+        Number of raw pose rows the caller must supply to predict(): one more
+        than window_size, because computing a real (not zero-padded) velocity
+        for the oldest row in the model's window requires the frame just
+        before it.
+        """
+        return self._window_size + 1
+
+    @property
     def is_available(self) -> bool:
         """True when the model loaded successfully and inference is possible."""
         return self._available
@@ -162,8 +166,10 @@ class LSTMPostureClassifier:
         window : list of dict
             Each dict must have a 'keypoints' key (flat list of 66 floats)
             as produced by pipeline_utils.build_pose_row().
-            Length must be >= self.window_size; only the last window_size
-            rows are used.
+            Length must be >= self.raw_history_needed (window_size + 1);
+            only the last raw_history_needed rows are used. The extra
+            leading row is consumed to compute a genuine velocity for the
+            first frame of the model's window (see lstm_features.py).
 
         Returns
         -------
@@ -176,20 +182,19 @@ class LSTMPostureClassifier:
         if not self._available or self._model is None:
             return self._fallback()
 
-        if len(window) < self._window_size:
+        if len(window) < self.raw_history_needed:
             return self._fallback()
 
-        # Use the last window_size frames
-        recent = window[-self._window_size:]
+        # Use the last raw_history_needed raw frames (window_size + 1)
+        recent = window[-self.raw_history_needed:]
 
-        # Build (window_size, 66) array
-        frames = np.stack(
-            [_impute_row(_extract_raw_keypoints(r), self._col_medians) for r in recent],
-            axis=0,
-        ).astype(np.float32)
+        # Raw (window_size+1, 66) -> normalized position + velocity (window_size, 132)
+        raw = np.stack([_extract_raw_keypoints(r) for r in recent], axis=0)
+        frames = lf.build_features_from_raw_window(raw)
+        frames = lf.impute_nan(frames, self._col_medians)
 
         # Model expects (batch, window_size, n_features)
-        X = frames[np.newaxis, ...]  # (1, window_size, 66)
+        X = frames[np.newaxis, ...].astype(np.float32)  # (1, window_size, 132)
 
         try:
             probs = self._model.predict(X, verbose=0)[0]  # (n_classes,)
@@ -260,28 +265,27 @@ def _run_demo():
     from src.posture.lstm.lstm_dataset import (
         _make_standing_kps,
         _make_fall_sequence,
-        FEATURE_DIM,
     )
 
     clf = LSTMPostureClassifier()
+    n = clf.raw_history_needed  # window_size + 1 raw frames
 
     if not clf.is_available:
         print("\n[demo] Model not available. Run lstm_trainer.py first.")
         print("[demo] Showing fallback output:")
-        window = [{"keypoints": list(_make_standing_kps())} for _ in range(clf.window_size)]
+        window = [{"keypoints": list(_make_standing_kps())} for _ in range(n)]
         print(" ", clf.predict(window))
         return
 
     print(f"\n[demo] window_size={clf.window_size}, n_features={clf._n_features}")
 
     # Standing window
-    stand_kps = _make_standing_kps()
-    window_stand = [{"keypoints": list(stand_kps)} for _ in range(clf.window_size)]
+    window_stand = [{"keypoints": list(_make_standing_kps())} for _ in range(n)]
     res = clf.predict(window_stand)
     print(f"  Standing window → {res}")
 
     # Fall window (transition from standing to lying)
-    fall_frames = _make_fall_sequence(clf.window_size)
+    fall_frames = _make_fall_sequence(n)
     window_fall = [{"keypoints": list(f)} for f in fall_frames]
     res = clf.predict(window_fall)
     print(f"  Fall    window → {res}")
