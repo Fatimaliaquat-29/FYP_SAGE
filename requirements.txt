@@ -24,3 +24,6 @@ tzdata==2026.2
 # LSTM pipeline
 tensorflow-cpu
 scikit-learn
+
+# YOLO object detection layer
+ultralytics

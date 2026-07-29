@@ -227,6 +227,10 @@ __marimo__/
 # Ignore datasets folder
 datasets/
 
+# Ignore Ultralytics training run output (checkpoints, plots) -- fully
+# regenerable via src/detection/generate_bbox_dataset.py + finetune_person.py
+runs/
+
 # Ignore generated keypoint/window data (large, fully regenerable via
 # src/data_processing/build_lstm_datasets.py + src/posture/lstm/lstm_dataset.py)
 data/
@@ -235,6 +239,11 @@ data/
 # files, some containing identifiable people; already covered for videos by
 # the *.mp4/*.mov/etc. rules above, but excluded wholesale here too)
 Testing/
+
+# Empty-room background footage for YOLO negatives. Kept OUTSIDE Testing/ on
+# purpose: clip discovery rglobs that tree and assigns train/val by index, so
+# adding clips there silently changes which clips are held out.
+Testing_EmptyRooms/
 
 .venv2/
 .vscode/
