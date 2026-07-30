@@ -61,22 +61,41 @@ python src/detection/build_merged_dataset.py \
 This is the one step that fails *silently* if wrong — a mismatched index trains `chair` boxes as `wine glass`, and the loss curves still look perfectly healthy. The script maps strictly by class **name** and aborts rather than guessing, but confirm the mapping looks sane anyway. Add `--strict` to hard-fail on any unrecognized class.
 
 ## Step 4 — Train (do this on Colab, not the laptop)
-Local CPU: ~4+ hours per 12-epoch run. Free-tier Colab T4: ~10 minutes. Do not iterate on CPU.
+Local CPU: 7,751 train images at the ~400s/epoch this machine measured on 1,832 images extrapolates to **~28 min/epoch, ~14 hours for 30 epochs** — not viable. Free-tier Colab T4 is roughly 20–40x faster on this workload.
+
+**Upload the zip, not the folder.** `datasets/sage_merged.zip` (built by `shutil.make_archive`) is a single ~1.5 GB file — upload that to Drive rather than the 10,317 loose files in `datasets/sage_merged/`. Also upload `models/yolov8n.pt` (the stock weights, ~6 MB).
+
+**Unzip onto Colab's local disk, don't train off the Drive mount.** Reading thousands of small files over the Drive FUSE mount is a known Colab bottleneck and can roughly double epoch time. Unzip to `/content/` (local, fast) instead of training directly against `/content/drive/...`.
 
 ```python
 # Colab cell
 !pip install ultralytics
 from google.colab import drive; drive.mount('/content/drive')
-# upload/copy datasets/sage_merged and models/yolov8n.pt to Drive first
+
+# Copy the zip from Drive to local disk, then unzip locally -- do not train
+# directly against the Drive-mounted path.
+!cp /content/drive/MyDrive/sage/sage_merged.zip /content/
+!unzip -q /content/sage_merged.zip -d /content/sage_merged
+
+# data.yaml's `path:` is still the Windows machine's absolute path -- point it
+# at the local unzip location instead of editing the yaml by hand.
+import yaml
+cfg = yaml.safe_load(open('/content/sage_merged/data.yaml'))
+cfg['path'] = '/content/sage_merged'
+yaml.safe_dump(cfg, open('/content/sage_merged/data.yaml', 'w'))
 
 from ultralytics import YOLO
-model = YOLO('/content/drive/MyDrive/sage/yolov8n.pt')   # STOCK weights
+model = YOLO('/content/drive/MyDrive/sage/yolov8n.pt')   # STOCK weights, not the person-only checkpoint
 model.train(
-    data='/content/drive/MyDrive/sage/sage_merged/data.yaml',
+    data='/content/sage_merged/data.yaml',
     epochs=30, imgsz=320, batch=32, patience=10,
+    project='/content/drive/MyDrive/sage/runs',  # save checkpoints straight to Drive
 )
 ```
-Note `data.yaml` contains an absolute `path:` — update it to the Colab path after uploading, or the run will fail to find images.
+
+Check `!nvidia-smi` before starting — free-tier Colab doesn't guarantee a T4; a slower GPU (or none) changes the time estimate a lot.
+
+`patience=10` means it may stop well before epoch 30 — the earlier person-only run peaked at epoch 11 of 12. That's expected, not a failure.
 
 Bring `best.pt` back as `models/yolov8n_sage_merged.pt`.
 
