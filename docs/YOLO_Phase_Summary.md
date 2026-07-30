@@ -133,6 +133,31 @@ This is the direct, predicted consequence of caveat 3: the person-only training 
 
 The merged multi-class dataset (section 2) includes these empty-room frames as explicit background negatives precisely to fix this, and the 11.9% figure is the before-number to beat. Re-measuring it is a required check after the merged retrain — see the runbook's step 5.
 
+## 5.2 Merged multi-class retrain — results (`models/yolov8n_sage_merged.pt`)
+Trained on Colab from stock weights over the merged dataset (10,317 images, 13 classes, 6.3% empty-room backgrounds). Full per-clip numbers: [`results/yolo_person_detection/merged_320_results.md`](../results/yolo_person_detection/merged_320_results.md).
+
+| Gate | Person-only | Merged | Verdict |
+|---|---|---|---|
+| False positives, 3 empty rooms | 11.9% | **0.0%** | unproven — see below |
+| False positives, *unseen* empty frames (`Normal_Fall_2` tail) | 0/40 | **3/40** | slightly worse |
+| Fall/lying recall, all such clips (person-present frames) | 96.8% | 94.5% | see below |
+| Fall/lying recall, **held-out clips only** | 95.9% | **96.3%** | improved |
+| Object classes detectable in *our* footage | none | none | **failed** |
+| Overall person detection / latency | 96.9% / 41.2 ms | 97.4% / 40.5 ms | improved |
+
+**The two recall rows disagree, and the held-out one is the trustworthy one.** The all-clips figure includes clips the person-only model trained on and had partly memorised, which is where its 96.8% comes from. On genuinely unseen footage the merged model is *better* (96.3% vs 95.9%). The apparent 2.3pp regression is largely the older model's overfitting becoming visible, not lost capability.
+
+**The false-positive fix is unproven, not confirmed.** 0.0% across the three empty rooms measures *fit*, because those frames are now in the training set — exactly the caveat recorded before training. The only genuinely unseen empty frames available (`Normal_Fall_2`'s 40-frame tail) went 0/40 → 3/40. Small sample, but it points the wrong way. **Do not claim the false-positive problem is solved without an empty room held back entirely from training.**
+
+### Why object detection still fails on our footage — a design error in the merged dataset
+The merged model detects all 13 classes correctly *on COCO images* (verified on 40 COCO val images: chair, couch, tv, cup, dining table, bowl, bottle, bed, refrigerator, toilet, wine glass and sink all fire at conf 0.4). It detects **zero** objects in SAGE footage.
+
+The cause is in how the dataset was assembled: our 1,832 auto-labeled frames carry `person` as their **only** label, because MediaPipe can only label people. Every chair, bed and couch visible in them is unlabeled, and YOLO treats unlabeled regions as background. The model was therefore explicitly taught *"furniture exists in COCO-looking images but not in SAGE-looking rooms."*
+
+This is the same failure mode this report warned about for the opposite case — deleting COCO's person boxes would teach "a person is background" — but in the direction that was missed when building the merge.
+
+**Fix:** pseudo-label our own frames for objects by running stock YOLOv8n over them and keeping its furniture/container boxes, then merge those with MediaPipe's person boxes. Both label sources stay fully automatic. Stock YOLO cannot see fallen people, but it does not need to — MediaPipe covers the person class, and stock covers the objects it was trained on.
+
 ## 6. Medicine-container / furniture status
 COCO includes furniture classes (`chair`, `couch`, `bed`, `dining table`, …) and container classes (`bottle`, `cup`, `bowl`). Spot checks confirm the **stock** model detects furniture plausibly (`Sit_1.mov`: person + bed; `Chair_fall.mp4`: person, chair, dining table). No `bottle` detections appeared in any clip, as expected — fall-testing footage doesn't stage medicine bottles, and COCO's "bottle" class is water/wine bottles, not pill bottles.
 

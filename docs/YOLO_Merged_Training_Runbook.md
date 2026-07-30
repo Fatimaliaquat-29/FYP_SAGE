@@ -6,6 +6,8 @@ Do **not** fine-tune from `models/yolov8n_sage_person.pt`. Its head has one outp
 
 ---
 
+> **Status after the first merged run (`models/yolov8n_sage_merged.pt`):** recall held up on held-out footage, but two gates did not pass — object classes still do not fire on SAGE footage, and the false-positive fix is unproven. See [`YOLO_Phase_Summary.md` §5.2](YOLO_Phase_Summary.md). Before the next Colab run, do **step 0b** (hold back one empty room) and **step 1b** (pseudo-label objects).
+
 ## Step 0 — Record empty-room footage (5 minutes, do this first)
 
 ### Where to put it — this matters more than it looks
@@ -31,6 +33,15 @@ At the default `--empty_stride 15`, 3 × 45s of 30fps video yields ~270 backgrou
 
 ### Why this matters
 Our person-only training set had **zero** background frames, so precision was never systematically measurable. These frames are what make a false-positive rate meaningful. (Encouraging preview: on the 40 genuinely empty frames at the end of `Normal_Fall_2.mov`, the current model produced **0** false detections.)
+
+## Step 0b — Record ONE more empty room and hold it back entirely
+Record a fourth room (~30s) and put it somewhere **outside** `Testing_EmptyRooms/`, e.g.:
+```
+Testing_EmptyHeldOut/spare_room.mp4
+```
+Do not pass this folder to `--empty_dir`. It never enters training, so it is the only way to honestly measure whether the false-positive rate actually improved.
+
+This exists because the first merged run scored 0.0% false positives on the three empty rooms — but those frames were in its training set, so that number measures fit, not generalisation. On the one genuinely unseen empty segment available (`Normal_Fall_2`'s tail) it scored 3/40, slightly *worse* than the person-only model's 0/40.
 
 ## Step 1 — Build the person dataset (already done, ~25 min if rerun)
 ```bash
