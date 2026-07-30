@@ -101,8 +101,32 @@ Three things must all hold before calling this a success:
 | Lying/fall recall **must not regress** | ≥ 95% | 95.2% |
 | Held-out fall/lying recall (person-present frames) | ≥ ~95% | ~95.9% |
 | Objects detectable again | chair/bed/bottle found | **broken — 0 classes** |
+| **False positives on empty rooms** | **≤ ~2%** | **11.9%** ← the main thing being fixed |
 
-Plus the new one that empty-room frames finally make measurable: **false-positive rate on background frames should be ~0%.**
+The false-positive check is the one that matters most for a caregiver alerting system, and it is now measurable. Re-run it with:
+```bash
+python - <<'EOF'
+import sys; sys.path.insert(0,'.')
+import cv2
+from pathlib import Path
+from src.detection.yolo_objects import YOLOObjectDetector
+det = YOLOObjectDetector(model_path='models/yolov8n_sage_merged.pt', imgsz=320, confidence_threshold=0.4)
+tot=fp=0
+for p in sorted(Path('Testing_EmptyRooms').rglob('*')):
+    if p.suffix.lower() not in {'.mp4','.mov','.avi','.mkv'}: continue
+    cap=cv2.VideoCapture(str(p)); idx=0
+    while True:
+        ret,f=cap.read()
+        if not ret: break
+        idx+=1
+        if idx % 10: continue
+        tot+=1
+        if any(d['class']=='person' for d in det.detect(f)): fp+=1
+    cap.release()
+print(f"false positives: {fp}/{tot} = {100*fp/tot:.1f}%  (baseline to beat: 11.9%)")
+EOF
+```
+Caveat: these empty-room frames are now *in* the training set, so this measures fit rather than generalization. A genuinely clean re-test needs one more empty-room clip from a room held back entirely — worth recording if the number looks too good.
 
 The 4 held-out clips (`newTest.mov`, `Sit_2.mov`, `Normal_Fall_2.mov`, `Foward_fall.mp4`) must stay held out — `build_merged_dataset.py` preserves the existing train/val split, so this happens automatically as long as Step 1 isn't rerun with different settings.
 

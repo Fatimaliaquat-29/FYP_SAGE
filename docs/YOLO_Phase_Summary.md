@@ -111,11 +111,27 @@ The gain on genuinely unseen footage is therefore larger than the raw table sugg
 ## 5. Caveats — read before trusting these numbers
 1. **Small held-out set.** 4 clips, 285 fall/lying frames. The 82.5% figure has wide error bars.
 2. **Labels come from MediaPipe, so the evaluation is partly circular.** We taught YOLO to agree with MediaPipe and then measured it on similar footage. Frames where MediaPipe found no pose produced no label and were simply *absent* from training rather than taught as negatives — so the fine-tuned model inherits MediaPipe's blind spots by construction.
-3. **The metric is detection rate, which measures recall only.** Precision is now partially evidenced rather than untested: the fine-tuned model returned zero detections on synthetic empty frames, on a person-free crop of a furnished room, and — the strongest evidence — across **40 consecutive real frames of an empty room in `Normal_Fall_2.mov`** (section 4). It has clearly not degenerated into "always predict a person." Still, the training set contained **no background/empty frames at all**, so precision has never been *systematically* measured. Adding empty-room negatives remains the right next step.
+3. **Precision is a real, measured weakness — see section 5.1.** Earlier drafts of this report called precision "partially evidenced" on the strength of zero false positives across 40 empty frames in `Normal_Fall_2.mov`. That was too generous: that room also appears in training footage. Measured on genuinely unseen rooms, the fine-tuned model false-positives on **11.9%** of empty frames.
 4. **Same rooms, same few people.** Nothing here shows it generalizes to new environments or new subjects.
 5. **The fine-tuned model is person-only.** Passing a 1-class dataset made Ultralytics log `Overriding model.yaml nc=80 with nc=1` — this **structurally replaced the detection head**, so there is no longer a `chair` output neuron at all. Confirmed: on a room crop where the stock model found `chair` 0.84 and `bed` 0.77, the fine-tuned model found nothing.
 
    Worth being precise, because it dictates the fix: this is *not* catastrophic forgetting (gradual drift that could be countered with a lower learning rate, a frozen backbone, or EWC). Those mitigations would do nothing here. The only fix is to keep a multi-class label space — which is what `build_merged_dataset.py` and the [runbook](YOLO_Merged_Training_Runbook.md) now provide. Retraining must start from **stock** `yolov8n.pt`; the person-only checkpoint cannot regrow classes its head no longer has.
+
+## 5.1 The fine-tuning traded precision for recall — measured on unseen rooms
+Three empty-room clips were recorded specifically to test false positives (4 videos, 1,950 frames, three rooms that appear nowhere in training). Every frame was verified by eye to contain no person. Sampling every 10th frame, at the same confidence 0.4 used throughout:
+
+| Model | False positives on 194 empty-room frames |
+|---|---|
+| Stock YOLOv8n @640 | **1.0%** |
+| Fine-tuned person-only @320 | **11.9%** |
+
+The fine-tuned model boxes a **water dispenser at 0.59 confidence** and a **sofa arm at 0.37** as `person`. So the headline recall gain (fall/lying 49.7% → 95.2%) came at roughly a **12× worse false-positive rate on rooms the model has not seen**.
+
+This is the direct, predicted consequence of caveat 3: the person-only training set contained zero background images, so nothing ever taught the model what *isn't* a person. It was invisible until now because every previous measurement used footage from rooms that appear in training — the earlier "0 false positives on `Normal_Fall_2`'s empty tail" result was measuring a **seen** room and gave false reassurance.
+
+**For the caregiver-alerting use case this matters more than the recall gain.** An alert system that fires on 12% of frames of an empty room is unusable, regardless of how well it detects real falls. The person-only model at `models/yolov8n_sage_person.pt` should therefore **not** be deployed as-is.
+
+The merged multi-class dataset (section 2) includes these empty-room frames as explicit background negatives precisely to fix this, and the 11.9% figure is the before-number to beat. Re-measuring it is a required check after the merged retrain — see the runbook's step 5.
 
 ## 6. Medicine-container / furniture status
 COCO includes furniture classes (`chair`, `couch`, `bed`, `dining table`, …) and container classes (`bottle`, `cup`, `bowl`). Spot checks confirm the **stock** model detects furniture plausibly (`Sit_1.mov`: person + bed; `Chair_fall.mp4`: person, chair, dining table). No `bottle` detections appeared in any clip, as expected — fall-testing footage doesn't stage medicine bottles, and COCO's "bottle" class is water/wine bottles, not pill bottles.
@@ -123,7 +139,7 @@ COCO includes furniture classes (`chair`, `couch`, `bed`, `dining table`, …) a
 **Genuine medicine-container detection still needs a custom-labeled dataset** — and unlike the person labels above, that one *cannot* be auto-generated from MediaPipe, since MediaPipe only tracks human bodies. That is real manual labeling effort, comparable to the LeFD dataset work, and remains the honest blocker for the medication-adherence feature.
 
 ## 7. Recommendation for the integration phase
-1. **Use the fine-tuned model for person detection.** It is better *and* faster than stock on every measured axis, which resolves the "YOLO is blind to fallen people" problem that would otherwise have forced awkward special-casing in the event schema.
+1. **Do not deploy the person-only model as-is; retrain on the merged dataset first.** It is better and faster than stock on *recall*, which resolves the "YOLO is blind to fallen people" problem — but section 5.1 shows it false-positives on 11.9% of unseen empty-room frames, which is disqualifying for alerting on its own. The merged multi-class retrain addresses both the false positives (via background negatives) and the lost object classes (via the restored label space).
 2. **YOLO is no longer the latency problem — MediaPipe is.** Fine-tuned YOLO runs at 41 ms/frame; MediaPipe (`pose_landmarker_full.task`) runs at ~110 ms/frame. Sequentially that is ~151 ms (~6.6 FPS).
 
    The 15+ FPS Jetson target allows a budget of **66.7 ms/frame total**. MediaPipe alone is 110 ms — it **blows the entire budget by itself, before YOLO runs at all.** This means *no amount of YOLO optimization reaches the target*: even if YOLO were free, the ceiling is ~9.1 FPS. Frame-skipping YOLO every 4th frame only moves ~151 ms → ~120 ms (~8.3 FPS), still well short.

@@ -121,21 +121,32 @@ def remap_label_file(label_path: Path, remap):
     return out_lines, dropped
 
 
-def copy_split(source_dir: Path, split: str, remap, out_dir: Path, prefix: str, stats):
-    """Copy one split of a YOLO dataset into the merged tree, remapping labels."""
+def copy_split(source_dir: Path, split: str, remap, out_dir: Path, prefix: str, stats,
+               reassign_val_every: int = 0, repeat: int = 1):
+    """Copy one split of a YOLO dataset into the merged tree, remapping labels.
+
+    reassign_val_every: if set, every Nth image of an incoming *train* split is
+        diverted to val instead. FiftyOne exports everything as one split, which
+        would otherwise leave val with no examples of the object classes -- so
+        object mAP would be silently unmeasurable.
+    repeat: writes each *train* image N times. This is the lever for the person
+        class-imbalance problem: COCO contributes far more (upright) person
+        boxes than our own footage contributes lying ones, so our lying-pose
+        examples can get drowned out. Oversampling is the safe correction --
+        deleting COCO's person boxes is NOT, because unlabeled people in an
+        image actively teach the model that a person is background.
+    """
     images_dir = source_dir / "images" / split
     labels_dir = source_dir / "labels" / split
     if not images_dir.is_dir():
         return
 
-    out_images = out_dir / "images" / split
-    out_labels = out_dir / "labels" / split
-    out_images.mkdir(parents=True, exist_ok=True)
-    out_labels.mkdir(parents=True, exist_ok=True)
+    for dest_split in ("train", "val"):
+        (out_dir / "images" / dest_split).mkdir(parents=True, exist_ok=True)
+        (out_dir / "labels" / dest_split).mkdir(parents=True, exist_ok=True)
 
-    for image_path in sorted(images_dir.iterdir()):
-        if image_path.suffix.lower() not in IMAGE_EXTENSIONS:
-            continue
+    images = [p for p in sorted(images_dir.iterdir()) if p.suffix.lower() in IMAGE_EXTENSIONS]
+    for i, image_path in enumerate(images):
         label_path = labels_dir / f"{image_path.stem}.txt"
 
         if label_path.exists():
@@ -145,16 +156,23 @@ def copy_split(source_dir: Path, split: str, remap, out_dir: Path, prefix: str, 
             # No label file: YOLO treats this as a background image.
             lines = []
 
-        dest_stem = f"{prefix}_{image_path.stem}"
-        shutil.copy2(image_path, out_images / f"{dest_stem}{image_path.suffix}")
-        (out_labels / f"{dest_stem}.txt").write_text(
-            ("\n".join(lines) + "\n") if lines else "", encoding="utf-8"
-        )
+        dest_split = split
+        if split == "train" and reassign_val_every and (i % reassign_val_every == reassign_val_every - 1):
+            dest_split = "val"
 
-        stats["images"] += 1
-        stats["boxes"] += len(lines)
-        if not lines:
-            stats["backgrounds"] += 1
+        # Only oversample training data; duplicating val would corrupt the metric.
+        copies = repeat if (dest_split == "train" and repeat > 1) else 1
+        for copy_idx in range(copies):
+            suffix = "" if copy_idx == 0 else f"_r{copy_idx}"
+            dest_stem = f"{prefix}_{image_path.stem}{suffix}"
+            shutil.copy2(image_path, out_dir / "images" / dest_split / f"{dest_stem}{image_path.suffix}")
+            (out_dir / "labels" / dest_split / f"{dest_stem}.txt").write_text(
+                ("\n".join(lines) + "\n") if lines else "", encoding="utf-8"
+            )
+            stats["images"] += 1
+            stats["boxes"] += len(lines)
+            if not lines:
+                stats["backgrounds"] += 1
 
 
 def collect_empty_frames(empty_dir: Path, out_dir: Path, val_every: int, stride: int, stats):
@@ -236,6 +254,14 @@ def main():
     parser.add_argument("--val_every", type=int, default=5, help="Every Nth empty-room frame goes to val")
     parser.add_argument("--strict", action="store_true",
                         help="Abort if a source contains any class not in SAGE_CLASSES")
+    parser.add_argument("--coco_val_every", type=int, default=10,
+                        help="Divert every Nth COCO train image to val (default 10). FiftyOne exports "
+                             "a single split, so without this val has no object-class examples and "
+                             "object mAP cannot be measured.")
+    parser.add_argument("--own_repeat", type=int, default=1,
+                        help="Repeat our own person frames N times in train, to stop COCO's much larger "
+                             "count of upright person boxes from drowning out our lying-pose examples. "
+                             "Raise this if lying recall regresses after training.")
     args = parser.parse_args()
 
     own_dir = Path(args.own_dir)
@@ -264,7 +290,13 @@ def main():
         remap = build_index_remap(names, prefix, args.strict)
         stats = {"images": 0, "boxes": 0, "boxes_dropped": 0, "backgrounds": 0}
         for split in SPLITS:
-            copy_split(source_dir, split, remap, out_dir, prefix, stats)
+            copy_split(
+                source_dir, split, remap, out_dir, prefix, stats,
+                # Our own dataset already has an honest clip-level split; only the
+                # single-split COCO export needs val carved out of it.
+                reassign_val_every=args.coco_val_every if prefix == "coco" else 0,
+                repeat=args.own_repeat if prefix == "own" else 1,
+            )
         print(f"[{prefix}] {stats['images']} images, {stats['boxes']} boxes, "
               f"{stats['boxes_dropped']} boxes dropped, {stats['backgrounds']} backgrounds\n")
         for key in totals:
@@ -286,8 +318,27 @@ def main():
         encoding="utf-8",
     )
 
+    # Per-class box counts, so imbalance is visible now rather than inferred
+    # from a disappointing training run later.
+    class_counts = {i: 0 for i in range(len(SAGE_CLASSES))}
+    split_images = {}
+    for split in SPLITS:
+        labels_dir = out_dir / "labels" / split
+        if not labels_dir.is_dir():
+            continue
+        split_images[split] = len(list((out_dir / "images" / split).glob("*")))
+        for label_file in labels_dir.glob("*.txt"):
+            for line in label_file.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    class_counts[int(line.split()[0])] += 1
+
     background_pct = 100 * totals["backgrounds"] / totals["images"] if totals["images"] else 0
     print("=== merged dataset ===")
+    for split, count in split_images.items():
+        print(f"  {split}: {count} images")
+    print("  boxes per class:")
+    for idx, name in enumerate(SAGE_CLASSES):
+        print(f"    {idx:>2} {name:<14} {class_counts[idx]}")
     print(f"  images:       {totals['images']}")
     print(f"  boxes:        {totals['boxes']}")
     print(f"  backgrounds:  {totals['backgrounds']} ({background_pct:.1f}% of images)")

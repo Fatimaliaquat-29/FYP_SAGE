@@ -50,6 +50,14 @@ def main():
     if out_dir.exists():
         raise SystemExit(f"{out_dir} already exists -- remove it first to avoid mixing two downloads.")
 
+    # This download is large enough that transient network failures are likely.
+    # FiftyOne keeps named datasets in a persistent database, so a half-finished
+    # run leaves a name behind that makes the retry fail with "already exists".
+    for stale in ("sage_coco_objects", "sage_coco_person"):
+        if stale in fo.list_datasets():
+            print(f"Removing stale dataset from a previous run: {stale}")
+            fo.delete_dataset(stale)
+
     object_classes = [c for c in SAGE_CLASSES if c != "person"]
     # Images overlap heavily (one kitchen photo holds several classes), so the
     # unique image count lands well below per_class * len(object_classes).
