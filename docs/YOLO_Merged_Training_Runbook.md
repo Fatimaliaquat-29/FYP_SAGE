@@ -49,6 +49,28 @@ python src/detection/generate_bbox_dataset.py --stride 2
 ```
 Produces `datasets/sage_person_finetune/` — 2,331 train / 1,837 val auto-labeled frames. Skip if it already exists.
 
+## Step 1b — Pseudo-label objects in our own frames (required; rerun of step 1)
+```bash
+python src/detection/generate_bbox_dataset.py --stride 2 --pseudo_objects --object_conf 0.35
+```
+This reruns step 1 with stock YOLOv8n additionally labeling furniture/containers in our frames. MediaPipe still supplies the `person` box; stock's own `person` detections are discarded, since stock is the model that cannot see fallen people.
+
+Without this, our frames carry `person` as their only label, so every chair and bed in them trains as **background** — which is exactly why the first merged model detected zero objects in SAGE footage while handling COCO images correctly.
+
+Verified working: boxes land correctly (person tight on the subject, chair on the armchair) and every frame keeps its person box.
+
+### Known limitation — most classes simply are not in our rooms
+Sampling every 60th frame across all 28 clips with stock YOLOv8n:
+
+| Confidence | Object boxes found | Classes present |
+|---|---|---|
+| 0.50 | 107 | chair (82), bed (25) |
+| 0.35 | 158 | chair (112), bed (35), dining table (8), tv (3) |
+
+Use `--object_conf 0.35` to pick up `dining table` and `tv` as well; furniture is an easy class for COCO models, so the extra recall is worth more than the small drop in label precision.
+
+**Pseudo-labeling can only fix classes that actually appear in the footage.** Nine of the 13 — including every medicine-container proxy (`bottle`, `cup`, `bowl`, `wine glass`) — appear **zero** times in our rooms. They will still be effectively trained as absent-from-SAGE-rooms, because they genuinely are absent. The model can still learn them from the COCO half, but do not expect reliable container detection in SAGE footage until footage that actually contains containers is recorded and labeled. This reinforces §6 of the phase summary: medicine-container detection is a data problem, not a modeling one.
+
 ## Step 2 — Download the COCO subset (~800 MB, ~15–30 min)
 ```bash
 pip install fiftyone
