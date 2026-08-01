@@ -158,6 +158,44 @@ This is the same failure mode this report warned about for the opposite case —
 
 **Fix:** pseudo-label our own frames for objects by running stock YOLOv8n over them and keeping its furniture/container boxes, then merge those with MediaPipe's person boxes. Both label sources stay fully automatic. Stock YOLO cannot see fallen people, but it does not need to — MediaPipe covers the person class, and stock covers the objects it was trained on.
 
+## 5.3 Second merged retrain with object pseudo-labels (`models/yolov8n_sage_merged_v2.pt`)
+v2 adds 4,599 pseudo-labeled object boxes to our own frames (stock YOLOv8n supplying furniture, MediaPipe still supplying `person`), fixing the design error that had every chair in our rooms training as background.
+
+| Gate | stock | person-only | v1 | **v2** |
+|---|---|---|---|---|
+| **1. FP on a room held back from training** | 0/56 | 3/56 (5.4%) | 0/56 | **0/56 (0.0%)** ✅ |
+| 1b. FP on unseen empty frames (`Normal_Fall_2` tail) | 0/40 | 0/40 | 3/40 | **0/40** ✅ |
+| FP on the 3 empty rooms *(now in training — fit only)* | 1.0% | 11.9% | 0.0% | 0.0% |
+| **4. Objects detected in SAGE footage** | n/a | none | **none** | **122 boxes** ✅ |
+| **3. Fall/lying recall, held-out clips** | 67.8% | 95.9% | 96.3% | **94.7%** ⚠️ |
+| **2. Fall/lying recall, all clips** | — | 96.8% | 94.5% | **93.0%** ⚠️ |
+
+### The false-positive question is now settled — properly
+A fourth empty room (a dining area, 569 frames) was recorded and **never passed to `--empty_dir`**, so it stayed out of training entirely. This is the first honest precision measurement in the project.
+
+- The person-only model's false-positive problem is **real and confirmed on unseen data**: 3/56 (5.4%).
+- **Both merged models score 0/56.** The empty-room negatives genuinely fixed it — this is no longer a fit artifact.
+
+### An incidental confirmation of the v1 diagnosis
+On this held-back dining room, **v1 detected objects fine** (chair 120, dining table 41, refrigerator 17) despite detecting **zero** objects across all 28 `Testing/` clips. That is exactly what the §5.2 diagnosis predicted: v1 had learned "furniture exists in COCO-looking scenes but not in SAGE-looking rooms," and this well-lit dining room reads as COCO-like. v2, having seen furniture labeled in SAGE rooms, no longer makes that split.
+
+### Latency
+Measured on an idle machine: **49.5 ms/frame (20.2 FPS)**, versus v1's 40.5 ms. Full numbers in [`results/yolo_person_detection/merged_v2_320_results.md`](../results/yolo_person_detection/merged_v2_320_results.md).
+
+A first attempt produced 70.0 ms, but that run overlapped a dataset rebuild on the same CPU and was discarded rather than reported — worth remembering that every latency figure in this project needs an otherwise-idle machine to mean anything.
+
+The ~9 ms increase over v1 is plausibly postprocessing: v2 emits many more detections per frame (it actually finds the furniture), and NMS plus box decoding scale with detection count. That is a hypothesis, not a measured attribution. Either way it stays far below MediaPipe's ~110 ms, so the pose stage remains the binding latency constraint (§7).
+
+### The open concern: person recall is drifting down
+Held-out fall/lying recall has gone 95.9% (person-only) → 96.3% (v1) → **94.7%** (v2) — about 12 more missed frames out of 245. The likeliest cause is capacity shifting toward the 12 object classes now competing with `person` in the same nano-sized model.
+
+**This matters more than it looks.** The Continuation Plan is explicit that a missed fall is the costliest error in this system, so recall on fall/lying footage is not a metric to trade away casually for object detection.
+
+Options, in order of preference:
+1. **Re-weight the person class** — rebuild with `--own_repeat 2` and retrain. Cheap and directly targets the cause.
+2. **Move up a model size** (`yolov8s`) so 13 classes are not competing for nano-sized capacity — costs latency, which currently has headroom (40 ms vs MediaPipe's 110 ms).
+3. **Accept it** — but only with the numbers stated plainly, since 94.7% is below the ≥95% gate this project set for itself.
+
 ## 6. Medicine-container / furniture status
 COCO includes furniture classes (`chair`, `couch`, `bed`, `dining table`, …) and container classes (`bottle`, `cup`, `bowl`). Spot checks confirm the **stock** model detects furniture plausibly (`Sit_1.mov`: person + bed; `Chair_fall.mp4`: person, chair, dining table). No `bottle` detections appeared in any clip, as expected — fall-testing footage doesn't stage medicine bottles, and COCO's "bottle" class is water/wine bottles, not pill bottles.
 

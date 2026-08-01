@@ -247,3 +247,7 @@ Testing_EmptyRooms/
 
 .venv2/
 .vscode/
+
+# Held-back empty room - NEVER passed to --empty_dir, so it stays out of
+# training and is the only honest false-positive test.
+Testing_EmptyHeldOut/
