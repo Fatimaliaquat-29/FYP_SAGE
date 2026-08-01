@@ -240,7 +240,13 @@ Gate 4 only established that objects are *detected*, not that the boxes are *cor
 
 **The two classes that actually occur in SAGE rooms — chair and bed — are the model's best object classes.** So the 120 boxes found in our footage rest on genuinely competent detection rather than noise.
 
-**Every container proxy is poor**, and that is measured on COCO's own images where bottles are plentiful. Bottle sits at 21% recall despite ~4,160 training boxes. The split is by object size — large classes do well, small classes do badly — which implicates `imgsz=320`. Re-validating at 640 raised every container proxy (bottle 0.242 → 0.333) but collapsed `bed` (0.838 → 0.267) and lowered overall mAP, because the model was trained at 320 and the eval-resolution mismatch distorts object scale. Suggestive, not conclusive; see [`MEDICATION_DETECTION_SCOPE.md` §2b](MEDICATION_DETECTION_SCOPE.md) for the cheap experiment that would settle it.
+**Every container proxy is poor**, and that is measured on COCO's own images where bottles are plentiful. Bottle sits at 21% recall despite ~4,160 training boxes. The split is by object size — large classes do well, small classes do badly — which implicates `imgsz=320`.
+
+**This was tested and confirmed.** A model trained natively at 640 lifted every container class on clean, human-annotated COCO labels — bottle 0.242 → **0.385** (+59%), wine glass +63%, cup +33%, bowl +29% — with half the training epochs. Resolution was a genuine constraint, not merely a data gap.
+
+**But the 640 model fails the fall-detection gates**: held-out fall/lying recall drops 95.9% → **90.6%**, and latency doubles to **85.9 ms**, which alone exceeds the entire 66.7 ms budget for 15 FPS. It keeps 0/56 false positives and detects more objects (139 vs 120), but a missed fall is this project's costliest error, so that trade is not available.
+
+**Conclusion: containers need a separate higher-resolution model on a low duty cycle**, not a resolution change to the fall-detection model. Medication adherence happens over seconds to minutes and does not need 15 FPS, which sidesteps the latency conflict. Full analysis in [`MEDICATION_DETECTION_SCOPE.md` §2c](MEDICATION_DETECTION_SCOPE.md).
 
 ### Remaining caveats
 1. **Small held-out set.** The 95.9% rests on 245 person-present frames across 2 fall/lying clips. It is consistent across four model variants, which is reassuring, but the sample is thin.
