@@ -196,13 +196,41 @@ Options, in order of preference:
 2. **Move up a model size** (`yolov8s`) so 13 classes are not competing for nano-sized capacity — costs latency, which currently has headroom (40 ms vs MediaPipe's 110 ms).
 3. **Accept it** — but only with the numbers stated plainly, since 94.7% is below the ≥95% gate this project set for itself.
 
+## 5.4 v3 — person class re-weighted (`models/yolov8n_sage_merged_v3.pt`) — **all gates pass**
+v2 had recovered object detection and fixed false positives but lost fall/lying recall, most likely because 12 object classes were competing with `person` for a nano-sized model's capacity. v3 tests the cheap fix first: rebuild with `--own_repeat 2`, doubling our own frames in train (person boxes 16,716 → 19,047) while leaving the COCO and empty-room portions untouched. Same architecture, same hyperparameters — only the class balance changes.
+
+| Gate | Target | stock | person-only | v1 | v2 | **v3** |
+|---|---|---|---|---|---|---|
+| **1. FP, room held back from training** | ~0% | 0/56 | 3/56 (5.4%) | 0/56 | 0/56 | **0/56 (0.0%)** ✅ |
+| 1b. FP, unseen `Normal_Fall_2` tail | 0 | 0/40 | 0/40 | 3/40 | 0/40 | **0/40** ✅ |
+| **3. Fall/lying recall, held-out** | **≥95%** | 67.8% | 95.9% | 96.3% | 94.7% ✗ | **95.9%** ✅ |
+| 2. Fall/lying recall, all clips | — | — | 96.8% | 94.5% | 93.0% | 94.0% |
+| **4. Objects in SAGE footage** | detected | n/a | none | none | 122 | **120** ✅ |
+
+**The cheap fix worked; `yolov8s` is not needed.** Re-weighting recovered held-out recall from 94.7% to 95.9% — back to the person-only model's level and over the ≥95% gate — while giving up essentially nothing: false positives stayed at 0/56 on the held-back room, and object detection stayed at 120 boxes versus v2's 122 (chair 96, bed 24).
+
+This ordering mattered. Reaching for a larger model first would have cost latency and obscured the real cause, which was class balance rather than capacity.
+
+Overall person detection 97.3% at **42.1 ms/frame (23.8 FPS)** on an idle machine — full numbers in [`results/yolo_person_detection/merged_v3_320_results.md`](../results/yolo_person_detection/merged_v3_320_results.md). Latency is back near v1's 40.5 ms, down from v2's 49.5 ms.
+
+### What v3 is, honestly
+- **Better than stock** on the thing that matters most: fall/lying recall on unseen footage, 67.8% → 95.9%.
+- **Better than the person-only model** on false positives (3/56 → 0/56) at identical recall (95.9%), and it detects objects at all.
+- **Still limited by data**, not modeling: only `chair` and `bed` are reliably detected in our rooms because they are nearly the only SAGE classes present. Containers appear zero times — see §6 and [`MEDICATION_DETECTION_SCOPE.md`](MEDICATION_DETECTION_SCOPE.md).
+
+### Remaining caveats
+1. **Small held-out set.** The 95.9% rests on 245 person-present frames across 2 fall/lying clips. It is consistent across four model variants, which is reassuring, but the sample is thin.
+2. **One held-back room, 56 test frames.** Enough to separate 0% from 5.4%, not enough to claim a precise false-positive rate.
+3. **Same rooms, same few people.** Generalization to new environments and subjects is still untested apart from the single held-back room.
+4. **Person labels remain MediaPipe-derived**, so the person class still partly measures agreement with MediaPipe rather than ground truth.
+
 ## 6. Medicine-container / furniture status
 COCO includes furniture classes (`chair`, `couch`, `bed`, `dining table`, …) and container classes (`bottle`, `cup`, `bowl`). Spot checks confirm the **stock** model detects furniture plausibly (`Sit_1.mov`: person + bed; `Chair_fall.mp4`: person, chair, dining table). No `bottle` detections appeared in any clip, as expected — fall-testing footage doesn't stage medicine bottles, and COCO's "bottle" class is water/wine bottles, not pill bottles.
 
 **Genuine medicine-container detection still needs a custom-labeled dataset** — and unlike the person labels above, that one *cannot* be auto-generated from MediaPipe, since MediaPipe only tracks human bodies. That is real manual labeling effort, comparable to the LeFD dataset work, and remains the honest blocker for the medication-adherence feature.
 
 ## 7. Recommendation for the integration phase
-1. **Do not deploy the person-only model as-is; retrain on the merged dataset first.** It is better and faster than stock on *recall*, which resolves the "YOLO is blind to fallen people" problem — but section 5.1 shows it false-positives on 11.9% of unseen empty-room frames, which is disqualifying for alerting on its own. The merged multi-class retrain addresses both the false positives (via background negatives) and the lost object classes (via the restored label space).
+1. **Use `models/yolov8n_sage_merged_v3.pt`.** It passes all four gates (§5.4): 95.9% fall/lying recall on held-out footage, 0/56 false positives on a room held back from training, and working object detection. Do **not** use `yolov8n_sage_person.pt` — it matches v3 on recall but false-positives on 5.4% of unseen empty-room frames and cannot detect objects at all.
 2. **YOLO is no longer the latency problem — MediaPipe is.** Fine-tuned YOLO runs at 41 ms/frame; MediaPipe (`pose_landmarker_full.task`) runs at ~110 ms/frame. Sequentially that is ~151 ms (~6.6 FPS).
 
    The 15+ FPS Jetson target allows a budget of **66.7 ms/frame total**. MediaPipe alone is 110 ms — it **blows the entire budget by itself, before YOLO runs at all.** This means *no amount of YOLO optimization reaches the target*: even if YOLO were free, the ceiling is ~9.1 FPS. Frame-skipping YOLO every 4th frame only moves ~151 ms → ~120 ms (~8.3 FPS), still well short.
