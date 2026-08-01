@@ -1,11 +1,16 @@
 """
-lstm_trainer.py
-===============
-Trains an LSTM model on the sliding-window pose keypoint dataset and saves it
-to models/lstm_posture.keras.
+tcn_trainer.py
+==============
+Trains the TCN model on the SAME sliding-window pose keypoint dataset used
+by the LSTM (data/lstm_dataset.npz) and saves it to models/tcn_posture.keras.
+
+This mirrors src/posture/lstm/lstm_trainer.py's data loading, grouped
+train/val split, synthetic-augmentation injection, callbacks, and evaluation
+flow exactly -- the only difference is which model architecture gets built
+and trained, so results are directly comparable between the two.
 
 Usage:
-    python src/posture/lstm/lstm_trainer.py [--epochs 100] [--batch-size 64]
+    python src/posture/tcn/tcn_trainer.py [--epochs 100] [--batch-size 64]
 """
 
 import argparse
@@ -19,80 +24,28 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.posture.tcn.tcn_model import build_tcn_model
+
 DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
 LSTM_DATASET_NPZ = DATA_DIR / "lstm_dataset.npz"
-LSTM_MODEL_PATH = MODELS_DIR / "lstm_posture.keras"
-LSTM_ENCODER_PATH = MODELS_DIR / "lstm_label_encoder.json"
-
-
-def build_model(
-    window_size: int,
-    n_features: int,
-    n_classes: int,
-    units1: int = 64,
-    units2: int = 32,
-    dropout_rate: float = 0.3,
-    learning_rate: float = 1e-3,
-):
-    """
-    Construct the LSTM classifier.
-
-    Architecture
-    ────────────
-    Input  (window_size, n_features)
-    LSTM(units1, return_sequences=True)  – captures short-term motion patterns
-    Dropout(dropout_rate)
-    LSTM(units2)                         – summarises the sequence
-    Dropout(dropout_rate)
-    Dense(n_classes, softmax)            – class probabilities
-
-    units1/units2/dropout_rate/learning_rate default to the original fixed
-    values (64, 32, 0.3, 1e-3) so existing callers see no behavior change;
-    they're exposed as parameters purely for hyperparameter sweeps (see
-    compare_tcn_lstm.py's optimization pass).
-    """
-    try:
-        import tensorflow as tf
-        from tensorflow import keras
-    except ImportError:
-        raise ImportError(
-            "TensorFlow is required for training. Install it with:\n"
-            "    pip install tensorflow-cpu\n"
-        )
-
-    model = keras.Sequential(
-        [
-            keras.layers.Input(shape=(window_size, n_features)),
-            keras.layers.LSTM(units1, return_sequences=True),
-            keras.layers.Dropout(dropout_rate),
-            keras.layers.LSTM(units2),
-            keras.layers.Dropout(dropout_rate),
-            keras.layers.Dense(n_classes, activation="softmax"),
-        ],
-        name="lstm_posture_classifier",
-    )
-    model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
-        loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"],
-    )
-    return model
+TCN_MODEL_PATH = MODELS_DIR / "tcn_posture.keras"
+TCN_ENCODER_PATH = MODELS_DIR / "tcn_label_encoder.json"
 
 
 def train(
     dataset_path: Path = LSTM_DATASET_NPZ,
-    model_out: Path = LSTM_MODEL_PATH,
-    encoder_out: Path = LSTM_ENCODER_PATH,
+    model_out: Path = TCN_MODEL_PATH,
+    encoder_out: Path = TCN_ENCODER_PATH,
     epochs: int = 100,
     batch_size: int = 64,
     val_split: float = 0.20,
-    units1: int = 64,
-    units2: int = 32,
-    dropout_rate: float = 0.3,
+    num_filters: int = 32,
+    kernel_size: int = 3,
+    dropout_rate: float = 0.2,
     learning_rate: float = 1e-3,
 ):
-    """Full training loop."""
+    """Full training loop (identical structure to lstm_trainer.train)."""
     try:
         import tensorflow as tf
         from tensorflow import keras
@@ -107,7 +60,7 @@ def train(
     # Fix the model's weight-initialization/dropout randomness so repeated
     # runs with the same hyperparameters are reproducible instead of landing
     # on a different local optimum each time -- otherwise architecture
-    # comparisons (e.g. against the TCN) are confounded by training noise
+    # comparisons (e.g. against the LSTM) are confounded by training noise
     # rather than reflecting the hyperparameters actually being compared.
     keras.utils.set_random_seed(42)
 
@@ -171,13 +124,14 @@ def train(
         n_seq = int(np.unique(g_val[mask]).shape[0]) if mask.sum() > 0 else 0
         print(f"    {cls:<10}: {mask.sum():>6} windows / {n_seq:>3} real sequences")
 
-
     # ── Build model ───────────────────────────────────────────────────────────
-    model = build_model(
+    model = build_tcn_model(
         window_size, n_features, n_classes,
-        units1=units1, units2=units2, dropout_rate=dropout_rate, learning_rate=learning_rate,
+        num_filters=num_filters, kernel_size=kernel_size,
+        dropout_rate=dropout_rate, learning_rate=learning_rate,
     )
     model.summary()
+    print(f"\n  Total trainable parameters: {model.count_params():,}")
 
     # ── Callbacks ─────────────────────────────────────────────────────────────
     callbacks = [
@@ -221,9 +175,9 @@ def train(
     print(f"Model saved -> {model_out}")
 
     # ── Save label encoder ────────────────────────────────────────────────────
-    # col_medians travels with the encoder so lstm_classifier.py imputes
-    # missing landmarks at inference time with the SAME per-feature medians
-    # used during training, instead of an arbitrary constant fill value.
+    # col_medians travels with the encoder so tcn_classifier.py imputes missing
+    # landmarks at inference time with the SAME per-feature medians used
+    # during training (same rationale as lstm_trainer.py's encoder).
     encoder = {
         "classes": list(classes),
         "class_to_idx": {c: int(i) for i, c in enumerate(classes)},
@@ -239,12 +193,12 @@ def train(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="LSTM Posture Model Trainer")
+    parser = argparse.ArgumentParser(description="TCN Posture Model Trainer")
     parser.add_argument("--epochs", type=int, default=100, help="Max training epochs (default: 100)")
     parser.add_argument("--batch-size", type=int, default=64, help="Batch size (default: 64)")
     parser.add_argument("--val-split", type=float, default=0.20, help="Validation split ratio (default: 0.20)")
     parser.add_argument("--dataset", type=str, default=str(LSTM_DATASET_NPZ), help="Path to lstm_dataset.npz")
-    parser.add_argument("--model-out", type=str, default=str(LSTM_MODEL_PATH), help="Output model path")
+    parser.add_argument("--model-out", type=str, default=str(TCN_MODEL_PATH), help="Output model path")
     args = parser.parse_args()
 
     train(

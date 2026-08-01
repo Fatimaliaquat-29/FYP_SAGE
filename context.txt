@@ -1,7 +1,7 @@
 # S.A.G.E. FYP — Full Technical History & Context
 **Branch:** new
-**Phase:** Real-time hybrid detection, data-driven threshold tuning, and multi-round validation on unseen footage
-**Last Updated:** July 2026 (major rewrite — see Section 12 for a changelog against the previous version of this file)
+**Phase:** Real-time hybrid detection, data-driven threshold tuning, multi-round validation on unseen footage, and a TCN alternative architecture with a same-data comparison against the LSTM
+**Last Updated:** August 2026 (added Section 13 — TCN implementation, training pipeline, and a reproducibility investigation; see Section 14 for a changelog against the previous version of this file)
 
 ---
 
@@ -201,14 +201,17 @@ Found via 8c's `Slow_fall.mp4`: `get_fall_window()`'s fallback derivation (used 
 - [x] Validation across 4 rounds of footage, including genuinely unseen team-recorded clips (Section 8): 8/9 real falls caught with 0 false positives.
 - [x] Recording guide for future validation clips: `docs/sanity_check_clips.md`.
 - [x] Repo cleanup: removed one-off diagnostic scripts and superseded result snapshots whose findings are already captured in this document; `data/`, `datasets/`, and `Testing/` excluded from git via `.gitignore` (see `INSTRUCTIONS.md` for how to regenerate `data/` locally).
+- [x] **TCN alternative architecture implemented, trained, and compared against the LSTM on real footage** (Section 13) — TCN wins on every measured axis (accuracy, fall recall, parameter count, latency) in the current run, but see Section 13's reproducibility caveat before treating that as settled.
 
 ### Pending / Open
-- [ ] **`Backward_fall.mp4`'s camera-axis miss** (Section 2/8c) — needs a product decision: camera-placement guideline, or a secondary detection cue independent of trunk rotation (e.g. rapid apparent-size/bounding-box shrinkage).
-- [ ] **No real elderly fall data.** Every fall in training (UR, UP-Fall, LeFD) is a fit adult *simulating* a fall — fast, athletic, often braced. Nothing resembles an actual frail/slow/unbraced elderly collapse, or someone using a cane/walker. This is judged the single highest-value gap remaining — higher priority than further tuning.
+- [ ] **`Backward_fall.mp4`'s camera-axis miss** (Section 2/8c) — needs a product decision: camera-placement guideline, or a secondary detection cue independent of trunk rotation (e.g. rapid apparent-size/bounding-box shrinkage). Confirmed in Section 13 that the TCN misses this clip too, for the same underlying single-camera-projection reason.
+- [ ] **No real elderly fall data.** Every fall in training (UR, UP-Fall, LeFD) is a fit adult *simulating* a fall — fast, athletic, often braced. Nothing resembles an actual frail/slow/unbraced elderly collapse, or someone using a cane/walker. This is judged the single highest-value gap remaining — higher priority than further tuning. Applies equally to the TCN, which was trained on the same UR data.
 - [ ] **Precision has only been validated on old footage, not new.** `Testing/Sanawar Testing 7-25-26/` was all fall clips — recall-only validation on new footage. The negative/ADL half of `docs/sanity_check_clips.md` (fast sit, recline, bend, walk) hasn't been recorded as genuinely new clips yet, so it's unconfirmed whether the false-positive fixes generalize the same way the recall did.
 - [ ] `Chair_fall.mp4`'s LSTM-alone miss — not urgent (heuristic covers it in the OR-gate) but worth more fall-from-seated training data if pursued.
 - [ ] Sit_1.mov / Sit_2.mov residual small LSTM false positives (17/157 and 1/150 frames) — low severity, not investigated further.
 - [ ] Chair_fall's posture-tracking *accuracy* (not fall detection) is shaky after landing in an unusual pose — doesn't affect alerting, not chased further.
+- [ ] **TF op-level non-determinism** (Section 13) — `keras.utils.set_random_seed(42)` was added to both trainers but real-footage results still vary run-to-run; `tf.config.experimental.enable_op_determinism()` plus a multi-seed sweep is needed before any hyperparameter conclusion (LSTM vs TCN or within either architecture) can be trusted.
+- [ ] Only 8 labelled real clips exist in `test_footage/` — one flipped clip swings fall-detection recall by 12.5 points, which is larger than most of the effects anyone will want to measure. More real clips are worth more than more tuning right now (same conclusion Section 10 already reached for the LSTM/heuristic work, now doubly true with a second model to compare).
 - [ ] Nothing has been pushed to the remote yet as of this writing — working tree is prepared (`.gitignore` updated, `data/` untracked) but the user has not yet confirmed the final push.
 
 ---
@@ -223,6 +226,11 @@ Found via 8c's `Slow_fall.mp4`: `get_fall_window()`'s fallback derivation (used 
 | `src/posture/lstm/lstm_trainer.py` | Trains the LSTM, saves `col_medians` into the label encoder |
 | `src/posture/lstm/lstm_classifier.py` | Production inference wrapper (`LSTMPostureClassifier`) |
 | `src/data_processing/build_lstm_datasets.py` | Raw video/image datasets (UR, UP-Fall, LeFD) → keypoint CSVs |
+| `src/data_processing/build_ur_dataset_from_data_root.py` | **New (Section 13).** Adapter that reuses `build_lstm_datasets.py`'s UR-processing function unchanged, pointed at `data/ADL`/`data/Fall` (this project's actual data drop location) instead of `datasets/UR_data/ADL`/`Fall` |
+| `src/posture/tcn/tcn_model.py` | **New (Section 13).** TCN architecture (`build_tcn_model`) — causal dilated `Conv1D` residual blocks |
+| `src/posture/tcn/tcn_trainer.py` | **New (Section 13).** Trains the TCN on the same `data/lstm_dataset.npz` as the LSTM; mirrors `lstm_trainer.py`'s split/augmentation/callbacks exactly |
+| `src/posture/tcn/tcn_classifier.py` | **New (Section 13).** Production inference wrapper (`TCNPostureClassifier`), same public interface as `LSTMPostureClassifier` — drop-in replacement |
+| `compare_tcn_lstm.py` | **New (Section 13).** Side-by-side LSTM-vs-TCN evaluator on labelled real footage; `--lstm-model`/`--tcn-model` let it point at any checkpoint |
 | `hybrid_evaluate.py` | Batch evaluation: heuristic vs. LSTM vs. hybrid, scored against ground truth |
 | `evaluate_real_footage.py` | Heuristic-only batch evaluator; also owns the ground-truth parser (`load_ground_truth`, `get_fall_window`) shared by `hybrid_evaluate.py` |
 | `realtime_fall_detection.py` | **New.** Live camera/video → hybrid pipeline → debounced alert |
@@ -230,10 +238,16 @@ Found via 8c's `Slow_fall.mp4`: `get_fall_window()`'s fallback derivation (used 
 | `docs/sanity_check_clips.md` | **New.** Recording guide (camera setup, clip list, GT format) for validation footage |
 | `INSTRUCTIONS.md` | **New.** Setup + run instructions, including live-camera usage |
 | `tests/test_lstm_pipeline.py` | Unit tests for the LSTM pipeline (21 tests, all passing as of this revision) |
-| `models/lstm_posture.keras` / `lstm_label_encoder.json` | Current trained model + encoder (includes `col_medians`) |
+| `models/lstm_posture.keras` / `lstm_label_encoder.json` | Current production model + encoder (includes `col_medians`); NEVER overwritten by the TCN work in Section 13 |
 | `models/lstm_posture_before_lefd.keras` / `lstm_label_encoder_before_lefd.json` | Pre-LeFD, pre-feature-fix backup, kept for before/after comparison |
-| `data/processed_keypoints/pose_keypoints.csv` / `posture_output.csv` | Frame-level keypoints + labels (not committed to git — see `.gitignore`; regenerate via `build_lstm_datasets.py`) |
-| `data/lstm_dataset.npz` | Window-level training data (not committed; regenerate via `lstm_dataset.py`) |
+| `models/lstm_posture_retrained.keras` / `lstm_label_encoder_retrained.json` | **New (Section 13).** LSTM retrained on the exact same `data/lstm_dataset.npz` as the TCN, for a fair same-data comparison — a separate file from the production model above, never used in production |
+| `models/tcn_posture.keras` / `tcn_label_encoder.json` | **New (Section 13).** Trained TCN model + encoder |
+| `data/processed_keypoints/pose_keypoints.csv` / `posture_output.csv` | Frame-level keypoints + labels (not committed to git — see `.gitignore`; regenerate via `build_lstm_datasets.py`, or `build_ur_dataset_from_data_root.py` if raw data is under `data/ADL`/`data/Fall`) |
+| `data/lstm_dataset.npz` | Window-level training data, shared by the LSTM and TCN (not committed; regenerate via `lstm_dataset.py`) |
+| `data/ADL/`, `data/Fall/` | **New (Section 13).** Raw UR Fall Detection Dataset frame sequences (40 ADL + 30 Fall, 11,936 frames total), not committed to git |
+| `test_footage/` | **New (Section 13).** 9 labelled real fall clips (recorded by the user) used to evaluate the LSTM/TCN comparison; not committed to git |
+| `results/tcn_vs_lstm/`, `results/tcn_vs_lstm_fair/` | **New (Section 13).** Generated comparison reports — the former is production-LSTM-vs-TCN, the latter is the same-data, fixed-seed comparison (see Section 13) |
+| `TCN_IMPLEMENTATION_NOTES.md` | **New (Section 13).** Standalone doc: how a TCN works, why it was chosen, LSTM/TCN differences, files added/modified, the reproducibility finding, how to train/compare |
 | `Testing/` | All recorded validation footage, organized by contributor+date (not committed to git — large video files) |
 | `context.txt` | This file |
 
@@ -242,3 +256,54 @@ Found via 8c's `Slow_fall.mp4`: `get_fall_window()`'s fallback derivation (used 
 ## 12. Changelog Against the Previous Revision of This File
 
 The previous revision of this document predated the LeFD integration and described the LSTM false-positive crisis as actively unresolved ("Pending: Retrain LSTM on the new clean dataset"), with three diagnostic tasks (window composition, sitting FP mechanism, geometric coordinate comparison) as the most recent findings. Everything from Section 4 onward in this revision happened after that point. The original diagnostic tasks and the Flaw A relabeling fix they led to are still historically accurate and are the reason the dataset window-labeling logic looks the way it does in `lstm_dataset.py` today (see Section 3's "Original diagnostic tasks" subsection), but are no longer restated in full here — the root cause they were chasing (Flaw B, "absolute feature representation") is the same one fully resolved in Section 3.
+
+---
+
+## 13. TCN Alternative Architecture & Reproducibility Investigation (August 2026)
+
+### Why
+The LSTM (Section 3) is a reasonable but not the only architecture for classifying the same 30-frame × 132-feature window. A Temporal Convolutional Network (TCN — causal, dilated `Conv1D` stack with residual connections, Bai et al. 2018) is the standard convolutional alternative to an RNN for sequence classification, and consumes the *exact same* `lstm_features.py` input, making it a clean apples-to-apples comparison point: same task, same window, same input representation, different temporal mechanism.
+
+### Architecture (`src/posture/tcn/tcn_model.py::build_tcn_model`)
+```
+Input (30 frames × 132 features)
+  → 4 residual blocks, dilations 1/2/4/8, each:
+      Conv1D(32, kernel=3, causal, dilation=d) → LayerNorm → ReLU → Dropout
+      Conv1D(32, kernel=3, causal, dilation=d) → LayerNorm → ReLU → Dropout
+      + residual add (1x1 Conv1D projection when channel counts differ)
+  → GlobalAveragePooling1D → Dense(5, softmax)
+```
+Receptive field: 31 frames (covers the whole window from the last block alone). 39,365 parameters vs. the LSTM's 63,013 — not forced to match, just reported honestly. `LayerNormalization` (not `BatchNormalization`) was chosen specifically because it normalizes per-sample, so behavior at single-window inference (batch size 1) matches training instead of depending on batch statistics.
+
+### Data pipeline built for this
+No windowed training dataset existed yet in this checkout — `data/` only contained raw UR Fall Detection Dataset frames (`data/ADL/`: 40 sequences, `data/Fall/`: 30 sequences, 11,936 frames total), dropped directly under `data/` rather than the `datasets/UR_data/` layout `build_lstm_datasets.py` expects. Rather than modifying that existing script or duplicating its MediaPipe-extraction logic, a new one-off adapter (`src/data_processing/build_ur_dataset_from_data_root.py`) imports and reuses its `process_ur_sequence` function unchanged, pointed at the new location. Output: `data/processed_keypoints/pose_keypoints.csv`/`posture_output.csv` (same paths `lstm_dataset.py` already reads) → `python src/posture/lstm/lstm_dataset.py` → `data/lstm_dataset.npz`, 9,906 windows across 70 sequences (Fall 24.2%, Lying 15.2%, Sitting 9.2%, Standing 40.0%, Unknown 11.3%).
+
+### Result: same-data comparison (`results/tcn_vs_lstm_fair/`)
+The LSTM was also retrained on this exact same `data/lstm_dataset.npz` (via the unmodified `lstm_trainer.py`, saved to `models/lstm_posture_retrained.keras` — a separate file, the production `models/lstm_posture.keras` was never touched) so the comparison reflects architecture, not training-data differences. Evaluated on all 8 valid clips in `test_footage/` (a 9th, `Forward_fall_gt.csv`, has no matching video — see below):
+
+| Metric | LSTM (retrained, same data) | TCN |
+|---|---|---|
+| Accuracy | 74.1% | 76.0% |
+| Fall-detection recall | 75.0% (6/8) | 87.5% (7/8) |
+| Parameters | 63,013 | 39,365 |
+| Latency mean | 57.9 ms/window | 55.1 ms/window |
+
+The TCN comes out ahead on every axis in this run. `Backward_fall.mp4` was missed by the TCN too (same single-camera 2D-projection limitation as Section 2's heuristic weakness — confirms it's a data/geometry limitation, not specific to any one architecture).
+
+**Filename bug found, not fixed**: `test_footage/Forward_fall_gt.csv` doesn't match `test_footage/Foward_fall.mp4` (missing "r"), so `discover_clips()`'s stem-matching skips it — same class of issue as `Testing/Sanawar Testing 7-25-26/`'s `Foward_fall.mp4` typo noted in Section 8c. Left unfixed (not renamed) per the same policy as that earlier instance — the user's recorded file is not renamed without being asked.
+
+### The hyperparameter sweep and what it actually found
+A sweep of ~4 hyperparameter variants per model (wider/narrower layers, dropout, learning rate) was run and initially looked like it found real improvements by validation accuracy ("TCN wider": 48 filters, "LSTM narrow_lowdrop": 48/24 units). **On real footage, both regressed** (fall recall 87.5% → 75%, both missing an additional clip they'd previously caught). Root-caused to: **model weight initialization was unseeded in both trainers** — retraining the exact same default hyperparameters twice produced different real-footage results (75% vs. 87.5%) from random init alone, before any hyperparameter was even changed. `keras.utils.set_random_seed(42)` was added to both `lstm_trainer.py::train()` and `tcn_trainer.py::train()` to reduce this, but full determinism would additionally need `tf.config.experimental.enable_op_determinism()` (not enabled — has its own performance cost, and TF's CPU convolution/LSTM ops can still be non-deterministic across process runs even with a fixed seed). **Conclusion: with only 8 real clips, one flipped clip is a 12.5-point swing in fall recall — large enough that this sweep's apparent hyperparameter effects cannot be distinguished from training noise.** The final models kept are the **original default hyperparameters** for both architectures, not the sweep's nominal winners. A trustworthy hyperparameter search would need multiple seeds averaged per config and/or a substantially larger real-footage evaluation set. Full detail: `TCN_IMPLEMENTATION_NOTES.md` Section 6.
+
+### Two more (minor) bugs fixed as part of this work
+- `lstm_trainer.py`/`tcn_trainer.py`: `val_split` was accepted as a parameter (and exposed via `--val-split`) but silently ignored — the split always used a hardcoded `StratifiedGroupKFold(n_splits=5, ...)` regardless of the value passed. Fixed to derive `n_splits` from `val_split`; default behavior (0.20 → 5 splits) unchanged.
+- `compare_tcn_lstm.py`'s auto-generated report had a section (data provenance) that hardcoded "the LSTM was NOT retrained for this comparison" — true for the very first run only, and silently wrong once a retrained checkpoint was evaluated via `--lstm-model`. Now reads the actual checkpoint path from the classifier and describes it dynamically.
+
+### Files added/modified — see `TCN_IMPLEMENTATION_NOTES.md` for the complete list
+Summary: `src/posture/tcn/{__init__.py, tcn_model.py, tcn_trainer.py, tcn_classifier.py}` and `src/data_processing/build_ur_dataset_from_data_root.py` are new; `compare_tcn_lstm.py` (new, repo root) evaluates both models under identical conditions and writes per-window CSVs + a markdown report with a discussion section generated from the actual measured numbers. `src/posture/lstm/lstm_trainer.py` and `src/posture/tcn/{tcn_model.py, tcn_trainer.py}` were modified (hyperparameter knobs, the seed fix, the `val_split` fix) — all additive/backward-compatible, default behavior unchanged. No file in Sections 1-12 above was touched otherwise (`lstm_features.py`, `lstm_dataset.py`, `lstm_classifier.py`, `pipeline_utils.py`, `realtime_fall_detection.py`, `evaluate_real_footage.py`, `hybrid_evaluate.py` are all untouched).
+
+---
+
+## 14. Changelog Against the Previous Revision of This File
+
+The previous revision ended at Section 12 (LeFD/LSTM-era changelog) with the heuristic+LSTM hybrid pipeline validated and pending items limited to the camera-axis miss, elderly-fall data gap, and unconfirmed precision on new ADL footage (Section 10). This revision adds Section 13 in full: a second model architecture (TCN) implemented from scratch, a full raw-data-to-trained-model pipeline built for data that arrived in a new location (`data/ADL`/`data/Fall` instead of `datasets/UR_data/`), a same-training-data comparison against a freshly-retrained LSTM, and — the most consequential finding — direct evidence that this project's training pipeline was not reproducible run-to-run, which had been silently confounding any attempt to compare hyperparameters (or, by extension, architectures) with only a single training run each. That reproducibility gap is partially closed (Section 13) but not fully solved, and is now the top methodological item under Section 10's Pending list alongside the pre-existing elderly-fall-data and new-footage-precision gaps.

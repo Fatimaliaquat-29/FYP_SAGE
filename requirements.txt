@@ -24,3 +24,6 @@ tzdata==2026.2
 # LSTM pipeline
 tensorflow-cpu
 scikit-learn
+
+# TCN pipeline + compare_tcn_lstm.py (peak-RAM measurement)
+psutil
