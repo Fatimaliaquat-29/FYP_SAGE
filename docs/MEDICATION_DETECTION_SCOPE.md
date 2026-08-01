@@ -33,6 +33,42 @@ Sampling every 60th frame across all 28 `Testing/` clips with stock YOLOv8n:
 
 Only `chair`, `bed`, `dining table` and `tv` appear at all. **Nine of the 13 SAGE classes never occur in our footage**, so no amount of pseudo-labeling or retraining on current data can produce a container detector. The blocker is data, not modeling.
 
+## 2b. It may not be *only* a data problem — resolution is a second suspect
+
+Earlier revisions of this document framed container detection as purely a data-collection gap. Validation of `yolov8n_sage_merged_v3` against held-out **COCO** labels (where bottles are plentiful and well-labeled) complicates that:
+
+| Class | mAP50 @320 | Recall @320 |
+|---|---|---|
+| person | 0.884 | 0.85 |
+| bed | 0.838 | 0.65 |
+| chair | 0.788 | 0.65 |
+| **bottle** | **0.242** | **0.21** |
+| wine glass | 0.226 | 0.23 |
+| cup | 0.357 | 0.34 |
+
+The model detects bottles at **21% recall despite training on ~4,160 bottle boxes**. Large objects (bed, chair) do fine; small objects do badly. That pattern points at **`imgsz=320`**, chosen for the Jetson latency target, degrading small-object detection — containers are small, furniture is not.
+
+Re-validating at 640 supports this but does **not** settle it:
+
+| Class | mAP50 @320 | mAP50 @640 |
+|---|---|---|
+| bottle | 0.242 | 0.333 |
+| cup | 0.357 | 0.408 |
+| wine glass | 0.226 | 0.261 |
+| bowl | 0.382 | 0.411 |
+| bed | 0.838 | **0.267** |
+| all | 0.508 | 0.421 |
+
+Every container proxy improved, but `bed` collapsed and overall mAP fell — because the model was *trained* at 320, so evaluating at 640 shifts the object-scale distribution away from what it learned. **The container gains are therefore suggestive, not conclusive.**
+
+### What this means for the plan
+**Run the cheap experiment before the expensive one.** Before committing 2–5 hours to labeling, train one model at `imgsz=640` on the *existing* merged dataset and compare container-proxy mAP against v3. That is one Colab run and no new labeling, and it answers whether resolution is a real blocker.
+
+- **If container mAP jumps at 640:** resolution is a genuine constraint, and container detection needs a bigger input than the current Jetson budget allows. That is a **latency/hardware decision that must be made before labeling**, since labeling for a 320px model that fundamentally cannot see containers would be wasted effort.
+- **If it does not jump:** resolution is exonerated, the bottleneck really is data, and the labeling plan below proceeds as written.
+
+This ordering mirrors the `--own_repeat` vs `yolov8s` decision in the phase summary: rule out the cheap cause before paying for the expensive fix.
+
 ## 3. What the work actually is
 
 ### 3a. Record footage (est. 2–4 hours)

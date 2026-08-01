@@ -218,6 +218,30 @@ Overall person detection 97.3% at **42.1 ms/frame (23.8 FPS)** on an idle machin
 - **Better than the person-only model** on false positives (3/56 → 0/56) at identical recall (95.9%), and it detects objects at all.
 - **Still limited by data**, not modeling: only `chair` and `bed` are reliably detected in our rooms because they are nearly the only SAGE classes present. Containers appear zero times — see §6 and [`MEDICATION_DETECTION_SCOPE.md`](MEDICATION_DETECTION_SCOPE.md).
 
+### Object-detection quality — measured against real labels
+Gate 4 only established that objects are *detected*, not that the boxes are *correct*. Validating v3 against the merged val set (held-out COCO images with real labels, IoU-based mAP) gives the missing numbers:
+
+| Class | Precision | Recall | mAP50 |
+|---|---|---|---|
+| person | 0.87 | 0.85 | **0.884** |
+| bed | 0.86 | 0.65 | **0.838** |
+| chair | 0.80 | 0.65 | **0.788** |
+| toilet | 0.65 | 0.67 | 0.694 |
+| refrigerator | 0.59 | 0.63 | 0.610 |
+| couch | 0.58 | 0.49 | 0.536 |
+| tv | 0.60 | 0.45 | 0.453 |
+| bowl | 0.57 | 0.38 | 0.382 |
+| cup | 0.53 | 0.34 | 0.357 |
+| dining table | 0.64 | 0.29 | 0.301 |
+| sink | 0.56 | 0.34 | 0.293 |
+| bottle | 0.48 | 0.21 | 0.242 |
+| wine glass | 0.44 | 0.23 | 0.226 |
+| **all** | 0.63 | 0.48 | **0.508** |
+
+**The two classes that actually occur in SAGE rooms — chair and bed — are the model's best object classes.** So the 120 boxes found in our footage rest on genuinely competent detection rather than noise.
+
+**Every container proxy is poor**, and that is measured on COCO's own images where bottles are plentiful. Bottle sits at 21% recall despite ~4,160 training boxes. The split is by object size — large classes do well, small classes do badly — which implicates `imgsz=320`. Re-validating at 640 raised every container proxy (bottle 0.242 → 0.333) but collapsed `bed` (0.838 → 0.267) and lowered overall mAP, because the model was trained at 320 and the eval-resolution mismatch distorts object scale. Suggestive, not conclusive; see [`MEDICATION_DETECTION_SCOPE.md` §2b](MEDICATION_DETECTION_SCOPE.md) for the cheap experiment that would settle it.
+
 ### Remaining caveats
 1. **Small held-out set.** The 95.9% rests on 245 person-present frames across 2 fall/lying clips. It is consistent across four model variants, which is reassuring, but the sample is thin.
 2. **One held-back room, 56 test frames.** Enough to separate 0% from 5.4%, not enough to claim a precise false-positive rate.
