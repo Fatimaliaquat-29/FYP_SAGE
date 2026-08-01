@@ -139,6 +139,36 @@ python src/detection/finetune_person.py \
     --weights models/yolov8n.pt --epochs 30
 ```
 
+## Step 4b — The 640px resolution experiment (answers the container question)
+
+**Purpose:** decide whether `imgsz=320` is why container classes detect so poorly (bottle 0.242 mAP50, 21% recall at 320) *before* anyone spends 2–5 hours labeling container footage. Labeling for a model that cannot resolve containers would waste that effort entirely.
+
+Uses the **existing** `sage_merged.zip` — no new dataset, no new labeling.
+
+```python
+# Same setup as step 4; only imgsz and batch differ
+from ultralytics import YOLO
+model = YOLO('/content/drive/MyDrive/sage/yolov8n.pt')   # STOCK weights
+model.train(data='/content/sage_merged/data.yaml',
+            epochs=30, imgsz=640, batch=16, patience=10)
+```
+
+**`batch=16`, not 32.** At 640px each image needs roughly 4× the activation memory of 320px; batch 32 will likely OOM on a free-tier T4.
+
+**Expect ~3–4× the training time of the 320 run** (~6–8 hrs), which risks Colab session limits and idle disconnects. If it looks like timing out, drop to `epochs=15` — the *direction* of the container-class change is what matters, not a production model, and a jump from 0.24 to 0.5+ would be unambiguous even under-trained. Note the epoch mismatch when comparing, since v3 had 30.
+
+Bring the result back as `models/yolov8n_sage_merged_640.pt`.
+
+### How to read the result
+
+| Outcome | Conclusion | Next action |
+|---|---|---|
+| Container mAP jumps substantially | Resolution is a real blocker | Settle the latency/hardware question **before** labeling — 640px costs ~3–4× inference time against a budget MediaPipe already exceeds |
+| Container mAP roughly flat | Resolution exonerated | Data really is the bottleneck; proceed with labeling as scoped |
+| Containers up but person/furniture down | Genuine trade-off | Consider two models, or a resolution between 320 and 640 |
+
+**All four original gates get re-run at 640, not just container mAP.** A resolution change could plausibly move fall recall or false positives, and neither may regress silently in pursuit of container detection. The v3 baselines to beat: FP 0/56 on the held-back room, held-out fall/lying recall 95.9%, furniture detected (chair 0.788 / bed 0.838 mAP50).
+
 ## Step 5 — Re-run the benchmark and check for regressions
 ```bash
 python src/detection/benchmark_footage.py \
