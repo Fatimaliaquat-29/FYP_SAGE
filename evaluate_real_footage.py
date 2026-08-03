@@ -235,7 +235,11 @@ def extract_keypoints(video_path: str) -> Tuple[List[dict], float, int]:
 
     options = PoseLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=MODEL_PATH),
-        running_mode=mp.tasks.vision.RunningMode.IMAGE,
+        # VIDEO mode (matches realtime_fall_detection.py): landmarks are tracked
+        # across frames rather than re-detected independently, which removes the
+        # frame-to-frame jitter that the fall logic would otherwise read as
+        # genuine hip velocity / torso rotation.
+        running_mode=mp.tasks.vision.RunningMode.VIDEO,
     )
     detector = PoseLandmarker.create_from_options(options)
 
@@ -263,7 +267,7 @@ def extract_keypoints(video_path: str) -> Tuple[List[dict], float, int]:
 
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-            result    = detector.detect(mp_image)
+            result    = detector.detect_for_video(mp_image, int(ts * 1000))
 
             row: dict = {"timestamp": ts, "frame_number": frame_count}
             if result.pose_landmarks:
@@ -307,6 +311,13 @@ def _keypoints_from_row(kp_row: dict) -> List[float]:
     return flat
 
 
+def _visibility_from_row(kp_row: dict) -> List[float]:
+    """MediaPipe's per-joint confidence, already captured by extract_keypoints().
+    Previously extracted and then discarded -- feeding it to build_pose_row is
+    what stops occluded (guessed) joints being treated as observed ones."""
+    return [kp_row.get(f"lm_{i}_visibility", np.nan) for i in range(LANDMARK_COUNT)]
+
+
 def classify_frames(kp_rows: List[dict], clip_name: Optional[str] = None) -> List[dict]:
     # Reset all inter-frame pipeline state so clips don't bleed into each other
     reset_session_state()
@@ -320,6 +331,7 @@ def classify_frames(kp_rows: List[dict], clip_name: Optional[str] = None) -> Lis
             timestamp=kp_row.get("timestamp"),
             frame=int(kp_row.get("frame_number", 0)),
             keypoints=keypoints,
+            visibility=_visibility_from_row(kp_row),
         )
 
         classification = classify_posture_and_fall(pose_row, previous_rows=previous_rows)

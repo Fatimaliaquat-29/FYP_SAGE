@@ -18,6 +18,28 @@ POSTURE_OUTPUT_CSV = DATA_DIR / "processed_keypoints" / "posture_output.csv"
 DETECTIONS_LOG = DATA_DIR / "detections.log"
 LANDMARK_COUNT = 33
 
+# ── Landmark trust threshold ──────────────────────────────────────────────────
+# MediaPipe ALWAYS emits an (x, y) for all 33 landmarks, even for joints it
+# cannot actually see -- it extrapolates a plausible-looking guess and reports
+# its own doubt in `visibility` ([0,1], "likelihood the landmark is present and
+# not occluded"). Coordinates alone are therefore NOT evidence a joint was seen.
+#
+# Measured on this project's own footage (27 labelled clips, 43k core-joint
+# samples): visibility is strongly bimodal -- 66% of core-joint samples sit in
+# [0.9,1.0] with a long low tail -- so a cut anywhere in the flat trough
+# separates "seen" from "guessed". 0.5 is the value MediaPipe's own docs and the
+# wider literature use.
+#
+# Why this matters here: in the indoor test clips the ankles are reported at
+# median visibility as low as 0.04 (Standing_2, Sit_3) -- MediaPipe explicitly
+# saying "I cannot see this joint" -- yet the pipeline previously fed those
+# guessed coordinates straight into body_height / vertical_span / knee_angle.
+# A guessed ankle that jumps between frames collapses vertical_span (-> a
+# standing person classified "Lying") and spikes hip velocity (-> a fall alarm
+# from nothing). Masking sub-threshold landmarks to NaN routes them through the
+# pipeline's existing missing-landmark handling instead.
+MIN_LANDMARK_VISIBILITY = 0.5
+
 # Configure logger
 logger = logging.getLogger("posture_pipeline")
 logger.setLevel(logging.INFO)
@@ -50,7 +72,20 @@ def ensure_data_dir(path: Optional[Path] = None) -> Path:
     return target
 
 
-def build_pose_row(timestamp: Optional[str] = None, frame: Optional[int] = None, landmarks: Optional[Sequence[Tuple[float, float]]] = None, keypoints: Optional[Sequence[float]] = None):
+def build_pose_row(timestamp: Optional[str] = None, frame: Optional[int] = None,
+                   landmarks: Optional[Sequence[Tuple[float, float]]] = None,
+                   keypoints: Optional[Sequence[float]] = None,
+                   visibility: Optional[Sequence[float]] = None,
+                   min_visibility: float = MIN_LANDMARK_VISIBILITY):
+    """Build one pose row.
+
+    visibility : per-landmark MediaPipe visibility scores (length LANDMARK_COUNT).
+        When supplied, any landmark scoring below `min_visibility` has its
+        coordinates replaced with NaN, so the rest of the pipeline treats it as
+        "not seen" rather than silently trusting MediaPipe's guess for an
+        occluded joint. See MIN_LANDMARK_VISIBILITY. Pass min_visibility=0.0 to
+        keep every landmark (e.g. to reproduce pre-fix behaviour).
+    """
     timestamp_value = timestamp or datetime.utcnow().isoformat()
     frame_value = frame if frame is not None else 0
 
@@ -72,6 +107,19 @@ def build_pose_row(timestamp: Optional[str] = None, frame: Optional[int] = None,
     # Fill default NaNs if keypoints is empty or insufficient
     if len(row["keypoints"]) < LANDMARK_COUNT * 2:
         row["keypoints"] = row["keypoints"] + [np.nan] * (LANDMARK_COUNT * 2 - len(row["keypoints"]))
+
+    # Drop landmarks MediaPipe itself reports as unseen. Done here (rather than
+    # at each call site) so every consumer -- realtime, offline evaluation and
+    # LSTM dataset building -- inherits the same trust rule.
+    if visibility is not None and min_visibility > 0.0:
+        n_dropped = 0
+        for i in range(min(LANDMARK_COUNT, len(visibility))):
+            v = visibility[i]
+            if v is None or (isinstance(v, float) and np.isnan(v)) or float(v) < min_visibility:
+                row["keypoints"][2 * i] = np.nan
+                row["keypoints"][2 * i + 1] = np.nan
+                n_dropped += 1
+        row["n_low_visibility"] = n_dropped
 
     return row
 
@@ -158,6 +206,46 @@ def _compute_knee_angle(hip, knee, ankle):
     return float(np.degrees(np.arccos(cos_theta)))
 
 
+def _compute_leg_angle(hip, ankle):
+    """Inclination of the hip->ankle line from vertical, in degrees.
+
+    ~0 deg when the legs are vertical (standing, or bending at the waist),
+    ~90 deg when the legs are horizontal (lying down). This is the signal the
+    trunk angle cannot provide: someone bending to pick something up pitches
+    their TRUNK past horizontal while their LEGS stay vertical."""
+    if hip is None or ankle is None:
+        return np.nan
+    if any(np.isnan(v) for v in hip) or any(np.isnan(v) for v in ankle):
+        return np.nan
+    dx = hip[0] - ankle[0]
+    dy = hip[1] - ankle[1]
+    dist = np.sqrt(dx**2 + dy**2)
+    if dist < 1e-6:
+        return np.nan
+    return float(np.degrees(np.arccos(np.clip(-dy / dist, -1.0, 1.0))))
+
+
+def _compute_body_extent_ratio(shoulder, hip, knee, ankle):
+    """Vertical extent of the body divided by its length along the joint chain.
+
+    Orientation-independent size normalisation: the denominator (shoulder->hip->
+    knee->ankle path length) barely changes with posture, while the numerator
+    collapses as the body goes horizontal.
+        standing / bending upright ~ 1.0   (measured: p5 = 0.96 while bending)
+        lying down                 ~ 0.4   (measured: p50 = 0.38)
+    """
+    pts = [shoulder, hip, knee, ankle]
+    if any(p is None or any(np.isnan(v) for v in p) for p in pts):
+        return np.nan
+    chain = 0.0
+    for a, b in zip(pts, pts[1:]):
+        chain += float(np.linalg.norm(np.array(a, dtype=float) - np.array(b, dtype=float)))
+    if chain < 1e-6:
+        return np.nan
+    ys = [p[1] for p in pts]
+    return float((max(ys) - min(ys)) / chain)
+
+
 def _compute_hip_angle(shoulder, hip, knee):
     """Angle at the hip joint: shoulder -> hip -> knee.
     ~170-180 deg when standing upright (torso in line with legs).
@@ -211,7 +299,13 @@ def _compute_velocity(previous_row: dict, current_row: dict) -> float:
     if body_scale is None or np.isnan(body_scale) or body_scale < 1e-3:
         body_scale = 1.0
 
-    return speed_per_sec / body_scale
+    # Translational implausibility cap, the counterpart of ANGULAR_VELOCITY_CAP.
+    # Measured peak hip speed of a genuine fall never exceeded 20.3 body-heights
+    # /sec across the labelled falls; anything far above that is the hip landmark
+    # jumping (tracking re-acquisition, a mirror, a second person entering
+    # frame), not a body moving. Clipping keeps "this was fast" without letting
+    # one glitched frame dominate the peak/average the fall gate reads.
+    return min(speed_per_sec / body_scale, VELOCITY_CAP)
 
 
 # Module-level state for post-fall tracking (shared across calls within a session)
@@ -224,14 +318,137 @@ _frames_since_confirmed: int = 0         # Fix B: frames since that label was se
 _last_valid_velocity: float = 0.0        # Fix C: velocity of last frame with landmarks
 _lying_run_length: int = 0               # Sustained Lying: frames continuously labeled as Lying
 _has_been_upright_this_session: bool = False # Sustained Lying: whether the clip has seen non-Lying posture
+_lstm_fall_run: int = 0                  # consecutive frames the LSTM has called Fall above the confidence floor
 
 POST_FALL_WINDOW = 10          # frames after a fall trigger to loosen Lying detection
 NAN_AFTER_FALL_THRESHOLD = 10  # consecutive all-NaN frames that infer Lying (after confirmed fall)
 LYING_PERSIST_WINDOW = 20      # Fix B: frames over which a prior Lying label persists through NaN
+# Frames over which a prior Standing/Sitting label persists through tracking
+# loss. Shorter than LYING_PERSIST_WINDOW: holding "upright" is the safe
+# default (it cannot itself raise an alarm), it just stops the posture readout
+# flickering to "Unknown" every time a joint drops out for a frame or two.
+POSTURE_PERSIST_WINDOW = 10
 VELOCITY_UPTICK_FACTOR = 0.5  # Fix C: fraction of FALL_AVG_VELOCITY_FLOOR to arm NaN inference
 ANGULAR_VELOCITY_CAP = 720.0  # deg/sec hard implausibility cap
+VELOCITY_CAP = 25.0           # body-heights/sec translational implausibility cap
+                              # (largest genuine labelled fall measured 20.3)
+
+# ── LSTM Fall-signal gating ───────────────────────────────────────────────────
+# lstm_classifier.predict() decides Fall by a bare argmax, so in a 5-class
+# softmax it can declare a fall on ~0.34 probability with no notion of doubt.
+# hybrid_evaluate.py has ALWAYS gated the LSTM (confidence floor + consecutive
+# frames + upright-seen) before OR-ing it, but the realtime path called the
+# classifier directly and inherited none of that -- which is why live behaviour
+# never matched the offline hybrid numbers. These constants are the single
+# definition both paths now use.
+#
+# A confidence floor ALONE does not work: measured on the labelled clips the
+# LSTM is 0.998 confident on the Sit_3 false positive while real falls sit at
+# 0.992-1.000 -- it is confidently wrong, so no threshold separates them.
+# PERSISTENCE does separate them. Longest unbroken run of P(Fall) >= 0.50:
+#     every ADL clip except Sit_3 ... 0 frames
+#     Sit_3 (the false positive) .... 7 frames
+#     real falls the LSTM sees ...... 17 to 71 frames
+# With the 4-of-12 debounce downstream, an alarm needs a run of >= SUSTAIN+3,
+# so Sit_3 is suppressed for SUSTAIN >= 5 and the weakest true fall
+# (Normal_Fall_1, 17 frames) survives up to SUSTAIN <= 14. 9 is the midpoint of
+# that 5..14 band -- 5 frames of margin on both sides. Costs ~8 frames (0.27s)
+# of latency; the hybrid still fires far earlier than the heuristic alone.
+#
+# Note on the floor: since probabilities sum to 1, P(Fall) >= 0.50 implies Fall
+# is the argmax, so `fall_detected and confidence >= 0.50` is exactly
+# equivalent to `P(Fall) >= 0.50` and needs no change to predict()'s interface.
+LSTM_FALL_MIN_CONFIDENCE = 0.50
+LSTM_FALL_SUSTAIN_FRAMES = 9
+
+# ── "The legs say we are still upright" veto ──────────────────────────────────
+# DISABLED BY DEFAULT -- see the measurement table below before re-enabling.
+#
+# These two vetoes are correct physics and they work: on the 7-30-26 held-out
+# negatives they take the HEURISTIC from 10/18 to 17/18 clean, removing almost
+# every bending false alarm. But measured end to end on the full hybrid:
+#
+#   veto config   mode        R2 ADL clean   R2 fall   R1 ADL   R1 falls
+#   none          heuristic       10/18        NO       9/9      10/12
+#   none          hybrid           9/18        yes      9/9      11/12   <- best today
+#   leg only      heuristic       11/18        NO       9/9       9/12
+#   leg only      hybrid           9/18        yes      9/9      10/12
+#   leg+hip       heuristic       17/18        NO       9/9       8/12
+#   leg+hip       hybrid           9/18        yes      9/9      10/12
+#
+# The hybrid is pinned at 9/18 in EVERY configuration because all nine of those
+# false alarms are triggered by the LSTM, which no heuristic-side veto can
+# suppress -- while the vetoes do cost one real fall. So enabling them today is
+# a pure loss. The LSTM is out-of-distribution since the VIDEO-mode +
+# visibility-gating change and needs retraining; once it is retrained, re-run
+# this comparison and these vetoes are expected to become a large net win.
+#
+# ENABLED 2 Aug 2026. Settled by the round-3 fall clips (Hussain Testing
+# 8-2-26), the first fall footage from the deployment camera setup. Full sweep,
+# realtime debounce 4-of-12:
+#
+#   model  sustained_lying  vetoes   R2 negatives   R3 falls   R2 fall
+#   ckpt        ON           off         9/18         6/6         y
+#   ckpt        ON           ON          9/18         6/6         y
+#   ckpt        OFF          ON          9/18         4/6         y
+#   v4          ON           off        10/18         6/6         y
+#   v4          ON           ON         17/18         6/6         y   <-- shipped
+#   v4          OFF          ON         17/18         6/6         y
+#
+# The vetoes only pay off with the v4 model (10/18 -> 17/18); with the old
+# checkpoint they changed nothing, which is why they sat disabled until now.
+# Caveat: 13 of those 18 negatives were in v4's training data. On the 5 strictly
+# held-out ones v4 scores 4/5 vs the checkpoint's 2/5. Round-3 is fully held out.
+ENABLE_UPRIGHT_VETOES = True
+# Trunk angle alone cannot tell bending-to-pick-something-up from lying down --
+# a documented failure mode in the vision fall-detection literature, and the
+# single largest false-positive source on the 7-30-26 held-out clips (bending
+# was being labelled Lying, which then fed sustained_lying).
+#
+# The legs settle it. Measured over 497 labelled bending/squatting frames vs
+# genuinely-fallen and deliberate-lie-down frames:
+#     bending/squatting  leg_angle p50 = 1.2 deg   extent_ratio p5  = 0.96
+#     deliberate lie-down leg_angle p50 = 67 deg   extent_ratio p50 = 0.38
+#     genuinely fallen    leg_angle p50 = 97 deg   extent_ratio p50 = 0.75
+# So while bending, the legs stay essentially vertical and the body stays fully
+# extended; both collapse once the person is actually horizontal.
+#
+# This is deliberately a ONE-WAY veto requiring POSITIVE evidence: it only
+# suppresses Lying when the knees AND ankles are reliably visible and both
+# conditions hold. If the lower body is occluded we stay silent and fall back to
+# the previous behaviour -- absence of evidence must never become evidence of
+# absence in a system where a missed fall is the costly error.
+LEG_VERTICAL_MAX_DEG      = 15.0  # bending measured p95 = 4.4 deg -> wide margin
+BODY_EXTENT_UPRIGHT_MIN   = 0.85  # bending measured p5  = 0.96   -> wide margin
+
+# The leg veto above only works while the knees and ankles are visible -- and
+# measured on the bend clips, in the frames that were WRONGLY labelled Lying the
+# legs were computable only 27% of the time (bending forward, the torso occludes
+# the legs from the camera precisely as the trunk crosses 45 deg). So a second,
+# weaker veto is needed that requires only the HIPS, which stay visible.
+#
+# Physical statement: you cannot be lying on the floor with your hips still at
+# standing height. Measured hip height as a fraction of that person's OWN median
+# standing hip height, over frames labelled Lying (camera-invariant, so it
+# transfers across rooms and mounts):
+#     bending over (wrong)  p10 = 0.850  p50 = 0.981   <- hips do not descend
+#     deliberate lie-down   p50 = 0.840
+#     genuine falls         p50 = 0.626  p90 = 0.874
+# At 0.85 the veto suppresses ~90% of the bad bending frames while touching only
+# the top ~12% of genuine-fall frames -- acceptable because a real fall yields a
+# long run of Lying frames and only needs part of it to survive.
+HIP_UPRIGHT_FRACTION      = 0.85
+HIP_BASELINE_MIN_SAMPLES  = 5     # standing frames needed before the baseline is trusted
 ANGVEL_SUSTAIN_FRAMES = 3     # consecutive frames above the (150 deg/sec) angular-velocity floor to confirm rotation (was 5); lower = less detection latency, still filters single-frame landmark jitter
-LYING_PERSISTENCE_FRAMES = 40 # Sustained Lying: frames of Lying needed to infer a fall without velocity triggers
+# Sustained Lying: frames of Lying needed to infer a fall without velocity
+# triggers. Re-derived July 2026 by measuring the longest UNBROKEN Lying run in
+# every labelled clip under the visibility-gated VIDEO-mode pipeline:
+#   ADL clips   max run = 26 (Sit_1; every other ADL clip <= 7)
+#   real falls  Chair_fall 38, Normal_Fall_1 42, all others >= 61
+# 32 is the midpoint of that 26..38 gap -- maximum margin on both sides. The
+# previous value of 40 sat ABOVE Chair_fall's 38-frame run, so a genuine fall
+# off a chair was missed by two frames.
+LYING_PERSISTENCE_FRAMES = 32
 
 
 def reset_session_state() -> None:
@@ -244,6 +461,8 @@ def reset_session_state() -> None:
     global _frames_angvel_above_floor
     global _last_confirmed_label, _frames_since_confirmed
     global _last_valid_velocity, _lying_run_length, _has_been_upright_this_session
+    global _lstm_fall_run
+    _lstm_fall_run = 0
     _frames_since_fall = 10**6
     _consecutive_nan_frames = 0
     _recent_angular_velocities = deque(maxlen=3)
@@ -270,61 +489,92 @@ def classify_posture_and_fall(
     previous_rows : list of dict, optional
         Ordered history of previous processed rows.
     lstm_classifier : LSTMPostureClassifier, optional
-        When provided and the rolling buffer is large enough, the LSTM
-        pipeline is used instead of the rule-based heuristic.  Pass None
-        (the default) to always use the heuristic.
+        When provided and the rolling buffer is large enough, the LSTM's Fall
+        signal is OR-ed with the heuristic's. Pass None (the default) for
+        heuristic only.
+
+    Hybrid semantics: fall_detected = heuristic OR LSTM.
+    The heuristic ALWAYS runs. It owns the reported posture_label and all the
+    inter-frame state (the sustained-lying counter, the upright-seen flag, the
+    dynamic body-height calibration); the LSTM contributes only its Fall signal.
+
+    This previously short-circuited -- when an LSTM was supplied the function
+    returned the LSTM's verdict and the heuristic never executed at all, so
+    realtime_fall_detection.py was running LSTM-ONLY while printing "running
+    HYBRID (heuristic OR LSTM)", and it disagreed with hybrid_evaluate.py which
+    has always OR-ed the two. Measured on the 21 labelled clips: LSTM-only got
+    10/12 falls with 1/9 ADL false alarms, the true OR gets 11/12 falls with the
+    same 1/9 -- strictly better. It also kept the heuristic's inter-frame state
+    frozen (the sustained-lying counter never advanced), which is why a fall the
+    heuristic alone caught (Chair_fall) was lost once the LSTM was enabled.
     """
-    # Declared here (rather than only in the heuristic section below) because
-    # the LSTM branch also reads/writes it, and a name can only be declared
-    # global once an assignment to it hasn't already occurred earlier in the
-    # function body.
+    result = _classify_heuristic(row, previous_rows)
+
+    if lstm_classifier is None or not getattr(lstm_classifier, "is_available", False):
+        return result
+
+    # raw_history_needed = window_size + 1: one extra leading raw frame so
+    # the LSTM can compute a genuine (not zero-padded) velocity for every
+    # frame in its window, including the oldest one. See lstm_features.py.
+    required = lstm_classifier.raw_history_needed - 1
+    if previous_rows is None or len(previous_rows) < required:
+        return result
+
+    window = list(previous_rows[-required:]) + [row]
+    try:
+        lstm_result = lstm_classifier.predict(window)
+    except Exception as exc:
+        logger.warning(f"LSTM prediction failed (frame {row.get('frame', '?')}): {exc}. "
+                       "Using heuristic result for this frame.")
+        return result
+
+    global _lstm_fall_run
+
+    # Confidence floor + persistence, matching hybrid_evaluate.py. A single
+    # high-confidence frame is not enough: the LSTM is confidently wrong on
+    # short bursts (see LSTM_FALL_SUSTAIN_FRAMES for the measured run lengths).
+    if (bool(lstm_result.get("fall_detected", False))
+            and float(lstm_result.get("confidence", 0.0) or 0.0) >= LSTM_FALL_MIN_CONFIDENCE):
+        _lstm_fall_run += 1
+    else:
+        _lstm_fall_run = 0
+    lstm_fall = _lstm_fall_run >= LSTM_FALL_SUSTAIN_FRAMES
+
+    if lstm_fall and not _has_been_upright_this_session:
+        # No genuine upright -> lying transition has been observed yet this
+        # session, so a "Fall" claim is indistinguishable from "already lying
+        # when tracking started" -- a single window has no way to tell those
+        # apart. Mirrors the heuristic's own sustained-lying guard.
+        # Diagnostic evidence: Lying_straight.mov and Lying_legs_straight.mov
+        # (subject lying for the entire clip) went from 0 false Fall frames to
+        # ~57% of frames flagged once the LSTM's raw-coordinate shortcut was
+        # removed -- this gate closes that gap without needing the shortcut back.
+        lstm_fall = False
+
+    row["lstm_posture_label"] = lstm_result.get("posture_label", "Unknown")
+    row["lstm_fall_detected"] = lstm_fall
+
+    if lstm_fall and not result["fall_detected"]:
+        result = dict(result,
+                      fall_detected=True,
+                      confidence=max(result.get("confidence", 0.0),
+                                     float(lstm_result.get("confidence", 0.0) or 0.0)),
+                      other_labels=",".join(
+                          [s for s in (result.get("other_labels", ""), "lstm_fall") if s]))
+        row["fall_detected"] = True
+    return result
+
+
+def _classify_heuristic(
+    row: dict,
+    previous_rows: Optional[Sequence[dict]] = None,
+) -> dict:
+    """Rule-based posture + fall classification for a single frame.
+
+    Owns all inter-frame state; see classify_posture_and_fall for the hybrid
+    wrapper that OR-s in the LSTM's Fall signal.
+    """
     global _has_been_upright_this_session
-
-    # ── LSTM path ──────────────────────────────────────────────────────────────
-    # When a pre-loaded LSTMPostureClassifier is supplied and the rolling
-    # history contains enough frames to fill one window, defer to the LSTM.
-    # The heuristic path (below) remains the default when lstm_classifier=None.
-    if lstm_classifier is not None and lstm_classifier.is_available:
-        # raw_history_needed = window_size + 1: one extra leading raw frame so
-        # the LSTM can compute a genuine (not zero-padded) velocity for every
-        # frame in its window, including the oldest one. See lstm_features.py.
-        required = lstm_classifier.raw_history_needed - 1
-        if previous_rows is not None and len(previous_rows) >= required:
-            window = list(previous_rows[-required:]) + [row]
-            try:
-                lstm_result = lstm_classifier.predict(window)
-                # Propagate computed metrics so downstream logging still works
-                row.setdefault("body_height", np.nan)
-                row.setdefault("torso_angle", np.nan)
-                row.setdefault("hip_height", np.nan)
-                row.setdefault("velocity", 0.0)
-                row["posture_label"] = lstm_result["posture_label"]
-
-                fall_detected = lstm_result["fall_detected"]
-                if lstm_result["posture_label"] in ("Standing", "Sitting"):
-                    _has_been_upright_this_session = True
-                elif not _has_been_upright_this_session:
-                    # No genuine upright -> lying transition has been
-                    # observed yet this session, so a "Fall" claim is
-                    # indistinguishable from "already lying when tracking
-                    # started" -- a single window has no way to tell those
-                    # apart. Suppress it, mirroring the heuristic's own
-                    # _has_been_upright_this_session guard on sustained-lying
-                    # detection. Diagnostic evidence: Lying_straight.mov and
-                    # Lying_legs_straight.mov (subject lying for the entire
-                    # clip, posture_label=="Lying" throughout) went from 0
-                    # false Fall frames to ~57% of frames flagged once the
-                    # LSTM's raw-coordinate shortcut was removed -- this gate
-                    # closes that gap without needing the shortcut back.
-                    fall_detected = False
-
-                row["fall_detected"] = fall_detected
-                lstm_result = dict(lstm_result, fall_detected=fall_detected)
-                return lstm_result
-            except Exception as exc:
-                logger.warning(f"LSTM prediction failed (frame {row.get('frame', '?')}): {exc}. "
-                               "Falling back to heuristic.")
-    # ── Heuristic path ─────────────────────────────────────────────────────────
     global _frames_since_fall, _consecutive_nan_frames, _recent_angular_velocities
     global _frames_angvel_above_floor, _last_confirmed_label, _frames_since_confirmed
     global _last_valid_velocity, _lying_run_length
@@ -365,6 +615,19 @@ def classify_posture_and_fall(
                 "fall_detected": False,
                 "confidence": 0.0,
                 "other_labels": "lying_persistence",
+            }
+
+        # Same idea for a recent Standing/Sitting: a joint dropping out for a
+        # few frames should not blank the posture readout to "Unknown". Note
+        # this only affects the REPORTED label -- no fall can be raised from
+        # this path -- so holding the last upright posture is the safe default.
+        if (_last_confirmed_label in ("Standing", "Sitting")
+                and _frames_since_confirmed <= POSTURE_PERSIST_WINDOW):
+            return {
+                "posture_label": _last_confirmed_label,
+                "fall_detected": False,
+                "confidence": 0.0,
+                "other_labels": "posture_persistence",
             }
 
         # Fix C / Issue 4 Alternative: sustained NaN after confirmed fall OR if upright recently
@@ -448,6 +711,44 @@ def classify_posture_and_fall(
     else:
         hip_angle = np.nan
 
+    # ── Lower-body geometry: the signal the trunk angle cannot provide ────────
+    # Only meaningful when the knees and ankles were actually SEEN (post
+    # visibility gating), which is exactly when we are entitled to use it.
+    leg_angle = np.nan
+    body_extent_ratio = np.nan
+    if kn_ok and ak_ok:
+        knee_mid = ((kn_l[0] + kn_r[0]) / 2.0, (kn_l[1] + kn_r[1]) / 2.0)
+        ankle_mid = ((ak_l[0] + ak_r[0]) / 2.0, (ak_l[1] + ak_r[1]) / 2.0)
+        leg_angle = _compute_leg_angle(hip, ankle_mid)
+        body_extent_ratio = _compute_body_extent_ratio(shoulder, hip, knee_mid, ankle_mid)
+
+    # Positive evidence that the lower body is still vertical => the person is
+    # standing or bending, not lying, however far the trunk has pitched over.
+    legs_say_upright = (
+        ENABLE_UPRIGHT_VETOES
+        and kn_ok and ak_ok
+        and not np.isnan(leg_angle) and leg_angle < LEG_VERTICAL_MAX_DEG
+        and not np.isnan(body_extent_ratio) and body_extent_ratio >= BODY_EXTENT_UPRIGHT_MIN
+    )
+    row["leg_angle"] = leg_angle
+    row["body_extent_ratio"] = body_extent_ratio
+    row["legs_say_upright"] = legs_say_upright
+
+    # Hip-height veto: works when the legs are occluded (the common case while
+    # bending) because it needs only the hips. See HIP_UPRIGHT_FRACTION.
+    standing_hip_heights = [
+        r.get("hip_height") for r in (previous_rows or [])
+        if r.get("posture_label") == "Standing"
+        and r.get("hip_height") is not None and not np.isnan(r.get("hip_height"))
+    ][-300:]
+    hips_still_high = False
+    if ENABLE_UPRIGHT_VETOES and len(standing_hip_heights) >= HIP_BASELINE_MIN_SAMPLES:
+        hip_baseline = float(np.median(standing_hip_heights))
+        if hip_baseline > 1e-6:
+            hips_still_high = hip_height >= HIP_UPRIGHT_FRACTION * hip_baseline
+            row["hip_vs_standing"] = hip_height / hip_baseline
+    row["hips_still_high"] = hips_still_high
+
     row["body_height"] = body_height
     row["vertical_span"] = vertical_span
     row["torso_angle"] = torso_angle
@@ -503,10 +804,14 @@ def classify_posture_and_fall(
     # Guard: if joint angles clearly say Standing, skip the vertical_span Lying heuristic
     #        (prevents false Lying when camera distance changes mid-session).
     # Guard 2: a vertical torso (torso_angle < 30.0) cannot be lying, even with a small vertical span.
-    elif torso_angle >= 45.0 or (not lower_body_occluded
-                                  and not angle_says_standing
-                                  and vertical_span < lying_span_threshold * effective_max_span
-                                  and torso_angle >= 30.0):
+    # Guard 3 (legs_say_upright): the trunk may be pitched past horizontal while
+    # the person is simply bent over with their legs vertical -- see
+    # LEG_VERTICAL_MAX_DEG. Only applies when knees+ankles were actually seen.
+    elif (not legs_say_upright) and (not hips_still_high) and (
+            torso_angle >= 45.0 or (not lower_body_occluded
+                                    and not angle_says_standing
+                                    and vertical_span < lying_span_threshold * effective_max_span
+                                    and torso_angle >= 30.0)):
         raw_posture_label = "Lying"
         other_labels.append("horizontal_torso" if torso_angle >= 45.0 else "horizontal_span")
     elif lower_body_occluded:
@@ -580,8 +885,13 @@ def classify_posture_and_fall(
         _lying_run_length = 0
     elif posture_label == "Lying":
         _lying_run_length += 1
-    else:
-        _lying_run_length = 0
+    # else: posture is Unknown -> FREEZE the run rather than resetting it.
+    # "I cannot see the person" is not evidence they stood back up; someone who
+    # was on the floor a frame ago is overwhelmingly likely to still be there.
+    # Resetting here meant that a person lying motionless -- exactly the case
+    # this counter exists to catch -- had their evidence wiped every time a
+    # limb dropped out of tracking, so the sustained-lying fall was never
+    # confirmed. Only a positively-observed upright posture clears it.
 
     # 5. Fall detection logic
     # ── Constants (units: body-heights/sec and deg/sec) ────────────────────────
