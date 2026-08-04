@@ -238,3 +238,9 @@ Testing/
 
 .venv2/
 .vscode/
+
+# Regenerable keypoint CSVs must never be committed, including copies that were
+# parked under models/ during the July 2026 retrain experiments (one was 63 MB).
+# Rebuild with src/data_processing/build_lstm_datasets.py.
+models/**/*.csv
+models/**/*.npz

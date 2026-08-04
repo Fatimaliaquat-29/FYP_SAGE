@@ -36,6 +36,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.posture.pipeline_utils import (
     LANDMARK_COUNT,
+    LSTM_FALL_MIN_CONFIDENCE,
+    LSTM_FALL_SUSTAIN_FRAMES,
     build_pose_row,
     classify_posture_and_fall,
     reset_session_state,
@@ -122,9 +124,9 @@ def classify_frames_hybrid(
     fall_idx: Optional[int],
     col_medians: Optional[np.ndarray] = None,
     clip_name: Optional[str] = None,
-    lstm_threshold: float = 0.50,
+    lstm_threshold: float = LSTM_FALL_MIN_CONFIDENCE,
     lstm_warmup_frames: int = 45,
-    lstm_consecutive_frames: int = 6,
+    lstm_consecutive_frames: int = LSTM_FALL_SUSTAIN_FRAMES,
 ) -> List[dict]:
     """
     Run heuristic AND LSTM in lock-step over every frame.
@@ -173,6 +175,10 @@ def classify_frames_hybrid(
             timestamp=kp_row.get("timestamp"),
             frame=int(kp_row.get("frame_number", 0)),
             keypoints=flat_kps,
+            # Same landmark-trust rule as the realtime path, so offline hybrid
+            # numbers describe the system that actually runs on the camera.
+            visibility=[kp_row.get(f"lm_{i}_visibility", np.nan)
+                        for i in range(LANDMARK_COUNT)],
         )
         classification = classify_posture_and_fall(pose_row, previous_rows=previous_rows)
         pose_row.update(classification)
@@ -265,9 +271,9 @@ def evaluate_clip_hybrid(
     lstm_model,
     fall_idx: Optional[int],
     col_medians: Optional[np.ndarray] = None,
-    lstm_threshold: float = 0.50,
+    lstm_threshold: float = LSTM_FALL_MIN_CONFIDENCE,
     lstm_warmup_frames: int = 45,
-    lstm_consecutive_frames: int = 6,
+    lstm_consecutive_frames: int = LSTM_FALL_SUSTAIN_FRAMES,
 ) -> dict:
     print(f"\n[{clip_name}] Extracting keypoints from: {video_path}")
     kp_rows, fps, total_frames = extract_keypoints(video_path)
@@ -358,11 +364,11 @@ def main():
     mode.add_argument("--video",     type=str, default=None)
     parser.add_argument("--ground_truth",   type=str, default=None)
     parser.add_argument("--output_dir",     type=str, default="results/hybrid")
-    parser.add_argument("--lstm_threshold", type=float, default=0.50,
+    parser.add_argument("--lstm_threshold", type=float, default=LSTM_FALL_MIN_CONFIDENCE,
                         help="LSTM fall-probability threshold (default 0.50)")
     parser.add_argument("--lstm_warmup", type=int, default=45,
                         help="Frames to suppress LSTM at start of clip (default 45, ~1.5s @ 30fps)")
-    parser.add_argument("--lstm_consecutive", type=int, default=6,
+    parser.add_argument("--lstm_consecutive", type=int, default=LSTM_FALL_SUSTAIN_FRAMES,
                         help="Consecutive Fall predictions required (default 6)")
     args = parser.parse_args()
 
