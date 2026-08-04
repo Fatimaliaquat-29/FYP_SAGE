@@ -1,3 +1,58 @@
+# =============================================================================
+# S.A.G.E. — Requirements
+# =============================================================================
+# INSTALL ORDER:
+#   1. pip install -r requirements.txt
+#   2. If on Windows and tensorflow-cpu fails, see note below.
+#
+# PYTHON VERSION NOTE:
+#   tensorflow-cpu has no wheel for Python 3.14 as of August 2026.
+#   Use Python 3.10 or 3.11 for the full LSTM pipeline to work.
+#   On Python 3.14 the YOLO layer and heuristic pipeline still run;
+#   only the LSTM classifier is unavailable.
+#
+# GPU NOTE:
+#   YOLO training was done on Google Colab (GPU). The inference packages
+#   here are CPU-only. For local GPU inference replace:
+#     tensorflow-cpu  →  tensorflow
+#     (ultralytics auto-detects CUDA if torch with CUDA is installed)
+# =============================================================================
+
+
+# --- Core vision & pose -------------------------------------------------------
+mediapipe==0.10.35          # Pose Landmarker — uses models/pose_landmarker_full.task
+opencv-python==4.13.0.92
+opencv-contrib-python==4.13.0.92
+numpy==2.4.6
+pillow==12.2.0
+
+
+# --- Data & plotting ----------------------------------------------------------
+pandas==3.0.3
+matplotlib==3.11.0
+scikit-learn                # StratifiedGroupKFold for LSTM dataset splits
+
+
+# --- LSTM pipeline ------------------------------------------------------------
+# tensorflow-cpu has NO wheel for Python 3.14 (as of Aug 2026).
+# Use Python 3.10 or 3.11 to run the LSTM classifier.
+# Heuristic-only mode (--no-lstm flag) works on any Python version.
+tensorflow-cpu
+
+
+# --- YOLO object detection layer ----------------------------------------------
+# Installs PyTorch (CPU), torchvision, and the ultralytics CLI.
+# For GPU training on Colab, Colab's pre-installed torch is used instead.
+ultralytics
+
+
+# --- Dataset download (COCO subset) -------------------------------------------
+# Only needed if regenerating datasets/coco_subset/ from scratch.
+# fetch_coco_subset.py uses FiftyOne to download a class-filtered COCO subset.
+# fiftyone                  # Uncomment to enable; ~200 MB install
+
+
+# --- Standard library dependencies (auto-installed, pinned for reproducibility)
 absl-py==2.4.0
 certifi==2026.6.17
 cffi==2.0.0
@@ -6,24 +61,10 @@ cycler==0.12.1
 flatbuffers==25.12.19
 fonttools==4.63.0
 kiwisolver==1.5.0
-matplotlib==3.11.0
-mediapipe==0.10.35
-numpy==2.4.6
-opencv-contrib-python==4.13.0.92
-opencv-python==4.13.0.92
 packaging==26.2
-pandas==3.0.3
-pillow==12.2.0
 pycparser==3.0
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
 six==1.17.0
 sounddevice==0.5.5
 tzdata==2026.2
-
-# LSTM pipeline
-tensorflow-cpu
-scikit-learn
-
-# YOLO object detection layer
-ultralytics

@@ -251,3 +251,7 @@ Testing_EmptyRooms/
 # Held-back empty room - NEVER passed to --empty_dir, so it stays out of
 # training and is the only honest false-positive test.
 Testing_EmptyHeldOut/
+
+# Held-out evaluation footage - a room/person used in NO training run.
+# Never pass this to --testing_dir or --empty_dir. See its README.md.
+Testing_HeldOutEval/
