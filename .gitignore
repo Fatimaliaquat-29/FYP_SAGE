@@ -255,3 +255,9 @@ Testing_EmptyHeldOut/
 # Held-out evaluation footage - a room/person used in NO training run.
 # Never pass this to --testing_dir or --empty_dir. See its README.md.
 Testing_HeldOutEval/
+
+# Regenerable keypoint CSVs must never be committed, including copies that were
+# parked under models/ during the July 2026 retrain experiments (one was 63 MB).
+# Rebuild with src/data_processing/build_lstm_datasets.py.
+models/**/*.csv
+models/**/*.npz

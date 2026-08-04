@@ -66,16 +66,20 @@ def process_sequence(detector, sequence_dir, sequence_id, expected_fall=False):
         detection_result = detector.detect(mp_image)
 
         landmark_pairs = []
+        landmark_vis = []
         if detection_result.pose_landmarks:
             landmarks = detection_result.pose_landmarks[0]
             landmark_pairs = [(lm.x, lm.y) for lm in landmarks]
-            # We can also extract z, visibility, presence, but lstm_dataset only needs x,y.
-            # We will save full 33 (x,y) pairs.
-            
+            # Visibility is carried through so occluded (guessed) joints are
+            # dropped here exactly as they are at inference time -- otherwise the
+            # LSTM trains on confident coordinates it will never see in practice.
+            landmark_vis = [lm.visibility for lm in landmarks]
+
         row = build_pose_row(
             timestamp=str(current_time),
             frame=frame_number,
             landmarks=landmark_pairs,
+            visibility=landmark_vis or None,
         )
         
         # Use heuristic to get baseline labels

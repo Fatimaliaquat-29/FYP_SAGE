@@ -57,6 +57,31 @@ UPFALL_ACTIVITY_MAP = {
 }
 
 
+UR_FPS = 30.0   # UR Fall Detection image sequences are 30 FPS recordings
+
+
+def make_video_detector():
+    """A FRESH PoseLandmarker in VIDEO mode, for exactly one sequence.
+
+    VIDEO mode is what realtime_fall_detection.py and evaluate_real_footage.py
+    now use, and the training data has to be produced the same way: in IMAGE
+    mode the landmarks jitter, which inflates the velocity half of the LSTM's
+    input features (measured ~6x larger on still activities). A model trained
+    on IMAGE-mode features and run on VIDEO-mode features is being asked to
+    generalise across a distribution shift it never saw -- that is what made
+    the previous model fire on ordinary sitting.
+
+    One detector PER SEQUENCE: VIDEO mode carries tracking state between calls,
+    so reusing a detector across clips would let one clip's pose leak into the
+    first frames of the next.
+    """
+    options = mp.tasks.vision.PoseLandmarkerOptions(
+        base_options=mp.tasks.BaseOptions(model_asset_path=str(MODEL_PATH)),
+        running_mode=mp.tasks.vision.RunningMode.VIDEO,
+    )
+    return mp.tasks.vision.PoseLandmarker.create_from_options(options)
+
+
 def get_image_files(directory):
     files = []
     for ext in ["*.png", "*.jpg", "*.jpeg"]:
@@ -78,30 +103,38 @@ def process_ur_sequence(detector, sequence_dir, sequence_id, expected_fall=False
     
     for frame_idx, img_path in enumerate(image_files):
         frame_number = frame_idx + 1
-        current_time = time.time()
-        
+        # Video time, NOT wall-clock. These images are consecutive frames of a
+        # 30 FPS recording, so the inter-frame dt that _compute_velocity divides
+        # by must be 1/30 s. Using time.time() here made dt the CPU's processing
+        # time per frame, so every velocity feature in the UR half of the
+        # training set was scaled by machine speed rather than real motion.
+        current_time = frame_idx / UR_FPS
+
         frame = cv2.imread(img_path)
         if frame is None:
             continue
-            
+
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-        detection_result = detector.detect(mp_image)
+        detection_result = detector.detect_for_video(mp_image, int(current_time * 1000))
 
         landmark_pairs = []
+        landmark_vis = []
         if detection_result.pose_landmarks:
             landmarks = detection_result.pose_landmarks[0]
             landmark_pairs = [(lm.x, lm.y) for lm in landmarks]
-            
+            landmark_vis = [lm.visibility for lm in landmarks]
+
         row = build_pose_row(
             timestamp=str(current_time),
             frame=frame_number,
             landmarks=landmark_pairs,
+            visibility=landmark_vis or None,
         )
-        
+
         result = classify_posture_and_fall(row, previous_rows=previous_rows)
         row.update(result)
-        
+
         if expected_fall:
             if result["fall_detected"]:
                 row["fall_detected"] = True
@@ -198,17 +231,20 @@ def process_lefd_video(detector, video_path, ann_path, sequence_id):
 
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-        detection_result = detector.detect(mp_image)
+        detection_result = detector.detect_for_video(mp_image, int((frame_number / fps) * 1000))
 
         landmark_pairs = []
+        landmark_vis = []
         if detection_result.pose_landmarks:
             landmarks = detection_result.pose_landmarks[0]
             landmark_pairs = [(lm.x, lm.y) for lm in landmarks]
+            landmark_vis = [lm.visibility for lm in landmarks]
 
         row = build_pose_row(
             timestamp=str(frame_number / fps),
             frame=frame_number,
             landmarks=landmark_pairs,
+            visibility=landmark_vis or None,
         )
 
         result = classify_posture_and_fall(row, previous_rows=previous_rows)
@@ -302,7 +338,13 @@ def process_lefd_dataset(detector):
             ann_path = (ann_dir / f"video ({vid_num}).txt") if ann_dir else None
             sequence_id = f"lefd_{scene_name.lower()}_v{vid_num}"
 
-            p_rows, post_rows = process_lefd_video(detector, video_path, ann_path, sequence_id)
+            # Fresh VIDEO-mode detector per video so tracking state cannot leak
+            # from one clip into the opening frames of the next.
+            detector = make_video_detector()
+            try:
+                p_rows, post_rows = process_lefd_video(detector, video_path, ann_path, sequence_id)
+            finally:
+                detector.close()
             all_pose_rows.extend(p_rows)
             all_posture_rows.extend(post_rows)
 
@@ -396,54 +438,44 @@ def main():
         print(f"Error: Model not found at {MODEL_PATH}")
         sys.exit(1)
 
-    BaseOptions = mp.tasks.BaseOptions
-    PoseLandmarker = mp.tasks.vision.PoseLandmarker
-    PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-    
-    options = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=str(MODEL_PATH)),
-        running_mode=mp.tasks.vision.RunningMode.IMAGE
-    )
-    detector = PoseLandmarker.create_from_options(options)
-
     all_pose_rows = []
     all_posture_rows = []
 
-    # 1. Process UR Dataset
+    # 1. Process UR Dataset. A FRESH VIDEO-mode detector per sequence -- see
+    #    make_video_detector() for why VIDEO mode, and why it must not be shared.
     print("\nProcessing UR Dataset (Raw Images)...")
     ur_dir = DATASETS_DIR / "UR_data"
-    
-    adl_dir = ur_dir / "ADL"
-    if adl_dir.exists():
-        for seq_path in sorted(adl_dir.iterdir()):
-            if seq_path.is_dir():
-                img_dir = seq_path / seq_path.name if (seq_path / seq_path.name).exists() else seq_path
-                p_rows, post_rows = process_ur_sequence(detector, str(img_dir), seq_path.name, expected_fall=False)
-                all_pose_rows.extend(p_rows)
-                all_posture_rows.extend(post_rows)
 
-    fall_dir = ur_dir / "Fall"
-    if fall_dir.exists():
-        for seq_path in sorted(fall_dir.iterdir()):
-            if seq_path.is_dir():
-                img_dir = seq_path / seq_path.name if (seq_path / seq_path.name).exists() else seq_path
-                p_rows, post_rows = process_ur_sequence(detector, str(img_dir), seq_path.name, expected_fall=True)
-                all_pose_rows.extend(p_rows)
-                all_posture_rows.extend(post_rows)
+    for sub, expected_fall in (("ADL", False), ("Fall", True)):
+        sub_dir = ur_dir / sub
+        if not sub_dir.exists():
+            continue
+        for seq_path in sorted(sub_dir.iterdir()):
+            if not seq_path.is_dir():
+                continue
+            img_dir = seq_path / seq_path.name if (seq_path / seq_path.name).exists() else seq_path
+            detector = make_video_detector()
+            try:
+                p_rows, post_rows = process_ur_sequence(
+                    detector, str(img_dir), seq_path.name, expected_fall=expected_fall)
+            finally:
+                detector.close()
+            all_pose_rows.extend(p_rows)
+            all_posture_rows.extend(post_rows)
 
-    # 2. Process LeFD Dataset (needs the same detector, still open)
-    lefd_pose_rows, lefd_posture_rows = process_lefd_dataset(detector)
+    # 2. Process LeFD Dataset (creates its own per-video detectors)
+    lefd_pose_rows, lefd_posture_rows = process_lefd_dataset(None)
     all_pose_rows.extend(lefd_pose_rows)
     all_posture_rows.extend(lefd_posture_rows)
 
-    detector.close()
-
-    # 3. Process UP-Fall Dataset
-    upfall_pose_rows, _ = process_upfall_dataset()
-    all_pose_rows.extend(upfall_pose_rows)
-    
-    # We do not strictly need posture_rows for UP-Fall since the LSTM trains mostly on pose_keypoints
-    # But the heuristic script expects both if used later. The heuristic doesn't process UP-Fall directly here.
+    # 3. UP-Fall is DELIBERATELY EXCLUDED.
+    #    Those 5 SUBJECT*.zip files hold pre-computed 3D skeleton coordinates
+    #    with no source frames, so they can never be re-extracted through
+    #    MediaPipe: no visibility scores to gate on, no VIDEO-mode tracking, and
+    #    a different coordinate convention entirely. Mixing them in would leave
+    #    part of the training set permanently misaligned with what the camera
+    #    actually produces at inference -- the exact mismatch this rebuild
+    #    exists to remove. (Decision made with the team, July 2026.)
 
     if not all_pose_rows:
         print("No data found to process.")
