@@ -1,0 +1,9 @@
+start_time,end_time,state,label
+0,0.5,Standing,Standing
+0.5,1.5,Transition State,Sitting
+1.6,5,Sitting,Sitting
+5,7,Transition State,Lying down seat level
+7,11,Lying,Lying down seat level
+11,14,Transition State,Getting up
+14,15.5,Sitting,Sitting
+15.5,16,Transition State,Getting up

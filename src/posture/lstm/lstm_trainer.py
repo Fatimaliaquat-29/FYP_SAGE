@@ -34,6 +34,8 @@ def build_model(
     units2: int = 32,
     dropout_rate: float = 0.3,
     learning_rate: float = 1e-3,
+    l1: float = 0.0,
+    l2: float = 0.0,
 ):
     """
     Construct the LSTM classifier.
@@ -51,6 +53,14 @@ def build_model(
     values (64, 32, 0.3, 1e-3) so existing callers see no behavior change;
     they're exposed as parameters purely for hyperparameter sweeps (see
     compare_tcn_lstm.py's optimization pass).
+
+    l1/l2 add an L1/L2 weight-magnitude penalty (kernel_regularizer, plus
+    recurrent_regularizer on the LSTM layers since their recurrent weights
+    can overfit the same way) on top of the existing Dropout. Both default
+    to 0.0, which produces no regularizer object at all (not just a
+    zero-coefficient one) so existing callers see byte-identical model
+    graphs. Motivated by a visible train/val accuracy gap (~90%+ train vs
+    ~65-70% val) suggestive of some overfitting -- see TCN_IMPLEMENTATION_NOTES.md.
     """
     try:
         import tensorflow as tf
@@ -61,14 +71,22 @@ def build_model(
             "    pip install tensorflow-cpu\n"
         )
 
+    reg = keras.regularizers.l1_l2(l1=l1, l2=l2) if (l1 > 0 or l2 > 0) else None
+
     model = keras.Sequential(
         [
             keras.layers.Input(shape=(window_size, n_features)),
-            keras.layers.LSTM(units1, return_sequences=True),
+            keras.layers.LSTM(
+                units1, return_sequences=True,
+                kernel_regularizer=reg, recurrent_regularizer=reg,
+            ),
             keras.layers.Dropout(dropout_rate),
-            keras.layers.LSTM(units2),
+            keras.layers.LSTM(
+                units2,
+                kernel_regularizer=reg, recurrent_regularizer=reg,
+            ),
             keras.layers.Dropout(dropout_rate),
-            keras.layers.Dense(n_classes, activation="softmax"),
+            keras.layers.Dense(n_classes, activation="softmax", kernel_regularizer=reg),
         ],
         name="lstm_posture_classifier",
     )
@@ -91,13 +109,29 @@ def train(
     units2: int = 32,
     dropout_rate: float = 0.3,
     learning_rate: float = 1e-3,
+    l1: float = 0.0,
+    l2: float = 0.0,
+    use_class_weights: bool = False,
 ):
-    """Full training loop."""
+    """
+    Full training loop.
+
+    use_class_weights (default False): weight each class's loss contribution
+    by inverse frequency ("balanced" scheme). Exposed for parity with
+    tcn_trainer.train()/rf_trainer.train(), which have the same parameter --
+    kept off by default here too, since the TCN ablation (see
+    TCN_IMPLEMENTATION_NOTES.md Phase 2.5) measured "balanced" weighting
+    trading a large amount of majority-class (Lying-heavy real footage)
+    accuracy for minority-class recall on that architecture; it has not
+    been separately validated for the LSTM, so it isn't turned on by
+    default here either without the same kind of before/after check.
+    """
     try:
         import tensorflow as tf
         from tensorflow import keras
         from sklearn.model_selection import StratifiedGroupKFold
         from sklearn.metrics import classification_report
+        from sklearn.utils.class_weight import compute_class_weight
     except ImportError as e:
         raise ImportError(
             f"Missing dependency: {e}\n"
@@ -165,6 +199,15 @@ def train(
         mask = (y_train == i)
         print(f"    {cls:<10}: {mask.sum():>6} windows")
 
+    # ── Class weights (balanced, computed from the actual train fold) ─────────
+    class_weight_dict = None
+    if use_class_weights:
+        weights = compute_class_weight(class_weight="balanced", classes=np.arange(n_classes), y=y_train)
+        class_weight_dict = {i: float(w) for i, w in enumerate(weights)}
+        print("\n  Class weights (balanced):")
+        for i, cls in enumerate(classes):
+            print(f"    {cls:<10}: {class_weight_dict[i]:.3f}")
+
     print("\n  Val Balance (Windows / Unique Real Sequences):")
     for i, cls in enumerate(classes):
         mask = (y_val == i)
@@ -176,6 +219,7 @@ def train(
     model = build_model(
         window_size, n_features, n_classes,
         units1=units1, units2=units2, dropout_rate=dropout_rate, learning_rate=learning_rate,
+        l1=l1, l2=l2,
     )
     model.summary()
 
@@ -203,6 +247,7 @@ def train(
         batch_size=batch_size,
         validation_data=(X_val, y_val),
         callbacks=callbacks,
+        class_weight=class_weight_dict,
         verbose=2,
     )
 

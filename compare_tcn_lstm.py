@@ -21,7 +21,7 @@ fair:
 Metrics reported (both models, identical evaluation code path):
   - Posture accuracy / precision / recall / F1 (overall + per-class)
   - Fall-detection recall (did the model flag the labelled fall window?)
-  - Inference latency (ms per predict() call, mean/median/p95)
+  - Inference latency (ms per predict() call, mean/median/min/max/p95)
   - Trainable parameter count
   - Peak resident-memory usage (RSS) while the model runs its full pass
 
@@ -132,6 +132,20 @@ def _to_keypoints_row(kp_row: dict) -> dict:
     }
 
 
+def _nan_fraction(kp_row: dict) -> float:
+    """Fraction of this single frame's 66 raw x/y landmark values that are
+    NaN (MediaPipe failed to detect that landmark) -- a direct, per-frame
+    proxy for occlusion/missing-landmark severity, used to check whether
+    misclassifications correlate with landmark visibility rather than
+    inferring it from clip names alone."""
+    vals = []
+    for i in range(LANDMARK_COUNT):
+        vals.append(kp_row.get(f"lm_{i}_x", np.nan))
+        vals.append(kp_row.get(f"lm_{i}_y", np.nan))
+    arr = np.array(vals, dtype=np.float64)
+    return float(np.isnan(arr).mean())
+
+
 # ------------------------------------------------------------------------------
 # Per-clip, per-model evaluation
 # ------------------------------------------------------------------------------
@@ -155,10 +169,17 @@ def run_model_over_clip(
       records           : list of per-window dicts -- one per window the
                            classifier actually ran inference on --
                            {clip_name, frame_number, gt_label, pred_label,
-                            correct, latency_ms}. gt_label/correct are ""
-                           when the frame has no usable (non-ignored) ground
-                           truth, so every inference call still contributes a
-                           latency sample even outside scored regions.
+                            correct, confidence, nan_fraction, latency_ms}.
+                           gt_label/correct are "" when the frame has no
+                           usable (non-ignored) ground truth, so every
+                           inference call still contributes a latency sample
+                           even outside scored regions. confidence is the
+                           classifier's own max-softmax-probability output;
+                           nan_fraction is the current frame's fraction of
+                           missing raw landmarks (occlusion proxy) -- both
+                           added specifically to support evidence-based
+                           misclassification analysis (Phase 2.5) instead of
+                           inferring failure causes from clip names alone.
       fall_result       : {"result": "true_positive"|"false_negative"|
                                      "false_positive"|"no_fall",
                             "latency": int|None}  (frames from window start)
@@ -203,6 +224,8 @@ def run_model_over_clip(
             "gt_label": gt_label,
             "pred_label": pred_label,
             "correct": correct,
+            "confidence": result.get("confidence", float("nan")),
+            "nan_fraction": round(_nan_fraction(kp_row), 4),
             "latency_ms": round(latency_ms, 4),
         })
 
@@ -212,6 +235,24 @@ def run_model_over_clip(
         "fall_result": fall_result,
         "clip_latencies_ms": clip_latencies_ms,
     }
+
+
+def _model_param_count(model) -> Optional[int]:
+    """
+    Generic "model size" proxy across the two model families this script
+    compares: Keras models (LSTM/TCN) report trainable weight count via
+    count_params(); a scikit-learn tree ensemble (Random Forest) has no such
+    notion, so the closest analogous complexity measure is total decision
+    node count summed across every tree (each node stores a learned
+    split feature/threshold, the tree-ensemble equivalent of a weight).
+    """
+    if model is None:
+        return None
+    if hasattr(model, "count_params"):
+        return model.count_params()
+    if hasattr(model, "estimators_"):
+        return int(sum(est.tree_.node_count for est in model.estimators_))
+    return None
 
 
 def _score_fall(fall_frames: List[int], fall_window: Optional[Tuple[int, int]]) -> dict:
@@ -236,11 +277,34 @@ def _score_fall(fall_frames: List[int], fall_window: Optional[Tuple[int, int]]) 
 # Full evaluation for one model across all clips
 # ------------------------------------------------------------------------------
 
+def build_ground_truth_cache(
+    clips: List[Tuple[str, str, str]],
+    cached_keypoints: Dict[str, Tuple[List[dict], float, int]],
+) -> Dict[str, Tuple[object, Optional[Tuple[int, int]]]]:
+    """
+    Parse each clip's ground-truth CSV into (frame_gt, fall_window) exactly
+    once, shared between both models' evaluate_model() calls -- ground truth
+    doesn't depend on which classifier is being scored, so previously
+    re-parsing it once per model was redundant work. Also keeps GT parsing
+    (disk I/O) out of the peak-RAM window measured around each model's
+    inference loop (see evaluate_model()).
+    """
+    cache = {}
+    for _, gt_path, clip_name in clips:
+        kp_rows, fps, total_frames = cached_keypoints[clip_name]
+        gt_df = load_ground_truth(gt_path)
+        frame_gt = build_frame_gt(gt_df, fps, total_frames)
+        fall_window = get_fall_window(gt_df, fps)
+        cache[clip_name] = (frame_gt, fall_window)
+    return cache
+
+
 def evaluate_model(
     model_label: str,
     classifier,
     clips: List[Tuple[str, str, str]],
     cached_keypoints: Dict[str, Tuple[List[dict], float, int]],
+    cached_gt: Dict[str, Tuple[object, Optional[Tuple[int, int]]]],
     output_dir: Path,
 ) -> dict:
     print(f"\n{'='*60}\n  Evaluating {model_label}\n{'='*60}")
@@ -252,18 +316,21 @@ def evaluate_model(
             "available": False,
         }
 
-    monitor = _PeakRSSMonitor()
-    monitor.start()
-
     all_records: List[dict] = []
     fall_results: List[dict] = []
     per_clip_summary: List[dict] = []
 
+    # Peak RAM is measured only around this inference loop. Keypoints and
+    # ground truth were already parsed/cached before this call, and the
+    # model itself was already loaded in main() before evaluate_model() was
+    # even invoked, so nothing inside this monitored window does file I/O or
+    # model loading -- every byte sampled reflects inference cost only.
+    monitor = _PeakRSSMonitor()
+    monitor.start()
+
     for video_path, gt_path, clip_name in clips:
         kp_rows, fps, total_frames = cached_keypoints[clip_name]
-        gt_df = load_ground_truth(gt_path)
-        frame_gt = build_frame_gt(gt_df, fps, total_frames)
-        fall_window = get_fall_window(gt_df, fps)
+        frame_gt, fall_window = cached_gt[clip_name]
 
         print(f"  [{model_label}] {clip_name}: classifying {len(kp_rows)} frames...")
         clip_result = run_model_over_clip(classifier, clip_name, kp_rows, frame_gt, fall_window)
@@ -282,14 +349,14 @@ def evaluate_model(
         })
 
     peak_ram_mb = monitor.stop_mb()
-    param_count = classifier._model.count_params() if classifier._model is not None else None
+    param_count = _model_param_count(classifier._model)
 
     # Per-window CSV: predicted class, ground truth, correctness, latency --
     # one row per window, for every clip, for this model.
     per_window_csv = output_dir / f"{model_label.lower()}_per_window.csv"
     with open(per_window_csv, "w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(
-            fh, fieldnames=["clip_name", "frame_number", "gt_label", "pred_label", "correct", "latency_ms"],
+            fh, fieldnames=["clip_name", "frame_number", "gt_label", "pred_label", "correct", "confidence", "nan_fraction", "latency_ms"],
         )
         writer.writeheader()
         writer.writerows(all_records)
@@ -340,14 +407,21 @@ def _fall_recall(fall_results: List[dict]) -> dict:
 
 
 def _latency_stats(latencies_ms: List[float]) -> dict:
+    """Summary stats over per-window inference latency (ms). `sorted_lat` is
+    computed once and reused for min/max/p95 rather than re-sorting per stat."""
     if not latencies_ms:
-        return {"mean": float("nan"), "median": float("nan"), "p95": float("nan"), "n": 0}
+        return {
+            "mean": float("nan"), "median": float("nan"), "p95": float("nan"),
+            "min": float("nan"), "max": float("nan"), "n": 0,
+        }
     sorted_lat = sorted(latencies_ms)
     p95_idx = min(len(sorted_lat) - 1, int(round(0.95 * (len(sorted_lat) - 1))))
     return {
         "mean": statistics.fmean(latencies_ms),
         "median": statistics.median(latencies_ms),
         "p95": sorted_lat[p95_idx],
+        "min": sorted_lat[0],
+        "max": sorted_lat[-1],
         "n": len(latencies_ms),
     }
 
@@ -578,7 +652,7 @@ def write_report(md_path: Path, lstm_res: dict, tcn_res: dict, clips: List[Tuple
         "labelled fall window (`get_fall_window`), identical scoring logic "
         "to `evaluate_real_footage.score_fall`.\n"
         "- **Latency**: wall-clock time around each `.predict()` call, "
-        "mean/median/p95 across every window in every clip.\n"
+        "mean/median/min/max/p95 across every window in every clip.\n"
         "- **Parameter count**: `model.count_params()` on the loaded Keras "
         "model.\n"
         "- **Peak RAM**: peak resident-set size (RSS) of this process, "
@@ -613,6 +687,8 @@ def write_report(md_path: Path, lstm_res: dict, tcn_res: dict, clips: List[Tuple
             f"| Fall false positives (clips) | {lstm_fall['fp']} | {tcn_fall['fp']} |\n"
             f"| Latency mean (ms/window) | {_fmt(lstm_lat['mean'], nd=3)} | {_fmt(tcn_lat['mean'], nd=3)} |\n"
             f"| Latency median (ms/window) | {_fmt(lstm_lat['median'], nd=3)} | {_fmt(tcn_lat['median'], nd=3)} |\n"
+            f"| Latency min (ms/window) | {_fmt(lstm_lat['min'], nd=3)} | {_fmt(tcn_lat['min'], nd=3)} |\n"
+            f"| Latency max (ms/window) | {_fmt(lstm_lat['max'], nd=3)} | {_fmt(tcn_lat['max'], nd=3)} |\n"
             f"| Latency p95 (ms/window) | {_fmt(lstm_lat['p95'], nd=3)} | {_fmt(tcn_lat['p95'], nd=3)} |\n"
             f"| Parameter count | {lstm_res['param_count']:,} | {tcn_res['param_count']:,} |\n"
             f"| Peak RAM (MB) | {_fmt(lstm_res['peak_ram_mb'], nd=1) if lstm_res['peak_ram_mb'] is not None else 'N/A (psutil not installed)'} "
@@ -687,11 +763,13 @@ def main():
         print(f"  Extracting: {clip_name}")
         cached_keypoints[clip_name] = extract_keypoints(video_path)
 
+    cached_gt = build_ground_truth_cache(clips, cached_keypoints)
+
     lstm_clf = LSTMPostureClassifier(
         model_path=Path(args.lstm_model) if args.lstm_model else None,
         encoder_path=Path(args.lstm_encoder) if args.lstm_encoder else None,
     )
-    lstm_res = evaluate_model("LSTM", lstm_clf, clips, cached_keypoints, output_dir)
+    lstm_res = evaluate_model("LSTM", lstm_clf, clips, cached_keypoints, cached_gt, output_dir)
     if lstm_res["available"]:
         lstm_res["metrics"] = _classification_metrics(lstm_res["gt_labels"], lstm_res["pred_labels"])
         lstm_res["fall_metrics"] = _fall_recall(lstm_res["fall_results"])
@@ -702,7 +780,7 @@ def main():
         model_path=Path(args.tcn_model) if args.tcn_model else None,
         encoder_path=Path(args.tcn_encoder) if args.tcn_encoder else None,
     )
-    tcn_res = evaluate_model("TCN", tcn_clf, clips, cached_keypoints, output_dir)
+    tcn_res = evaluate_model("TCN", tcn_clf, clips, cached_keypoints, cached_gt, output_dir)
     if tcn_res["available"]:
         tcn_res["metrics"] = _classification_metrics(tcn_res["gt_labels"], tcn_res["pred_labels"])
         tcn_res["fall_metrics"] = _fall_recall(tcn_res["fall_results"])

@@ -1,0 +1,6 @@
+start_time,end_time,state,label
+0,0.5,Standing,Standing
+0.5,1.6,Transition State,Sitting  
+1,4.9,Sitting,Sitting  
+5,6,Transition State,Standing up
+6,6.6,Standing,Standing  

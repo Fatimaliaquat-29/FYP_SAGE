@@ -26,7 +26,7 @@ This report compares the existing LSTM posture classifier (`src/posture/lstm/`) 
 
 - **Posture accuracy/precision/recall/F1**: computed over every non-ignored ground-truth frame, pooled across all clips, using `sklearn.metrics.classification_report` on the Standing/Sitting/Lying/Unknown vocabulary (same as `evaluate_real_footage.py`'s `POSTURE_CLASSES`).
 - **Fall-detection recall**: per-clip TP/FN/FP against the labelled fall window (`get_fall_window`), identical scoring logic to `evaluate_real_footage.score_fall`.
-- **Latency**: wall-clock time around each `.predict()` call, mean/median/p95 across every window in every clip.
+- **Latency**: wall-clock time around each `.predict()` call, mean/median/min/max/p95 across every window in every clip.
 - **Parameter count**: `model.count_params()` on the loaded Keras model.
 - **Peak RAM**: peak resident-set size (RSS) of this process, sampled every 50ms while each model's full evaluation pass runs (models evaluated sequentially, one at a time, so the two measurements don't share concurrent memory pressure).
 - **Per-window detail**: every window's predicted class, ground truth, correctness, and latency is saved to `lstm_per_window.csv` / `tcn_per_window.csv` in the output directory (one row per inference call, per clip).
@@ -35,50 +35,52 @@ This report compares the existing LSTM posture classifier (`src/posture/lstm/`) 
 
 | Metric | LSTM | TCN |
 |---|---|---|
-| Accuracy | 74.1% | 76.0% |
-| Macro Precision | 0.354 | 0.232 |
-| Macro Recall | 0.283 | 0.212 |
-| Macro F1 | 0.314 | 0.222 |
-| Fall-detection recall | 75.0% (6/8) | 87.5% (7/8) |
+| Accuracy | 72.8% | 79.1% |
+| Macro Precision | 0.343 | 0.489 |
+| Macro Recall | 0.294 | 0.312 |
+| Macro F1 | 0.315 | 0.368 |
+| Fall-detection recall | 87.5% (7/8) | 75.0% (6/8) |
 | Fall false positives (clips) | 0 | 0 |
-| Latency mean (ms/window) | 57.854 | 55.052 |
-| Latency median (ms/window) | 56.288 | 54.797 |
-| Latency p95 (ms/window) | 65.481 | 57.203 |
+| Latency mean (ms/window) | 87.578 | 85.198 |
+| Latency median (ms/window) | 83.822 | 82.719 |
+| Latency min (ms/window) | 54.543 | 55.322 |
+| Latency max (ms/window) | 335.175 | 816.708 |
+| Latency p95 (ms/window) | 127.483 | 119.427 |
 | Parameter count | 63,013 | 39,365 |
-| Peak RAM (MB) | 442.4 | 468.7 |
+| Peak RAM (MB) | 440.5 | 464.1 |
 
 
 ### Per-class metrics — LSTM
 
 | Class | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| Standing | 0.477 | 0.341 | 0.397 | 91 |
+| Standing | 0.394 | 0.407 | 0.400 | 91 |
 | Sitting | 0.000 | 0.000 | 0.000 | 11 |
-| Lying | 0.938 | 0.793 | 0.860 | 865 |
+| Lying | 0.977 | 0.771 | 0.862 | 865 |
 | Unknown | 0.000 | 0.000 | 0.000 | 0 |
-| *Macro avg* | 0.354 | 0.283 | 0.314 | 967 |
-| *Weighted avg* | 0.884 | 0.741 | 0.806 | 967 |
+| *Macro avg* | 0.343 | 0.294 | 0.315 | 967 |
+| *Weighted avg* | 0.911 | 0.728 | 0.809 | 967 |
 
 
 ### Per-class metrics — TCN
 
 | Class | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| Standing | 0.000 | 0.000 | 0.000 | 91 |
+| Standing | 1.000 | 0.407 | 0.578 | 91 |
 | Sitting | 0.000 | 0.000 | 0.000 | 11 |
-| Lying | 0.928 | 0.850 | 0.887 | 865 |
+| Lying | 0.955 | 0.842 | 0.895 | 865 |
 | Unknown | 0.000 | 0.000 | 0.000 | 0 |
-| *Macro avg* | 0.232 | 0.212 | 0.222 | 967 |
-| *Weighted avg* | 0.830 | 0.760 | 0.794 | 967 |
+| *Macro avg* | 0.489 | 0.312 | 0.368 | 967 |
+| *Weighted avg* | 0.949 | 0.791 | 0.855 | 967 |
 
 
 ### Confusion matrix — LSTM
 
 | GT \ Pred | Standing | Sitting | Lying | Unknown |
 |---|---|---|---|---|
-| **Standing** | 31 | 0 | 34 | 26 |
+| **Standing** | 37 | 0 | 5 | 49 |
 | **Sitting** | 0 | 0 | 11 | 0 |
-| **Lying** | 34 | 42 | 686 | 103 |
+| **Lying** | 57 | 60 | 667 | 81 |
 | **Unknown** | 0 | 0 | 0 | 0 |
 
 
@@ -86,9 +88,9 @@ This report compares the existing LSTM posture classifier (`src/posture/lstm/`) 
 
 | GT \ Pred | Standing | Sitting | Lying | Unknown |
 |---|---|---|---|---|
-| **Standing** | 0 | 11 | 46 | 34 |
+| **Standing** | 37 | 0 | 23 | 31 |
 | **Sitting** | 0 | 0 | 11 | 0 |
-| **Lying** | 0 | 30 | 735 | 100 |
+| **Lying** | 0 | 17 | 728 | 120 |
 | **Unknown** | 0 | 0 | 0 | 0 |
 
 
@@ -96,22 +98,22 @@ This report compares the existing LSTM posture classifier (`src/posture/lstm/`) 
 
 | Clip | LSTM acc | LSTM avg latency (ms) | LSTM fall result | TCN acc | TCN avg latency (ms) | TCN fall result |
 |---|---|---|---|---|---|---|
-| Backward_fall | 25.0 (12/48) | 59.700 | true_positive | 4.2 (2/48) | 59.021 | true_positive |
-| Chair_fall | 44.6 (82/184) | 59.515 | true_positive | 62.0 (114/184) | 54.727 | true_positive |
-| Fall_and_lie | 82.6 (238/288) | 59.114 | true_positive | 90.3 (260/288) | 54.678 | true_positive |
-| Far_fall | 100.0 (66/66) | 57.608 | false_negative | 74.2 (49/66) | 54.795 | false_negative |
-| Occluded_fall | 94.4 (102/108) | 55.350 | false_negative | 81.5 (88/108) | 54.510 | true_positive |
-| Off_axis_fall | 91.8 (56/61) | 57.426 | true_positive | 98.4 (60/61) | 55.379 | true_positive |
-| Side_fall | 97.9 (95/97) | 56.753 | true_positive | 97.9 (95/97) | 55.259 | true_positive |
-| Slow_fall | 57.4 (66/115) | 55.803 | true_positive | 58.3 (67/115) | 54.570 | true_positive |
+| Backward_fall | 8.3 (4/48) | 75.421 | true_positive | 12.5 (6/48) | 110.099 | false_negative |
+| Chair_fall | 23.4 (43/184) | 91.224 | true_positive | 47.8 (88/184) | 74.680 | true_positive |
+| Fall_and_lie | 89.2 (257/288) | 85.064 | true_positive | 92.0 (265/288) | 85.291 | true_positive |
+| Far_fall | 100.0 (66/66) | 110.866 | false_negative | 100.0 (66/66) | 66.791 | false_negative |
+| Occluded_fall | 100.0 (108/108) | 77.193 | true_positive | 100.0 (108/108) | 104.074 | true_positive |
+| Off_axis_fall | 98.4 (60/61) | 102.211 | true_positive | 98.4 (60/61) | 78.298 | true_positive |
+| Side_fall | 97.9 (95/97) | 91.924 | true_positive | 97.9 (95/97) | 71.449 | true_positive |
+| Slow_fall | 61.7 (71/115) | 77.306 | true_positive | 67.0 (77/115) | 96.081 | true_positive |
 
 
 
 ## 7. Discussion
 
-**Recall.** Fall-detection recall was 75.0% for the LSTM (6/8 labelled fall clips detected) versus 87.5% for the TCN (7/8). Recall matters more than precision for fall detection specifically because a missed fall (false negative) can mean a real injury goes unnoticed until someone happens to check on the person, while a false alarm (false positive) only costs a caregiver a few seconds of checking a monitor -- the two error types are not symmetric in consequence, so the model with higher recall is preferable even if it comes with a lower precision, up to the point where false alarms become frequent enough to cause alert fatigue.
+**Recall.** Fall-detection recall was 87.5% for the LSTM (7/8 labelled fall clips detected) versus 75.0% for the TCN (6/8). Recall matters more than precision for fall detection specifically because a missed fall (false negative) can mean a real injury goes unnoticed until someone happens to check on the person, while a false alarm (false positive) only costs a caregiver a few seconds of checking a monitor -- the two error types are not symmetric in consequence, so the model with higher recall is preferable even if it comes with a lower precision, up to the point where false alarms become frequent enough to cause alert fatigue.
 
-**Latency.** Mean per-window inference time was 57.85 ms for the LSTM and 55.05 ms for the TCN (measured identically: wall-clock time around a single `.predict()` call, same machine, same warm model, same window buffer construction).
+**Latency.** Mean per-window inference time was 87.58 ms for the LSTM and 85.20 ms for the TCN (measured identically: wall-clock time around a single `.predict()` call, same machine, same warm model, same window buffer construction).
 
 **Model size.** The LSTM has 63,013 trainable parameters versus 39,365 for the TCN (TCN is smaller).
 
@@ -121,4 +123,4 @@ This report compares the existing LSTM posture classifier (`src/posture/lstm/`) 
 
 **Trade-offs.** The LSTM's recurrence can capture dependencies longer than the fixed window if state were carried across windows (not currently done here -- both models are evaluated strictly per-window); the TCN's fixed receptive field is a hard ceiling. Conversely, the TCN's residual/dilated-conv structure trains more predictably (no vanishing/exploding gradients through many recurrent steps) and is simpler to reason about layer-by-layer.
 
-**Recommendation for future Hybrid AI work.** Given the existing heuristic-OR-LSTM hybrid in `hybrid_evaluate.py`, and that the TCN showed higher fall-detection recall in the run above, a natural next step is a three-way OR/voting gate (heuristic, LSTM, TCN) or an ensemble that averages the two models' softmax outputs before the argmax, so a fall gets flagged if either sequence model agrees with the heuristic. This is worth re-checking on a larger/more varied evaluation set before committing to it, since the run above is 8 clips from one recording session.
+**Recommendation for future Hybrid AI work.** Given the existing heuristic-OR-LSTM hybrid in `hybrid_evaluate.py`, and that the LSTM showed higher fall-detection recall in the run above, a natural next step is a three-way OR/voting gate (heuristic, LSTM, TCN) or an ensemble that averages the two models' softmax outputs before the argmax, so a fall gets flagged if either sequence model agrees with the heuristic. This is worth re-checking on a larger/more varied evaluation set before committing to it, since the run above is 8 clips from one recording session.

@@ -1,0 +1,4 @@
+start_time,end_time,state,label
+0,3.5,Transition State,Lying down on floor slowly
+3,7.3,Sitting,Sitting on floor legs crossed
+7,9.8,Transition State,Getting up

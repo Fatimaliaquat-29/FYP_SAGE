@@ -24,7 +24,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.posture.tcn.tcn_model import build_tcn_model
+from src.posture.tcn.tcn_model import build_tcn_model, L1_REG, L2_REG
 
 DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
@@ -44,13 +44,41 @@ def train(
     kernel_size: int = 3,
     dropout_rate: float = 0.2,
     learning_rate: float = 1e-3,
+    l1: float = L1_REG,
+    l2: float = L2_REG,
+    use_class_weights: bool = False,
 ):
-    """Full training loop (identical structure to lstm_trainer.train)."""
+    """
+    Full training loop (identical structure to lstm_trainer.train).
+
+    use_class_weights (default False -- see regression note below): weight
+    each class's loss contribution by inverse frequency ("balanced" scheme).
+    This was briefly turned on by default after Phase 2.5's edge-case
+    analysis found Sitting-related confusions make up ~74% of genuine
+    misclassifications on real test footage, with Sitting the smallest real
+    training class (9.2% of real windows vs. Standing's 39.8%).
+
+    That change was a measured regression, not an improvement: a 4-config
+    ablation (see TCN_IMPLEMENTATION_NOTES.md Phase 2.5 "Regression
+    analysis") isolated it as the sole cause of a same-footage accuracy drop
+    from 76.0% to 47.8% (8-clip Sanawar set) / 69.3% to 67.0% (validation
+    split). "Balanced" weighting fixed Unknown-class recall (0%->~68% on
+    validation) largely by making the model predict "Unknown" far more
+    often -- on real footage, which is ~90% Lying frames, that shows up as
+    Unknown predictions nearly tripling (134->464 over the same 8 clips)
+    and cannibalizing correct Lying/Standing predictions, plus fall-
+    detection recall dropping 87.5%->75.0% (one clip flips to a missed
+    fall). L2=1e-5 (the OTHER change made in the same session) is not
+    implicated -- the same ablation shows it alone is harmless, even mildly
+    positive (76.0%->76.9% on the same 8 clips), so it stays enabled by
+    default; only use_class_weights was reverted.
+    """
     try:
         import tensorflow as tf
         from tensorflow import keras
         from sklearn.model_selection import StratifiedGroupKFold
         from sklearn.metrics import classification_report
+        from sklearn.utils.class_weight import compute_class_weight
     except ImportError as e:
         raise ImportError(
             f"Missing dependency: {e}\n"
@@ -118,6 +146,15 @@ def train(
         mask = (y_train == i)
         print(f"    {cls:<10}: {mask.sum():>6} windows")
 
+    # ── Class weights (balanced, computed from the actual train fold) ─────────
+    class_weight_dict = None
+    if use_class_weights:
+        weights = compute_class_weight(class_weight="balanced", classes=np.arange(n_classes), y=y_train)
+        class_weight_dict = {i: float(w) for i, w in enumerate(weights)}
+        print("\n  Class weights (balanced):")
+        for i, cls in enumerate(classes):
+            print(f"    {cls:<10}: {class_weight_dict[i]:.3f}")
+
     print("\n  Val Balance (Windows / Unique Real Sequences):")
     for i, cls in enumerate(classes):
         mask = (y_val == i)
@@ -129,6 +166,7 @@ def train(
         window_size, n_features, n_classes,
         num_filters=num_filters, kernel_size=kernel_size,
         dropout_rate=dropout_rate, learning_rate=learning_rate,
+        l1=l1, l2=l2,
     )
     model.summary()
     print(f"\n  Total trainable parameters: {model.count_params():,}")
@@ -157,6 +195,7 @@ def train(
         batch_size=batch_size,
         validation_data=(X_val, y_val),
         callbacks=callbacks,
+        class_weight=class_weight_dict,
         verbose=2,
     )
 

@@ -1,4 +1,0 @@
-start_time,end_time,state,label
-0.00,1.20,Standing,Standing
-1.20,2.30,Transition State,Falling (Backward)
-2.30,3.71,Fall,Fallen / Lying

@@ -154,6 +154,70 @@ hyperparameter search would need multiple seeds averaged per configuration
 and/or a larger real-footage evaluation set before its conclusions could be
 trusted.
 
+## 6.5. Phase 2.5 — Regression analysis: the class-weighting regression
+
+After Section 6's hyperparameter-sweep work, two further changes were made
+to `tcn_trainer.py`/`tcn_model.py` in the same session: L2 weight
+regularization (`l2=1e-5`, Section 6's own finding) and `class_weight`d
+training (`use_class_weights=True`, "balanced" scheme), the latter motivated
+by an edge-case pass over real footage that found Sitting-related confusion
+dominating genuine misclassifications and Sitting under-represented in
+training (9.2% of real windows vs. Standing's 39.8%). Both changes were
+committed to `tcn_model.py`/`tcn_trainer.py` as new defaults without a
+same-footage before/after regression check.
+
+**Symptom.** Overall accuracy on the same 8-clip real-footage set
+(`test_footage/Sanawar Testing 7-22-26`) dropped from 76.0% to 47.8%, and
+fall-detection recall dropped from 87.5% (7/8) to 75.0% (6/8) --
+`Backward_fall` flipped from a detected fall to a missed one.
+
+**Isolating the cause.** A 4-config ablation retrained the TCN from
+scratch (same seed=42, same `StratifiedGroupKFold` split, same synthetic
+augmentation) with every combination of the two changes, then evaluated
+each checkpoint on both the in-distribution validation split and the same
+8 real clips:
+
+| Config | Val accuracy | Val macro F1 | Val Unknown recall | Real-footage accuracy | Real-footage fall recall | Real-footage "Unknown" predictions (of ~967 frames) |
+|---|---|---|---|---|---|---|
+| baseline (l2=0, no class weights) | 69.3% | 0.517 | 0.0% | 76.0% | 87.5% (7/8) | 134 |
+| l2=1e-5 only | 69.8% | 0.537 | 0.4% | **76.9%** | 87.5% (7/8) | 143 |
+| class weights only | 67.0% | 0.586 | 66.8% | 51.5% | 75.0% (6/8) | 413 |
+| current (l2 + class weights) | 67.0% | 0.595 | 68.8% | 47.8% | 75.0% (6/8) | 464 |
+
+**Root cause**: `use_class_weights=True`. Balanced class weighting makes
+the model's loss much more sensitive to the rarest classes (Unknown and
+Sitting are up-weighted ~1.4-1.8x relative to Lying in the actual training
+split), which does fix Unknown-class recall on the validation split
+(0.0% -> ~68%) -- but it does so largely by making the model predict
+"Unknown" far more readily across the board, not just on genuinely
+ambiguous frames. Real footage is ~90% Lying frames (865/967 in this set),
+so a broad shift toward predicting "Unknown" shows up there as accuracy
+collapse: "Unknown" predictions roughly tripled (134 -> 464) at the direct
+expense of correct Lying/Standing calls, and one real fall clip
+(`Backward_fall`) flips from detected to missed because its Lying-phase
+frames get relabeled Unknown instead. L2=1e-5 alone is not implicated -- it
+is harmless and even mildly *better* than the original baseline on this
+same real footage (76.0% -> 76.9%), consistent with Section 6's original
+validation-split finding, so it was kept.
+
+**Process gap.** The `use_class_weights` docstring in `tcn_trainer.py`
+referenced a "Phase 2.5" edge-case write-up that was never actually
+committed to this file or to `context.txt` -- the class-imbalance
+motivation (Sitting confusions, 9.2% vs 39.8% class share) could not be
+independently verified beyond the bare percentages already in the
+docstring. The lesson generalizes: a training-time change motivated by one
+evaluation set (real-footage misclassification analysis) was shipped
+without re-running the *other* standing evaluation (`compare_tcn_lstm.py`
+on the same footage) before being made the default, which is what let a
+measured 28-point accuracy regression ship as an "improvement."
+
+**Fix applied**: `use_class_weights` now defaults to `False` in
+`tcn_trainer.py::train()`. The parameter itself is kept (not removed) so a
+*softer* class-weighting scheme (e.g. capped weights, or weighting only
+Sitting rather than a fully "balanced" scheme across all 5 classes) remains
+available to revisit later with a proper before/after check -- see Section
+9.
+
 ## 7. How to train
 
 Both trainers need `data/lstm_dataset.npz` to exist first (see

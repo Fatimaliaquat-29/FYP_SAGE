@@ -1,4 +1,0 @@
-start_time,end_time,state,label
-0.00,1.40,Sitting,Sitting on Chair
-1.40,2.60,Transition State,Falling off Chair
-2.60,8.36,Fall,Fallen / Lying

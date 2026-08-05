@@ -1,0 +1,4 @@
+start_time,end_time,state,label
+0,2,Walking,Moving out of frame
+2,4,Not in frame,Not in frame
+4,7,Walking,Moving in the frame

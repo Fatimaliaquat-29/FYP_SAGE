@@ -1,0 +1,5 @@
+start_time,end_time,state,label
+0,0.8,Standing,Standing
+1,4,Transition State,Lying down slowly
+4,8,Lying,Lying  
+8,12,Transition State,Getting back up slowly

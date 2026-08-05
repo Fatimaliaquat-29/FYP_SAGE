@@ -1,0 +1,10 @@
+start_time,end_time,state,label
+0,2,Standing,Standing
+2,3.7,Transition State,bending down back
+3.7,5,Transition State,Getting up
+5,6,Standing,Standing
+6,7,Transition State,Bending down back left
+7,9,Transition State,Getting up
+9,10,Standing,Standing
+10,12,Transition State,Squatting down right back
+12,14,Transition State,Getting up
