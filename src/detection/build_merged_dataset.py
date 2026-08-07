@@ -1,6 +1,12 @@
 """Merges three sources into one YOLO dataset over the SAGE class list:
 
-  1. Our MediaPipe-auto-labeled person frames (generate_bbox_dataset.py)
+  1. Our own room frames (generate_bbox_dataset.py). NOTE: the person boxes here
+     are MediaPipe-derived and reliable, but when that script is run with
+     --pseudo_objects the SAME files also carry furniture boxes guessed by a
+     stock COCO model. Those object labels are pseudo-labels, not ground truth,
+     and they currently cover only chair/bed/dining table/tv/refrigerator.
+     Anything measured against them is measuring agreement with that guesser --
+     see report_label_sources.py.
   2. A COCO subset exported in YOLO format (fetch_coco_subset.py)
   3. Optional empty-room "background" frames carrying no objects
 
@@ -241,7 +247,8 @@ def collect_empty_frames(empty_dir: Path, out_dir: Path, val_every: int, stride:
 def main():
     parser = argparse.ArgumentParser(description="Merge SAGE person frames + COCO subset + empty-room negatives")
     parser.add_argument("--own_dir", type=str, default=str(REPO_ROOT / "datasets" / "sage_person_finetune"),
-                        help="Our MediaPipe-auto-labeled dataset (person only)")
+                        help="Our own room frames: MediaPipe person boxes, plus pseudo-labeled "
+                             "furniture boxes if generate_bbox_dataset.py was run with --pseudo_objects")
     parser.add_argument("--coco_dir", type=str, default=str(REPO_ROOT / "datasets" / "coco_subset"),
                         help="COCO subset exported in YOLO format")
     parser.add_argument("--empty_dir", type=str, default=None,

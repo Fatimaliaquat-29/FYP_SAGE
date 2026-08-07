@@ -29,14 +29,22 @@ activity monitoring — we are NOT simplifying to a Fall/Not-Fall-only model).
 
 **What & why:** The public datasets (LeFD, UR) are currently labeled by
 calling our OLD heuristic on every frame outside the annotated fall window.
-We've since improved that heuristic (the "upright vetoes" — already written,
-currently switched off in `pipeline_utils.py` via `ENABLE_UPRIGHT_VETOES`).
+We've since improved that heuristic (the "upright vetoes" in
+`pipeline_utils.py`, gated by `ENABLE_UPRIGHT_VETOES`).
 Re-labeling with the improved version fixes most of the bad guesses for free,
 with zero information lost — we keep full Standing/Sitting/Lying/Fall labels
 the whole way through.
 
+> **Correction (Aug 2026):** an earlier draft of this plan said the vetoes were
+> "currently switched off" and made turning them on step 1. They were already
+> `True` — set in `b566685`, which this plan's own commit descends from. The
+> draft was written from a stale `DISABLED BY DEFAULT` comment header that sat
+> above the flag; that header has since been corrected. **No flag needs
+> flipping.** The rebuild in step 1 is still required, because switching the
+> flag on does not retroactively relabel CSVs that were generated before it.
+
 **Steps:**
-1. Turn `ENABLE_UPRIGHT_VETOES = True` on, rebuild the LeFD/UR label CSVs.
+1. Rebuild the LeFD/UR label CSVs so they pick up the (already-enabled) vetoes.
 2. For any frame where even the improved heuristic is still unsure (e.g. mid
    bend, ambiguous torso angle) — don't force a label in. Drop that frame from
    training rather than teach the model a guess.
@@ -60,8 +68,9 @@ where the public data can't teach it anything.
 
 **Steps:**
 1. When building the training set, repeat the round-2/round-3 GT-labeled
-   frames 2–3x (same trick Sanawar's YOLO branch used for the person class —
-   `--own_repeat 2` — proven to work, low risk).
+   frames 2–3x (same trick Fatima's YOLO branch used for the person class —
+   `--own_repeat 2` in `src/detection/build_merged_dataset.py`, added in
+   `2b33933` — proven to work, low risk).
 2. Retrain, check whether it holds or improves fall recall on your existing
    held-out clips before deciding the repeat factor.
 
@@ -105,26 +114,53 @@ replacing anything, and back up the current model first."*
 
 ## Track 2 — Fatima: Object detection (YOLO furniture/objects)
 
-### Phase 1 — Rebalance away from the self-guessed labels
+### Phase 1 — ~~Rebalance away from the self-guessed labels~~ SUPERSEDED
 
-**What & why:** Right now, furniture boxes (chair/bed/couch/etc.) in your own
-room footage were drawn by a rough, un-fine-tuned YOLO model, not a person —
-those are "pseudo-labels." A real, human-labeled furniture dataset (COCO) is
-already part of the training mix, but it's currently outweighed by the
-pseudo-labeled room-specific data. Turning that balance around is the fix.
+> **Measured Aug 2026 (`src/detection/report_label_sources.py`) — this phase
+> as written should NOT be done.** Three findings, each independently fatal to
+> it:
+>
+> 1. **The premise is backwards in aggregate.** COCO already dominates: own
+>    footage is only **15.2%** of all object boxes (4,599 vs 25,725), or 26.3%
+>    at the `--own_repeat 2` v3 actually used. It is *not* "currently
+>    outweighed by the pseudo-labeled data."
+> 2. **It only ever concerned two classes.** Pseudo-labels exist for just 5 of
+>    13 classes, and own footage leads in only `bed` (59.9%) and, at repeat 2,
+>    `chair` (48.9%). The other 8 classes are 100% COCO — reweighting does
+>    literally nothing for them.
+> 3. **The requested mechanism cannot exist.** `--own_repeat` applies to the
+>    whole `own` source, person and furniture together, so diluting pseudo-
+>    furniture also dilutes the reliably-labeled person boxes. And deleting the
+>    furniture boxes instead is *actively harmful* for exactly the reason
+>    `copy_split()` already documents about COCO's person boxes: unlabeled
+>    objects that are visibly present train as **background**. All 4,168 own
+>    images contain furniture.
+>
+> **Replaced by Phase 1b (better teacher) and a reordering: do Phase 3 first.**
+
+### Phase 1b — Improve the teacher instead of down-weighting it
+
+**What & why:** The pseudo-labels come from **YOLOv8-nano**, the weakest model
+in the family (`generate_bbox_dataset.py`, `STOCK_YOLO_PATH`), at
+`--object_conf 0.5`. Better labels beat reweighted bad labels, and this
+sidesteps the `--own_repeat` problem entirely.
 
 **Steps:**
-1. In `build_merged_dataset.py`, reduce the repeat/weight given to the
-   pseudo-labeled "own footage" object boxes relative to the COCO subset.
-2. Re-check `datasets/coco_subset/` actually has enough examples per class
-   (chair, bed, couch, etc.) — if any class is thin, that's worth knowing
-   before retraining, not after.
+1. Re-run pseudo-labeling with `--object_model models/yolov8x.pt`. One offline
+   pass over 4,168 frames, no training involved — `--object_model` is already a
+   parameter, so this is a flag change.
+2. Hand-correct the result. This is far cheaper than it sounds: the 4,168
+   frames come from only **28 clips across 3 recording sessions**, and
+   furniture is static under a fixed camera — so you correct roughly one frame
+   per camera setup and propagate, not 4,168 frames.
+3. Re-check `datasets/coco_subset/` per-class counts (already measured — see
+   the balance table; `couch` 943, `toilet` 726, `refrigerator` 402 are the
+   thin ones).
 
-**Ask AI for help with:** *"In `src/detection/build_merged_dataset.py`,
-show me the current ratio of pseudo-labeled own-footage object boxes to
-COCO object boxes per class. Then help me rebalance so COCO dominates the
-furniture classes while our own footage still dominates the `person`
-class (which IS reliably labeled, via MediaPipe)."*
+*(The original "Ask AI" prompt for the superseded Phase 1 asked for the
+per-class ratio and then a rebalance. The ratio is now a committed script —
+`python src/detection/report_label_sources.py --target sources` — and the rebalance half is
+the part finding 3 above shows cannot be built.)*
 
 ### Phase 2 — Prioritize new rooms over new clips
 
@@ -136,25 +172,50 @@ Genuinely different rooms teach generalization; repeat footage doesn't.
 seen (different house, different furniture style), even briefly — a few
 minutes in 3 new rooms is worth more than another hour in a familiar one.
 
-### Phase 3 — Validate on a room held out from training, honestly
+### Phase 3 — Validate honestly — **DO THIS FIRST**
 
-**What & why:** The "5.4% false-positive" and "chair/bed strong" numbers we
-have now are partly measuring "did it memorize this room," not real
-generalization. A clean test needs a room that never appeared in training at
-all — same principle as Hussain's held-out clips.
+**What & why:** This phase understated the problem, and fixing that moves it to
+the front of the queue. It says the current numbers are "partly measuring did
+it memorize this room." Measured, it is worse than that: **the validation
+labels for furniture are themselves the rough detector's guesses.**
+
+| class | val boxes from own footage (pseudo) | from COCO (human) | pseudo share |
+|---|---|---|---|
+| chair | 1835 | 648 | **73.9%** |
+| bed | 334 | 78 | **81.1%** |
+| dining table | 179 | 245 | 42.2% |
+| tv | 34 | 90 | 27.4% |
+
+So "chair/bed strong" is scoring the student against the teacher it was trained
+to imitate, on the same rooms. That is circular, and **a held-out room does not
+fix it by itself** — if that room's furniture is also pseudo-labeled, the
+circularity is reproduced intact. The held-out room's labels must be drawn by
+hand.
+
+Nothing else in Track 2 can be evaluated until this is done, which is why it
+now precedes Phase 1b rather than following it.
 
 **Steps:**
-1. Pick (or record) one room that goes into ZERO training runs, ever.
-2. After retraining with the Phase 1 rebalance, measure furniture detection
-   and false-positive rate on that room specifically.
-3. Compare against the old numbers honestly — if it's still bad, that tells
-   us the rebalance wasn't enough, which is useful to know.
-
-**Ask AI for help with:** *"Score `yolov8n_sage_merged_v3.pt` and the
-retrained model on [held-out room], reporting per-class precision/recall
-and false-positive rate, the same way `benchmark_footage.py` already does
-for person detection. Don't include this room in any training or
-validation split."*
+1. Use `Testing_HeldOutEval/` — it already exists, with structural protection
+   and a README. Note it currently contains only `empty/`, and **no furniture
+   labels at all**.
+2. Sample frames (`src/detection/sample_heldout_frames.py`). The `empty/` clip
+   is ideal: with no person in frame, the score is pure furniture
+   precision/recall and no person confound.
+3. **Hand-label the furniture.** The "label one frame, copy the .txt to the
+   rest" shortcut only holds if the camera is genuinely static — and the first
+   held-out clip is handheld, drifting up to **14px**. Copying there would
+   offset every box and bias the one eval set that exists to be trustworthy.
+   `sample_heldout_frames.py` now measures drift per clip (phase correlation)
+   and reports `camera STATIC` or `camera MOVES`; label individually whenever
+   it says MOVES. *(Caught by Hussain in review — an earlier draft of this plan
+   recommended the shortcut unqualified.)*
+4. Score `yolov8n_sage_merged_v3.pt` against those labels
+   (`src/detection/score_heldout_objects.py`). This is the first furniture
+   number on this project not scored against pseudo-labels.
+5. Keep reporting split by label source from now on
+   (`src/detection/report_label_sources.py --target merged-val`) so a contaminated furniture number
+   can never be quoted again by accident.
 
 ### Phase 4 (parallel, independent) — Medicine-container detection
 

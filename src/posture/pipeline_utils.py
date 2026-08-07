@@ -362,28 +362,32 @@ LSTM_FALL_MIN_CONFIDENCE = 0.50
 LSTM_FALL_SUSTAIN_FRAMES = 9
 
 # ── "The legs say we are still upright" veto ──────────────────────────────────
-# DISABLED BY DEFAULT -- see the measurement table below before re-enabling.
+# ENABLED (see ENABLE_UPRIGHT_VETOES below). Two analyses are kept here because
+# they reached opposite conclusions; the SECOND one is current.
 #
+# --- SUPERSEDED (30 Jul 2026, before the v4 retrain) ---------------------------
 # These two vetoes are correct physics and they work: on the 7-30-26 held-out
 # negatives they take the HEURISTIC from 10/18 to 17/18 clean, removing almost
 # every bending false alarm. But measured end to end on the full hybrid:
 #
 #   veto config   mode        R2 ADL clean   R2 fall   R1 ADL   R1 falls
 #   none          heuristic       10/18        NO       9/9      10/12
-#   none          hybrid           9/18        yes      9/9      11/12   <- best today
+#   none          hybrid           9/18        yes      9/9      11/12   <- best then
 #   leg only      heuristic       11/18        NO       9/9       9/12
 #   leg only      hybrid           9/18        yes      9/9      10/12
 #   leg+hip       heuristic       17/18        NO       9/9       8/12
 #   leg+hip       hybrid           9/18        yes      9/9      10/12
 #
-# The hybrid is pinned at 9/18 in EVERY configuration because all nine of those
-# false alarms are triggered by the LSTM, which no heuristic-side veto can
-# suppress -- while the vetoes do cost one real fall. So enabling them today is
-# a pure loss. The LSTM is out-of-distribution since the VIDEO-mode +
-# visibility-gating change and needs retraining; once it is retrained, re-run
-# this comparison and these vetoes are expected to become a large net win.
+# The hybrid was pinned at 9/18 in EVERY configuration because all nine of those
+# false alarms were triggered by the LSTM, which no heuristic-side veto can
+# suppress -- while the vetoes did cost one real fall. So enabling them was a
+# pure loss AT THAT TIME. The conclusion drawn then was: the LSTM is
+# out-of-distribution since the VIDEO-mode + visibility-gating change and needs
+# retraining; re-run this comparison afterwards. That retrain is v4, and the
+# re-run is the table below -- which is why this analysis no longer governs.
 #
-# ENABLED 2 Aug 2026. Settled by the round-3 fall clips (Hussain Testing
+# --- CURRENT (2 Aug 2026, post-v4) --------------------------------------------
+# Settled by the round-3 fall clips (Hussain Testing
 # 8-2-26), the first fall footage from the deployment camera setup. Full sweep,
 # realtime debounce 4-of-12:
 #
