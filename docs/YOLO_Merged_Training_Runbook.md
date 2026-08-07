@@ -12,20 +12,31 @@ Do **not** fine-tune from `models/yolov8n_sage_person.pt`. Its head has one outp
 
 ### Where to put it — this matters more than it looks
 ```
-Testing_EmptyRooms/          <-- repo root, SIBLING of Testing/ (NOT inside it)
+yolo_testing/Training/Empty/       <-- background negatives that DO enter training
     livingroom.mp4
     bedroom.mp4
     hallway.mp4
 ```
 
-**Do not put these inside `Testing/`.** Both `generate_bbox_dataset.py` and `benchmark_footage.py` discover clips by rglobbing the whole `Testing/` tree and assign train/val by list index. Adding three clips there shifts every index and silently changes which clips are held out — verified: it drops `Sit_2` and `newTest` from the held-out set and swaps in three others, which would invalidate every before/after comparison in the report. Nothing errors; the numbers just quietly become meaningless.
+> **Layout changed (Aug 2026).** Footage was consolidated from four sibling
+> directories (`yolo_testing/`, `Testing_EmptyRooms/`, `Testing_EmptyHeldOut/`,
+> `Testing_HeldOutEval/`) into one tree — see `src/detection/footage_paths.py`
+> for the authoritative description:
+> ```
+> Testing/            SHARED person + fall footage (read in place)
+> yolo_testing/
+>     Training/Empty/       background negatives
+>     Reserved/             NEVER trained on
+> ```
 
-`Testing_EmptyRooms/` is outside that rglob, so the held-out set is unaffected. Video files are already gitignored by extension, and the folder is now gitignored explicitly.
+**Do not put these in `Testing/`.** Both `generate_bbox_dataset.py` and `benchmark_footage.py` discover clips by rglobbing the directory they are given and assign train/val by list index. Adding three clips there shifts every index and silently changes which clips are held out — verified: it drops `Sit_2` and `newTest` from the held-out set and swaps in three others, which would invalidate every before/after comparison in the report. Nothing errors; the numbers just quietly become meaningless.
 
-Subfolders are fine (`Testing_EmptyRooms/bedroom/clip1.mp4`) — frames are keyed on the path relative to the folder, so two rooms can both contain a `room.mp4` without colliding.
+For the same reason, leave `--testing_dir` at its default (`Testing/`, the shared session archive). Widening it to a parent of both footage trees would sweep in the empty-room clips and shift those same indices. After adding any footage, confirm the held-out four are still `newTest`, `Sit_2`, `Normal_Fall_2`, `Foward_fall` — see [`TESTING_GUIDE.md`](TESTING_GUIDE.md#adding-new-footage--checklist) for the one-line check.
+
+Subfolders are fine (`yolo_testing/Training/Empty/bedroom/clip1.mp4`) — frames are keyed on the path relative to the folder, so two rooms can both contain a `room.mp4` without colliding.
 
 ### How much to record
-- **Rooms:** one per distinct environment in `Testing/` — roughly **3** covers it. More *angles per room* is worth more than more rooms, since the goal is teaching "this background contains no person," and it's the deployment backgrounds that matter.
+- **Rooms:** one per distinct environment in `yolo_testing/` — roughly **3** covers it. More *angles per room* is worth more than more rooms, since the goal is teaching "this background contains no person," and it's the deployment backgrounds that matter.
 - **Length:** 30–60s each is plenty. Include the spots where people usually are — an empty chair, an empty bed, a doorway — since those are where false positives are most likely.
 - **Person strictly out of frame**, including hands, feet, and shadows-with-a-body-attached. A single frame with a person in it is a mislabeled example, because these are written with empty label files by definition.
 
@@ -35,11 +46,11 @@ At the default `--empty_stride 15`, 3 × 45s of 30fps video yields ~270 backgrou
 Our person-only training set had **zero** background frames, so precision was never systematically measurable. These frames are what make a false-positive rate meaningful. (Encouraging preview: on the 40 genuinely empty frames at the end of `Normal_Fall_2.mov`, the current model produced **0** false detections.)
 
 ## Step 0b — Record ONE more empty room and hold it back entirely
-Record a fourth room (~30s) and put it somewhere **outside** `Testing_EmptyRooms/`, e.g.:
+Record a fourth room (~30s) and put it under `Reserved/`, not `Training/`:
 ```
-Testing_EmptyHeldOut/spare_room.mp4
+yolo_testing/Reserved/Empty/spare_room.mp4
 ```
-Do not pass this folder to `--empty_dir`. It never enters training, so it is the only way to honestly measure whether the false-positive rate actually improved.
+Do not pass this folder to `--empty_dir` — `assert_not_reserved()` will now refuse it outright. It never enters training, so it is the only way to honestly measure whether the false-positive rate actually improved.
 
 This exists because the first merged run scored 0.0% false positives on the three empty rooms — but those frames were in its training set, so that number measures fit, not generalisation. On the one genuinely unseen empty segment available (`Normal_Fall_2`'s tail) it scored 3/40, slightly *worse* than the person-only model's 0/40.
 
@@ -82,7 +93,7 @@ Pulls only images containing SAGE-relevant classes (~5k images), not the full 19
 ```bash
 python src/detection/build_merged_dataset.py \
     --coco_dir datasets/coco_subset \
-    --empty_dir Testing_EmptyRooms
+    --empty_dir "yolo_testing/Training/Empty"
 ```
 
 **Read the printed class mapping before continuing.** It looks like:
@@ -194,7 +205,7 @@ from pathlib import Path
 from src.detection.yolo_objects import YOLOObjectDetector
 det = YOLOObjectDetector(model_path='models/yolov8n_sage_merged.pt', imgsz=320, confidence_threshold=0.4)
 tot=fp=0
-for p in sorted(Path('Testing_EmptyRooms').rglob('*')):
+for p in sorted(Path('yolo_testing/Training/Empty').rglob('*')):
     if p.suffix.lower() not in {'.mp4','.mov','.avi','.mkv'}: continue
     cap=cv2.VideoCapture(str(p)); idx=0
     while True:

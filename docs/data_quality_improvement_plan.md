@@ -196,7 +196,7 @@ Nothing else in Track 2 can be evaluated until this is done, which is why it
 now precedes Phase 1b rather than following it.
 
 **Steps:**
-1. Use `Testing_HeldOutEval/` — it already exists, with structural protection
+1. Use `yolo_testing/Reserved/` — protected by `assert_not_reserved()`
    and a README. Note it currently contains only `empty/`, and **no furniture
    labels at all**.
 2. Sample frames (`src/detection/sample_heldout_frames.py`). The `empty/` clip

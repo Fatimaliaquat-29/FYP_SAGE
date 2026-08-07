@@ -7,9 +7,10 @@ stock COCO YOLOv8n (see report_label_sources.py). Scoring the model against
 those is circular. The only cure is a set of boxes a human drew, on a room the
 model never trained on.
 
-`Testing_HeldOutEval/` is that room. It already has structural protection and a
-README, but it contains no labels at all. This script does the mechanical half
--- pulling frames out -- so the only manual work left is drawing boxes.
+`yolo_testing/Reserved/` is that room. It is protected by assert_not_reserved() in
+the training-data producers (see footage_paths.py), but it contains no labels
+at all. This script does the mechanical half -- pulling frames out -- so the
+only manual work left is drawing boxes.
 
 Labelling shortcut -- ONLY when the camera is genuinely static
 --------------------------------------------------------------
@@ -29,10 +30,10 @@ score is pure furniture precision/recall, with no person confound.
 
 Safety
 ------
-Writes ONLY into --out_dir, and refuses to place output inside datasets/ or
-Testing*/ -- those trees are walked by the training scripts, and dropping
-frames into them is exactly the silent contamination Testing_HeldOutEval's
-README exists to prevent.
+Writes ONLY into --out_dir, and refuses to place output inside datasets/,
+yolo_testing/ or Testing/ -- those trees are walked by the training scripts, and dropping
+frames into them is exactly the silent contamination footage_paths.py's
+assert_not_reserved() exists to prevent.
 """
 
 import argparse
@@ -43,12 +44,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.detection.footage_paths import RESERVED_ROOT
+
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".mkv"}
 
-# Directory names that training/eval scripts rglob. Output must never land in one.
-FORBIDDEN_PARENTS = ("datasets", "Testing", "Testing_EmptyRooms",
-                     "Testing_EmptyHeldOut", "Testing_HeldOutEval")
+# Directory names that training/eval scripts rglob. Output must never land in
+# one: extracted frames written back under yolo_testing/ would be discovered as if
+# they were source footage, and could be swept into a training set.
+FORBIDDEN_PARENTS = ("datasets", "yolo_testing", "Testing")
 
 
 def assert_safe_output(out_dir: Path):
@@ -128,12 +132,11 @@ def report_drift(max_shift: float):
 def main():
     parser = argparse.ArgumentParser(
         description="Extract frames from held-out footage for hand labelling")
-    parser.add_argument("--source_dir", type=str,
-                        default=str(REPO_ROOT / "Testing_HeldOutEval"),
-                        help="Held-out footage to sample (read-only)")
+    parser.add_argument("--source_dir", type=str, default=str(RESERVED_ROOT),
+                        help="Held-out footage to sample (read-only). Defaults to yolo_testing/Reserved.")
     parser.add_argument("--out_dir", type=str,
                         default=str(REPO_ROOT / "eval" / "heldout_objects"),
-                        help="Where sampled frames are written. Must be outside datasets/ and Testing*/")
+                        help="Where sampled frames are written. Must be outside datasets/, yolo_testing/ and Testing/")
     parser.add_argument("--stride", type=int, default=30,
                         help="Keep every Nth video frame (default 30, ~1/sec at 30fps). "
                              "Raise it if the camera never moves -- fewer frames means fewer "

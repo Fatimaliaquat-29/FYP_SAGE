@@ -40,6 +40,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.detection.footage_paths import TRAINING_EMPTY, assert_not_reserved
 from src.detection.sage_classes import CLASS_TO_INDEX, SAGE_CLASSES
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
@@ -189,10 +190,12 @@ def collect_empty_frames(empty_dir: Path, out_dir: Path, val_every: int, stride:
     only false-positive suppression. Our person-only training set contained
     zero of these, which is why precision was never systematically measurable.
 
-    IMPORTANT: point --empty_dir at a directory OUTSIDE Testing/. The clip
-    discovery in generate_bbox_dataset.py and benchmark_footage.py rglobs the
-    whole Testing/ tree, and adding clips there shifts the index-based
-    train/val assignment -- which silently changes which clips are held out.
+    IMPORTANT: use yolo_testing/Training/Empty. Anything under yolo_testing/Reserved/ is
+    refused by assert_not_reserved() in main(), because folding held-out
+    footage into training destroys it permanently. Note also that the clip
+    discovery in generate_bbox_dataset.py and benchmark_footage.py assigns
+    train/val BY POSITION in the sorted listing, so which directory you point
+    at changes which clips are held out.
     """
     if not empty_dir or not empty_dir.is_dir():
         return
@@ -252,8 +255,8 @@ def main():
     parser.add_argument("--coco_dir", type=str, default=str(REPO_ROOT / "datasets" / "coco_subset"),
                         help="COCO subset exported in YOLO format")
     parser.add_argument("--empty_dir", type=str, default=None,
-                        help="Optional dir of empty-room images and/or videos (background negatives). "
-                             "MUST be outside Testing/ -- see collect_empty_frames docstring.")
+                        help=f"Dir of empty-room images/videos used as background negatives. "
+                             f"Use {TRAINING_EMPTY}; anything under yolo_testing/Reserved/ is refused.")
     parser.add_argument("--empty_stride", type=int, default=15,
                         help="Keep every Nth frame of empty-room video (default 15; raise it if "
                              "backgrounds end up over ~15%% of the dataset)")
@@ -274,6 +277,13 @@ def main():
     own_dir = Path(args.own_dir)
     coco_dir = Path(args.coco_dir)
     out_dir = Path(args.out_dir)
+
+    # Validate BEFORE any copying. Checked at the point of use instead, this
+    # would abort only after thousands of frames had already been written --
+    # leaving a half-built dataset behind and burning minutes to report an
+    # error that was knowable from the arguments alone.
+    if args.empty_dir:
+        assert_not_reserved(Path(args.empty_dir), "background negatives")
 
     if out_dir.exists():
         raise SystemExit(f"{out_dir} already exists -- remove it first so a stale merge can't be trained on.")
