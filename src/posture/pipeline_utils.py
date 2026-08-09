@@ -162,6 +162,27 @@ def _joint_point(pairs, index):
     return None
 
 
+# Posture-tag confidence tiers -- see the definition site (raw_posture_label
+# rules, near "row[\"raw_posture_label\"]") for the full rationale and the
+# measured drop-rate. Declared here, at module scope, so both
+# classify_posture_and_fall() and build_lstm_datasets.py import one definition.
+LOW_CONFIDENCE_POSTURE_TAGS = frozenset({
+    "torso_only_standing_hh",     # hip_height fallback -- explicitly unreliable
+                                   # when the camera is mounted high
+    "fallback_height_standing",   # body_height ratio, used only when joint
+    "fallback_height_sitting",    # angles were ambiguous/unavailable
+    "fallback_default",           # no rule could decide; defaults to Standing
+})
+
+
+def is_low_confidence_posture_tag(other_labels) -> bool:
+    """True if other_labels records one of the heuristic's weakest, most-
+    guessed posture calls (see LOW_CONFIDENCE_POSTURE_TAGS)."""
+    if not other_labels:
+        return False
+    return any(tag in LOW_CONFIDENCE_POSTURE_TAGS for tag in str(other_labels).split(","))
+
+
 def is_landmark_valid(pt, margin: float = 0.1) -> bool:
     if pt is None:
         return False
@@ -847,6 +868,19 @@ def _classify_heuristic(
         other_labels.append("fallback_default")
 
     row["raw_posture_label"] = raw_posture_label
+
+    # ── Posture-tag confidence tiers ────────────────────────────────────────
+    # Exactly one of the tags appended above lands in other_labels, in order of
+    # how much we trust it: angle_standing/angle_sitting/horizontal_torso are
+    # confident (a real signal fired); torso_only_standing/torso_only_sitting/
+    # horizontal_span are a step down; the four below are explicit
+    # last-resort guesses -- the rulebook itself is saying "I couldn't get a
+    # real signal here." Used by build_lstm_datasets.py to decide which frames
+    # are safe to teach a model from. Measured Aug 2026 on the LeFD/UR public
+    # data: dropping just this LOW tier removes 12.2% of frames; also dropping
+    # the MEDIUM tier removes 30% and nearly halves the already-smallest
+    # Sitting class -- so only LOW is excluded from training.
+    row["low_confidence_posture"] = is_low_confidence_posture_tag(",".join(other_labels))
 
     # 4. Temporal Smoothing (5-Frame Persistence Filter)
     #

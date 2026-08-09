@@ -358,6 +358,8 @@ def build_dataset(
     window_size: int = 30,
     step: int = 1,
     output_path: Path = LSTM_DATASET_NPZ,
+    oversample_prefix: str = "r2_",
+    oversample_factor: int = 1,
 ) -> tuple:
     """
     Build the REAL-ONLY sliding-window dataset from all available keypoint CSVs.
@@ -365,6 +367,21 @@ def build_dataset(
     Synthetic augmentation is intentionally excluded here so that the
     train/val split in lstm_trainer.py operates on a 100% real-world proxy
     before any synthetic windows are injected into the training fold.
+
+    Parameters
+    ----------
+    oversample_prefix, oversample_factor
+        Windows whose sequence_id (group) starts with `oversample_prefix` are
+        repeated `oversample_factor` times in the saved dataset. These are the
+        only frames in the whole dataset with real, human-checked labels (the
+        rest is the heuristic's own guess on LeFD/UR) -- at their natural ~6%
+        share they're easily drowned out by the much larger public-data pile.
+        oversample_factor=1 is a no-op (default): every earlier dataset build
+        used this, so existing comparisons stay apples-to-apples unless this
+        is explicitly requested.
+        Applied AFTER col_medians/imputation (so the imputation statistics
+        reflect the natural distribution, not an inflated one) but BEFORE the
+        shuffle (so duplicates aren't left in a suspicious contiguous block).
 
     Outputs
     -------
@@ -419,6 +436,21 @@ def build_dataset(
     print("  Imputing NaN values...")
     X_real = impute_nan(X_real)
 
+    if oversample_factor > 1:
+        mask = np.array([str(g).startswith(oversample_prefix) for g in g_real])
+        n_matched = int(mask.sum())
+        if n_matched == 0:
+            print(f"  [oversample] WARNING: no groups matched prefix "
+                  f"'{oversample_prefix}' -- oversample_factor had no effect.")
+        else:
+            extra = oversample_factor - 1
+            X_real = np.concatenate([X_real] + [X_real[mask]] * extra, axis=0)
+            y_real = np.concatenate([y_real] + [y_real[mask]] * extra, axis=0)
+            g_real = np.concatenate([g_real] + [g_real[mask]] * extra, axis=0)
+            print(f"  [oversample] '{oversample_prefix}*' windows repeated "
+                  f"{oversample_factor}x: {n_matched} -> {n_matched * oversample_factor} "
+                  f"(total dataset {len(y_real) - n_matched * extra} -> {len(y_real)})")
+
     # Shuffle (preserves group integrity; trainer re-shuffles within train fold)
     rng = np.random.default_rng(seed=0)
     idx = rng.permutation(len(X_real))
@@ -452,12 +484,18 @@ def main():
     parser.add_argument("--window-size", type=int, default=30, help="Sliding window length in frames (default: 30)")
     parser.add_argument("--step", type=int, default=1, help="Sliding window step (default: 1)")
     parser.add_argument("--output", type=str, default=str(LSTM_DATASET_NPZ), help="Output .npz path")
+    parser.add_argument("--oversample-prefix", type=str, default="r2_",
+                        help="Group/sequence_id prefix to repeat (default: 'r2_', the real GT-labeled clips)")
+    parser.add_argument("--oversample-factor", type=int, default=1,
+                        help="How many times to repeat matching windows (default: 1 = no-op)")
     args = parser.parse_args()
 
     build_dataset(
         window_size=args.window_size,
         step=args.step,
         output_path=Path(args.output),
+        oversample_prefix=args.oversample_prefix,
+        oversample_factor=args.oversample_factor,
     )
 
 

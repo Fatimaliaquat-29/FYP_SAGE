@@ -20,6 +20,11 @@ from src.posture.pipeline_utils import (
     LANDMARK_COUNT
 )
 
+# Tallies frames dropped for being a low-confidence heuristic guess (see
+# pipeline_utils.LOW_CONFIDENCE_POSTURE_TAGS). Shared across process_ur_sequence
+# and process_lefd_video so main() can report one total at the end.
+_DROP_STATS = {"total": 0, "dropped": 0}
+
 DATA_DIR = REPO_ROOT / "data"
 DATASETS_DIR = REPO_ROOT / "datasets"
 MODELS_DIR = REPO_ROOT / "models"
@@ -135,13 +140,23 @@ def process_ur_sequence(detector, sequence_dir, sequence_id, expected_fall=False
         result = classify_posture_and_fall(row, previous_rows=previous_rows)
         row.update(result)
 
-        if expected_fall:
-            if result["fall_detected"]:
-                row["fall_detected"] = True
-                row["posture_label"] = "Fall"
-                
+        # A frame's posture_label is either overridden by real annotation
+        # timing (expected_fall + heuristic confirms) or it's the heuristic's
+        # own raw guess. Only the raw-guess case is a candidate for the
+        # low-confidence drop -- an override is trustworthy regardless of tag.
+        is_overridden = bool(expected_fall and result["fall_detected"])
+        if is_overridden:
+            row["fall_detected"] = True
+            row["posture_label"] = "Fall"
+
         previous_rows.append(row)
-        
+
+        if not is_overridden and row.get("low_confidence_posture", False):
+            _DROP_STATS["dropped"] += 1
+            _DROP_STATS["total"] += 1
+            continue
+        _DROP_STATS["total"] += 1
+
         pose_row = {
             "sequence_id": sequence_id,
             "timestamp": row.get("timestamp", ""),
@@ -155,9 +170,9 @@ def process_ur_sequence(detector, sequence_dir, sequence_id, expected_fall=False
             idx_y = idx_x + 1
             pose_row[f"x{i}"] = keypoints[idx_x] if idx_x < len(keypoints) else ""
             pose_row[f"y{i}"] = keypoints[idx_y] if idx_y < len(keypoints) else ""
-            
+
         pose_rows.append(pose_row)
-        
+
         posture_row = {
             "sequence_id": sequence_id,
             "timestamp": row.get("timestamp", ""),
@@ -250,6 +265,10 @@ def process_lefd_video(detector, video_path, ann_path, sequence_id):
         result = classify_posture_and_fall(row, previous_rows=previous_rows)
         row.update(result)
 
+        # Only a frame inside [fall_start, fall_end] or after it is overridden
+        # by real annotation timing; everything else keeps the heuristic's raw
+        # guess and is a candidate for the low-confidence drop below.
+        is_overridden = bool(has_fall and frame_number >= fall_start)
         if has_fall:
             if frame_number < fall_start:
                 row["fall_detected"] = False  # pre-fall: trust heuristic's posture, but no fall yet
@@ -266,6 +285,12 @@ def process_lefd_video(detector, video_path, ann_path, sequence_id):
             row["fall_detected"] = False
 
         previous_rows.append(row)
+
+        if not is_overridden and row.get("low_confidence_posture", False):
+            _DROP_STATS["dropped"] += 1
+            _DROP_STATS["total"] += 1
+            continue
+        _DROP_STATS["total"] += 1
 
         pose_row = {
             "sequence_id": sequence_id,
@@ -503,6 +528,12 @@ def main():
             writer = csv.DictWriter(f, fieldnames=posture_headers)
             writer.writeheader()
             writer.writerows(all_posture_rows)
+
+    if _DROP_STATS["total"] > 0:
+        pct = _DROP_STATS["dropped"] / _DROP_STATS["total"] * 100
+        print(f"\nDropped {_DROP_STATS['dropped']} / {_DROP_STATS['total']} frames "
+              f"({pct:.1f}%) as low-confidence heuristic guesses "
+              f"(see LOW_CONFIDENCE_POSTURE_TAGS in pipeline_utils.py).")
 
     print(f"\nDone! Processed {len(all_pose_rows)} frames in total across all datasets.")
 
