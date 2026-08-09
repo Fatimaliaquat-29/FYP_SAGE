@@ -10,6 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.detection.footage_paths import RESERVED_ROOT, TRAINING_PEOPLE, is_reserved
 from src.detection.generate_bbox_dataset import is_fall_lying_clip, split_clips
 from src.detection.yolo_objects import YOLOObjectDetector
 
@@ -56,8 +57,12 @@ def benchmark_clip(detector, clip_path: Path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Benchmark YOLO person detection over Testing/ footage")
-    parser.add_argument("--testing_dir", type=str, default=str(REPO_ROOT / "Testing"))
+    parser = argparse.ArgumentParser(description="Benchmark YOLO person detection over yolo_testing/ footage")
+    parser.add_argument("--testing_dir", type=str, default=str(TRAINING_PEOPLE),
+                        help=f"Footage to benchmark. Defaults to yolo_testing/Training/'With people'. "
+                             f"Pointing this at {RESERVED_ROOT.name}/ is ALLOWED and encouraged -- "
+                             "measuring held-out footage is what it is for; only the training-data "
+                             "producers refuse it.")
     parser.add_argument("--conf", type=float, default=0.4)
     parser.add_argument("--model", type=str, default=None, help="Path to YOLO weights (default: models/yolov8n.pt)")
     parser.add_argument("--imgsz", type=int, default=640, help="Inference image size; match what a fine-tuned model was trained at")
@@ -75,6 +80,13 @@ def main():
         sys.exit(1)
 
     print(f"Found {len(clips)} clips under {testing_dir}")
+    # State up front whether this number is honest. A score on Training/ footage
+    # is partly memorisation and cannot be compared with one on Reserved/.
+    if is_reserved(testing_dir):
+        print("  HELD-OUT footage: no model trained on this, so the result is a fair test.")
+    else:
+        print("  TRAINING footage: the model has seen these clips, so treat the result as a")
+        print(f"  sanity check, not a generalisation measure. For that, use {RESERVED_ROOT}.")
     detector_kwargs = {"confidence_threshold": args.conf, "imgsz": args.imgsz}
     if args.model:
         detector_kwargs["model_path"] = Path(args.model)

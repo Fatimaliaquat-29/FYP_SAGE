@@ -1,4 +1,4 @@
-"""Builds a YOLO fine-tuning dataset (single 'person' class) from Testing/ footage.
+"""Builds a YOLO fine-tuning dataset (single 'person' class) from yolo_testing/ footage.
 
 No manual bounding-box labeling needed: MediaPipe already extracts 33 body
 keypoints per frame for the existing posture pipeline, so a padded box drawn
@@ -22,6 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.detection.footage_paths import TRAINING_PEOPLE, assert_not_reserved, warn_if_shallow
 from src.detection.sage_classes import CLASS_TO_INDEX, SAGE_CLASSES
 
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".mkv"}
@@ -85,7 +86,7 @@ def landmarks_to_bbox(landmarks, min_visibility, pad_fraction):
 
 
 def clip_key(clip_path: Path, testing_dir: Path) -> str:
-    """Filename-safe key that is unique across the whole Testing/ tree.
+    """Filename-safe key that is unique across the whole yolo_testing/ tree.
 
     The clip's own stem is NOT enough: several folders reuse names like
     `normal` and `old`, so keying on the stem alone made later clips silently
@@ -189,8 +190,14 @@ def process_clip(detector, clip_path, images_dir, labels_dir, stride, min_visibi
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate a YOLO person-detection fine-tuning dataset from Testing/ footage")
-    parser.add_argument("--testing_dir", type=str, default=str(REPO_ROOT / "Testing"))
+    parser = argparse.ArgumentParser(
+        description="Generate a YOLO person-detection fine-tuning dataset from yolo_testing/Training footage")
+    parser.add_argument("--testing_dir", type=str, default=str(TRAINING_PEOPLE),
+                        help="Footage to build training data from. Defaults to "
+                             "yolo_testing/Training/'With people' -- deliberately one level below "
+                             "Training/, because train/val is assigned by position in the sorted "
+                             "clip listing and folding Empty/ in would shift every index. "
+                             "Anything under yolo_testing/Reserved/ is refused.")
     parser.add_argument("--out_dir", type=str, default=str(DEFAULT_OUT_DIR))
     parser.add_argument("--stride", type=int, default=2, help="Keep every Nth frame (reduces near-duplicate frames)")
     parser.add_argument("--min_visibility", type=float, default=0.3)
@@ -207,6 +214,9 @@ def main():
     args = parser.parse_args()
 
     testing_dir = Path(args.testing_dir)
+    # This script PRODUCES training data, so reserved footage must never reach it.
+    assert_not_reserved(testing_dir, "training-dataset generation")
+    warn_if_shallow(testing_dir)
     out_dir = Path(args.out_dir)
     clips = find_clips(testing_dir)
     if not clips:

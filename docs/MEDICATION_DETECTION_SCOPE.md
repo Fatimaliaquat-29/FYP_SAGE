@@ -24,7 +24,7 @@ Neither automatic source can produce these labels:
 
 ## 2. Evidence from this branch — the gap is measured, not assumed
 
-Sampling every 60th frame across all 28 `Testing/` clips with stock YOLOv8n:
+Sampling every 60th frame across all 28 `yolo_testing/` clips with stock YOLOv8n:
 
 | Confidence | Container-proxy detections (`bottle`, `cup`, `bowl`, `wine glass`) |
 |---|---|
@@ -112,7 +112,7 @@ Cover, per container type:
 - Multiple positions (nightstand, table, held in hand, on the floor)
 - Both distances the camera actually sees
 - Partially occluded and partially out of frame
-- The lighting conditions already present in `Testing/` (these rooms are fairly dim)
+- The lighting conditions already present in `yolo_testing/` (these rooms are fairly dim)
 
 ### 3b. Decide the class list
 Recommended starting classes, kept deliberately small:
@@ -146,13 +146,13 @@ The existing pipeline already handles this with no changes beyond the class list
 ```bash
 python src/detection/build_merged_dataset.py \
     --coco_dir datasets/coco_subset \
-    --empty_dir Testing_EmptyRooms \
+    --empty_dir "yolo_testing/Training/Empty" \
     --container_dir datasets/containers      # new source, same remap-by-name path
 ```
 `build_merged_dataset.py` remaps every source strictly by class name and aborts on unknown names, so a container dataset slots in as a third source without touching the existing logic.
 
 ## 4. Deliverables
-- A labeled container dataset (~600 images, 3 classes), stored outside `Testing/` so it cannot disturb the held-out split
+- A labeled container dataset (~600 images, 3 classes), stored outside `yolo_testing/` so it cannot disturb the held-out split
 - A retrained model detecting containers in SAGE rooms
 - Precision/recall per container class on a held-out set of clips
 - An honest write-up, in the style of `YOLO_Phase_Summary.md`, including how thin the validation set is
