@@ -1,0 +1,218 @@
+frame_number,timestamp,gt_label,ignore,posture_label,fall_detected,confidence,other_labels,knee_angle,hip_angle,torso_angle,velocity,torso_angular_velocity,body_height,effective_max_bh,hip_height,lower_body_occluded,tracking_lost_after_fall,recent_label_history
+1,0.034276018099547514,Standing,False,Standing,False,0.55,torso_only_standing,,,9.745581205441367,0.0,0.0,0.6015585583131606,0.6015585583131606,0.3539890944957733,True,False,Standing
+2,0.06855203619909503,Standing,False,Standing,False,0.62,torso_only_standing,,,7.625825467572929,0.9611217948314718,61.843698754973566,0.6268197835956616,0.6268197835956616,0.3366052210330963,True,False,Standing|Standing
+3,0.10282805429864254,Standing,False,Standing,False,0.62,torso_only_standing,,,5.876192079024842,0.6507859170876836,51.04540975169994,0.6408664132777867,0.6408664132777867,0.32947131991386414,True,False,Standing|Standing|Standing
+4,0.13710407239819006,Standing,False,Standing,False,0.62,torso_only_standing,,,5.248949556639959,0.5726969697380099,18.299748837895613,0.6417620002721272,0.6417620002721272,0.3293232321739197,True,False,Standing|Standing|Standing|Standing
+5,0.17138009049773756,Standing,False,Standing,False,0.62,torso_only_standing,,,4.520156694056251,0.6462955771940804,21.26247163445538,0.6519728714049051,0.6519728714049051,0.3241845965385437,True,False,Standing|Standing|Standing|Standing|Standing
+6,0.2056561085972851,Standing,False,Standing,False,0.62,torso_only_standing,,,4.380435571046843,0.5304433239929847,4.0763522356540065,0.6689258378909664,0.6689258378909664,0.3162074387073517,True,False,Standing|Standing|Standing|Standing|Standing
+7,0.2399321266968326,Standing,False,Standing,False,0.62,torso_only_standing,,,3.50825249912079,1.183353226674197,25.445869161142934,0.7122326201714423,0.7122326201714423,0.2899942398071289,True,False,Standing|Standing|Standing|Standing|Standing
+8,0.2742081447963801,Standing,False,Standing,False,0.62,torso_only_standing,,,3.021530137033316,0.5350721937404741,14.200084755291316,0.7138462096500268,0.7138462096500268,0.28834283351898193,True,False,Standing|Standing|Standing|Standing|Standing
+9,0.3084841628959276,Standing,False,Standing,False,0.62,torso_only_standing,,,2.204883056315724,0.42336426661938203,23.82561119981359,0.7116697289728137,0.7138462096500268,0.28694140911102295,True,False,Standing|Standing|Standing|Standing|Standing
+10,0.3427601809954751,Standing,False,Standing,False,0.62,torso_only_standing,,,1.5010559060729318,0.618760596583299,20.53409903678641,0.722628673255753,0.722628673255753,0.27993130683898926,True,False,Standing|Standing|Standing|Standing|Standing
+11,0.3770361990950226,Standing,False,Standing,False,0.62,torso_only_standing,,,0.8944143619011077,0.6096172235326813,17.698716998280286,0.7105730485825624,0.722628673255753,0.28529292345046997,True,False,Standing|Standing|Standing|Standing|Standing
+12,0.4113122171945702,Standing,False,Standing,False,0.62,torso_only_standing,,,0.1984165148445115,0.7419279392309359,20.30567976231123,0.6993791674282986,0.722628673255753,0.2884949743747711,True,False,Standing|Standing|Standing|Standing|Standing
+13,0.4455882352941177,Standing,False,Standing,False,0.62,torso_only_standing,,,0.237019837098206,0.4038367992099261,1.1262487416589424,0.69687152136914,0.722628673255753,0.29069986939430237,True,False,Standing|Standing|Standing|Standing|Standing
+14,0.4798642533936652,Standing,False,Standing,False,0.62,torso_only_standing,,,0.16778472545818687,0.38053371058271446,2.0199286696296017,0.69718743283797,0.722628673255753,0.2917579710483551,True,False,Standing|Standing|Standing|Standing|Standing
+15,0.5141402714932127,Standing,False,Standing,False,0.62,torso_only_standing,,,0.8681032823429263,0.1663116505576791,20.4317361150531,0.6982222817669302,0.722628673255753,0.2925838828086853,True,False,Standing|Standing|Standing|Standing|Standing
+16,0.5484162895927602,Standing,False,Standing,False,0.62,torso_only_standing,,,1.2568022618420664,0.3318056334576219,11.34026065601452,0.7023735549899833,0.722628673255753,0.29320353269577026,True,False,Standing|Standing|Standing|Standing|Standing
+17,0.5826923076923077,Standing,False,Standing,False,0.62,torso_only_standing,,,1.0158501413951622,0.5650464431007604,7.029758233500444,0.6997964554163091,0.722628673255753,0.2985162138938904,True,False,Standing|Standing|Standing|Standing|Standing
+18,0.6169683257918552,Standing,False,Standing,False,0.62,torso_only_standing,,,1.6380368457552752,0.277676029674559,18.15224576416964,0.6981154493518836,0.722628673255753,0.2981933057308197,True,False,Standing|Standing|Standing|Standing|Standing
+19,0.6512443438914027,Standing,False,Standing,False,0.62,torso_only_standing,,,1.2933573035161445,0.29243504322077707,10.055997205920516,0.7039063092765846,0.722628673255753,0.2973696291446686,True,False,Standing|Standing|Standing|Standing|Standing
+20,0.6855203619909502,Standing,False,Standing,False,0.62,torso_only_standing,,,2.0365937254571906,0.23949628162998166,21.683861286992904,0.7040422655072919,0.722628673255753,0.2942426800727844,True,False,Standing|Standing|Standing|Standing|Standing
+21,0.7197963800904977,Standing,False,Standing,False,0.62,torso_only_standing,,,2.4302369911367325,0.34056404485579983,11.484509797383337,0.7069154708597198,0.722628673255753,0.2923029363155365,True,False,Standing|Standing|Standing|Standing|Standing
+22,0.7540723981900452,Standing,False,Standing,False,0.62,torso_only_standing,,,3.583993729885901,0.2017480550903015,33.66075765855661,0.6999079366379097,0.722628673255753,0.2950320541858673,True,False,Standing|Standing|Standing|Standing|Standing
+23,0.7883484162895928,Standing,False,Standing,False,0.62,torso_only_standing,,,2.7583831761382402,0.6341010475947453,24.08711978590528,0.7041857863754588,0.722628673255753,0.29202330112457275,True,False,Standing|Standing|Standing|Standing|Standing
+24,0.8226244343891403,Standing,False,Standing,False,0.62,torso_only_standing,,,4.620542457813252,0.12049451534311685,54.32834339936338,0.7069439635510445,0.722628673255753,0.29026007652282715,True,False,Standing|Standing|Standing|Standing|Standing
+25,0.8569004524886878,Standing,False,Standing,False,0.62,torso_only_standing,,,4.622335477272595,0.47925874184994294,0.052311194787451006,0.6972858587347959,0.722628673255753,0.2933290898799896,True,False,Standing|Standing|Standing|Standing|Standing
+26,0.8911764705882353,Standing,False,Standing,False,0.62,torso_only_standing,,,4.730387718955973,0.5644636529572892,3.1524152359110955,0.6861965292659153,0.722628673255753,0.2909300625324249,True,False,Standing|Standing|Standing|Standing|Standing
+27,0.9254524886877828,Standing,False,Standing,False,0.62,torso_only_standing,,,6.743694549806717,0.8070506964698644,58.73806067564548,0.6845034235889754,0.722628673255753,0.2905333638191223,True,False,Standing|Standing|Standing|Standing|Standing
+28,0.9597285067873303,Standing,False,Standing,False,0.62,torso_only_standing,,,7.0407399523612995,1.0721354438213457,8.666275110833363,0.6385316830060976,0.722628673255753,0.3076746463775635,True,False,Standing|Standing|Standing|Standing|Standing
+29,0.9940045248868778,Standing,False,Standing,False,0.62,torso_only_standing,,,5.735046810520717,0.4901663690762302,38.09348968274176,0.6308209845242778,0.722628673255753,0.3067425787448883,True,False,Standing|Standing|Standing|Standing|Standing
+30,1.0282805429864255,Standing,False,Standing,False,0.62,torso_only_standing,,,6.067685845089715,0.24149842556653822,9.704716388085584,0.6244820958108732,0.722628673255753,0.30275630950927734,True,False,Standing|Standing|Standing|Standing|Standing
+31,1.0625565610859729,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Standing|Standing|Standing|Standing|Unknown
+32,1.0968325791855205,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Standing|Standing|Standing|Unknown|Unknown
+33,1.1311085972850679,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Standing|Standing|Unknown|Unknown|Unknown
+34,1.1653846153846155,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Standing|Unknown|Unknown|Unknown|Unknown
+35,1.1996606334841629,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+36,1.2339366515837105,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+37,1.268212669683258,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+38,1.3024886877828055,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+39,1.336764705882353,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+40,1.3710407239819005,Standing,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+41,1.405316742081448,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+42,1.4395927601809955,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+43,1.473868778280543,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+44,1.5081447963800905,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+45,1.542420814479638,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+46,1.5766968325791857,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+47,1.610972850678733,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+48,1.6452488687782807,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+49,1.679524886877828,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+50,1.7138009049773757,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+51,1.748076923076923,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+52,1.7823529411764707,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+53,1.816628959276018,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+54,1.8509049773755657,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+55,1.8851809954751133,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+56,1.9194570135746607,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+57,1.9537330316742083,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+58,1.9880090497737557,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+59,2.022285067873303,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+60,2.056561085972851,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+61,2.0908371040723983,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+62,2.1251131221719457,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+63,2.159389140271493,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+64,2.193665158371041,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+65,2.2279411764705883,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+66,2.2622171945701357,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+67,2.2964932126696835,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+68,2.330769230769231,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+69,2.3650452488687783,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+70,2.3993212669683257,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+71,2.4335972850678735,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+72,2.467873303167421,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+73,2.5021493212669683,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+74,2.536425339366516,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+75,2.5707013574660635,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+76,2.604977375565611,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+77,2.6392533936651583,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+78,2.673529411764706,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+79,2.7078054298642535,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+80,2.742081447963801,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+81,2.7763574660633483,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+82,2.810633484162896,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+83,2.8449095022624435,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+84,2.879185520361991,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+85,2.9134615384615388,Not in frame,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+86,2.947737556561086,,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+87,2.9820135746606335,,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+88,3.016289592760181,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+89,3.0505656108597288,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+90,3.084841628959276,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+91,3.1191176470588236,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+92,3.1533936651583714,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+93,3.1876696832579188,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+94,3.221945701357466,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+95,3.2562217194570136,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+96,3.2904977375565614,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+97,3.3247737556561088,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+98,3.359049773755656,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+99,3.3933257918552036,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+100,3.4276018099547514,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+101,3.461877828054299,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+102,3.496153846153846,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+103,3.530429864253394,Standing,False,Unknown,False,0.0,missing_keypoints,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+104,3.5647058823529414,Standing,False,Unknown,False,0.62,torso_only_standing,,,0.5445258243055806,0.04259757202507535,2.177536998650065,0.5743689942592071,0.722628673255753,0.3645698130130768,True,False,Unknown|Unknown|Unknown|Unknown|Standing
+105,3.598981900452489,Standing,False,Unknown,False,0.62,fallback_height_standing,,160.96377076768738,2.172520592942326,0.8635276900994451,47.4966130519765,0.717758836924854,0.722628673255753,0.35132238268852234,False,False,Unknown|Unknown|Unknown|Standing|Standing
+106,3.633257918552036,Standing,False,Unknown,False,0.62,fallback_height_standing,,168.33931899723984,3.3076221814717814,0.6891071642935381,33.1164951901004,0.7358770389791327,0.7358770389791327,0.3464515805244446,False,False,Unknown|Unknown|Standing|Standing|Standing
+107,3.667533936651584,Standing,False,Unknown,False,0.62,fallback_height_standing,,172.86433166958685,3.7194637974476574,0.5542561801082224,12.015445165764717,0.7259250856156887,0.7259250856156887,0.34476542472839355,False,False,Unknown|Standing|Standing|Standing|Standing
+108,3.7018099547511314,Standing,False,Standing,False,0.62,fallback_height_standing,,173.55314954108547,4.409579680296245,0.6376247149203063,20.134073941853256,0.7570061239798548,0.7570061239798548,0.33597448468208313,False,False,Standing|Standing|Standing|Standing|Standing
+109,3.736085972850679,,False,Standing,False,0.62,fallback_height_standing,,176.4016334657073,4.127616845337378,0.4086007985973957,8.226242445664676,0.783198132441999,0.783198132441999,0.3299073278903961,False,False,Standing|Standing|Standing|Standing|Standing
+110,3.7703619909502266,,False,Standing,False,0.62,fallback_height_standing,,176.71723744285134,3.2677063488160374,0.28263601937311295,25.08781778629893,0.791814320749346,0.791814320749346,0.3252108097076416,False,False,Standing|Standing|Standing|Standing|Standing
+111,3.804638009049774,Transition,True,Standing,False,0.62,fallback_height_standing,,174.91185567568567,2.299770877768973,0.4664719156227838,28.239437505135573,0.7728194660006296,0.791814320749346,0.33705660700798035,False,False,Standing|Standing|Standing|Standing|Standing
+112,3.8389140271493214,Transition,True,Standing,False,0.62,fallback_height_standing,,177.9067818833145,2.970989590170272,0.4031236817287962,19.582750553226084,0.798488597361802,0.798488597361802,0.3374716341495514,False,False,Standing|Standing|Standing|Standing|Standing
+113,3.873190045248869,Transition,True,Standing,False,0.62,torso_only_standing,,,3.0643941779650823,0.46644480425730417,2.725071142264439,0.6454149191421564,0.798488597361802,0.3360596299171448,True,False,Standing|Standing|Standing|Standing|Standing
+114,3.9074660633484166,Transition,True,Standing,False,0.62,torso_only_standing,,,4.017403571724448,0.6114723807811897,27.803970431791136,0.6546611916128761,0.798488597361802,0.33407220244407654,True,False,Standing|Standing|Standing|Standing|Standing
+115,3.941742081447964,Transition,True,Standing,False,0.62,torso_only_standing,,,3.9030624424038995,0.9084501968758844,3.3358930138404372,0.634120890299025,0.798488597361802,0.35219302773475647,True,False,Standing|Standing|Standing|Standing|Standing
+116,3.9760180995475114,Transition,True,Standing,False,0.62,torso_only_standing,,,4.114149192765115,0.45656870435982083,6.158438525389946,0.6370095316103426,0.798488597361802,0.3550163209438324,True,False,Standing|Standing|Standing|Standing|Standing
+117,4.010294117647059,Transition,True,Standing,False,0.62,torso_only_standing,,,4.42022516622917,0.4666177095685635,8.92974127202053,0.6313781760910523,0.798488597361802,0.35847505927085876,True,False,Standing|Standing|Standing|Standing|Standing
+118,4.044570135746606,Transition,True,Standing,False,0.62,torso_only_standing,,,4.448211328038058,0.25295188053071666,0.8164939616850472,0.6304230570200081,0.798488597361802,0.35929539799690247,True,False,Standing|Standing|Standing|Standing|Standing
+119,4.078846153846154,Transition,True,Standing,False,0.62,torso_only_standing,,,4.299430351085058,0.2884973699801901,4.340672726945562,0.6317961852077646,0.798488597361802,0.3574739396572113,True,False,Standing|Standing|Standing|Standing|Standing
+120,4.113122171945702,Transition,True,Standing,False,0.62,torso_only_standing,,,3.9964023668809694,0.19798862416136456,8.840816436845275,0.6286276200782976,0.798488597361802,0.3573493957519531,True,False,Standing|Standing|Standing|Standing|Standing
+121,4.147398190045249,Transition,True,Standing,False,0.62,torso_only_standing,,,3.9006340496501366,0.19786596804576337,2.7940327535332536,0.6236504041368167,0.798488597361802,0.3574681282043457,True,False,Standing|Standing|Standing|Standing|Standing
+122,4.181674208144797,Transition,True,Standing,False,0.62,torso_only_standing,,,3.5715395195368314,0.19318587563243705,9.601305763041555,0.6096242653459423,0.798488597361802,0.35745567083358765,True,False,Standing|Standing|Standing|Standing|Standing
+123,4.2159502262443445,Transition,True,Standing,False,0.62,torso_only_standing,,,5.0553034151272565,0.6646699252606597,43.288689231086586,0.5970221511081772,0.798488597361802,0.3580681085586548,True,False,Standing|Standing|Standing|Standing|Standing
+124,4.250226244343891,Transition,True,Standing,False,0.62,torso_only_standing,,,5.163172267968008,0.29962109291143646,3.147064881558615,0.568936199067905,0.798488597361802,0.3566891551017761,True,False,Standing|Standing|Standing|Standing|Standing
+125,4.284502262443439,Transition,True,Standing,False,0.62,torso_only_standing,,,5.235465650814825,0.8096671327469553,2.1091534797552907,0.5696984087655591,0.798488597361802,0.3436923325061798,True,False,Standing|Standing|Standing|Standing|Standing
+126,4.318778280542986,Transition,True,Standing,False,0.62,torso_only_standing,,,5.599811221953291,2.2213279465290663,10.629751976449164,0.5984155816482171,0.798488597361802,0.29980459809303284,True,False,Standing|Standing|Standing|Standing|Standing
+127,4.353054298642534,Transition,True,Standing,False,0.62,torso_only_standing,,,7.939125285824935,1.3458492370151633,68.24929480074303,0.6057268607681706,0.798488597361802,0.27702879905700684,True,False,Standing|Standing|Standing|Standing|Standing
+128,4.387330316742082,Transition,True,Standing,False,0.62,torso_only_standing,,,7.843350285506881,1.0789355761647577,2.794227732051443,0.5866670692393922,0.798488597361802,0.2557021975517273,True,False,Standing|Standing|Standing|Standing|Standing
+129,4.421606334841629,Transition,True,Standing,False,0.62,torso_only_standing,,,7.5476099612020535,0.640119697530615,8.628199560576636,0.5847617753165137,0.798488597361802,0.24337783455848694,True,False,Standing|Standing|Standing|Standing|Standing
+130,4.455882352941177,Transition,True,Standing,False,0.62,torso_only_standing,,,8.325642452990168,1.16431626469535,22.69903375381805,0.578049393557748,0.798488597361802,0.22333484888076782,True,False,Standing|Standing|Standing|Standing|Standing
+131,4.4901583710407245,Transition,True,Standing,False,0.62,torso_only_standing,,,7.74413870388039,0.9409717305065132,16.965323901420437,0.561475022655986,0.798488597361802,0.20613691210746765,True,False,Standing|Standing|Standing|Standing|Standing
+132,4.524434389140271,Transition,True,Standing,False,0.62,torso_only_standing,,,4.978438598274751,1.543092346110071,80.68907238796783,0.5746092744420688,0.798488597361802,0.17713767290115356,True,False,Standing|Standing|Standing|Standing|Standing
+133,4.558710407239819,Transition,True,Standing,False,0.62,torso_only_standing,,,3.2097871871459556,0.1456159971624743,51.60025899134788,0.5453850899744799,0.798488597361802,0.1798258125782013,True,False,Standing|Standing|Standing|Standing|Standing
+134,4.592986425339367,Transition,True,Standing,False,0.62,torso_only_standing,,,1.029214212498189,0.5157638179809398,63.61803662008606,0.506958734933112,0.798488597361802,0.18367326259613037,True,False,Standing|Standing|Standing|Standing|Standing
+135,4.627262443438914,Transition,True,Standing,False,0.62,torso_only_standing,,,5.531163895111095,0.19109869202677776,131.34401054224008,0.49307591632602793,0.798488597361802,0.18080434203147888,True,False,Standing|Standing|Standing|Standing|Standing
+136,4.661538461538462,Transition,True,Standing,False,0.62,torso_only_standing,,,9.661768991508989,0.41876626986450033,120.51006287840607,0.4676108346464934,0.798488597361802,0.18727391958236694,True,False,Standing|Standing|Standing|Standing|Standing
+137,4.69581447963801,Transition,True,Standing,False,0.62,torso_only_standing,,,12.952077062563466,0.2708074427625524,95.99446649544986,0.45237685200564914,0.798488597361802,0.19028902053833008,True,False,Standing|Standing|Standing|Standing|Standing
+138,4.730090497737557,Transition,True,Standing,False,0.62,torso_only_standing,,,13.98323601814364,0.17446864339515383,30.08397744993029,0.45688188864144136,0.798488597361802,0.1924070417881012,True,False,Standing|Standing|Standing|Standing|Standing
+139,4.7643665158371045,Transition,True,Standing,False,0.62,torso_only_standing,,,15.777829855513819,0.31359744834167613,52.357127136476024,0.45298037849369316,0.798488597361802,0.1936665177345276,True,False,Standing|Standing|Standing|Standing|Standing
+140,4.798642533936651,Transition,True,Standing,False,0.62,torso_only_standing,,,17.100748359457295,0.3399664556218524,38.59603820085983,0.4611274712547859,0.798488597361802,0.19417470693588257,True,False,Standing|Standing|Standing|Standing|Standing
+141,4.832918552036199,Transition,True,Standing,False,0.62,torso_only_standing,,,17.43814466860766,0.5556259379792005,9.843509481482474,0.4553255396995958,0.798488597361802,0.19378751516342163,True,False,Standing|Standing|Standing|Standing|Standing
+142,4.867194570135747,Transition,True,Standing,False,0.62,torso_only_standing,,,19.28558352161438,0.6417933326281094,53.89887610752233,0.43629977993323527,0.798488597361802,0.19430524110794067,True,False,Standing|Standing|Standing|Standing|Standing
+143,4.901470588235294,Transition,True,Standing,False,0.62,torso_only_standing,,,21.937205617784716,0.17407617087214816,77.3608558750698,0.4245962686366375,0.798488597361802,0.194618821144104,True,False,Standing|Standing|Standing|Standing|Standing
+144,4.935746606334842,Transition,True,Standing,False,0.62,torso_only_standing,,,23.14342898181624,0.9227841888661708,35.19146712223947,0.41969073129059103,0.798488597361802,0.198998361825943,True,False,Standing|Standing|Standing|Standing|Standing
+145,4.97002262443439,Transition,True,Standing,False,0.62,torso_only_standing,,,27.05551206999154,0.42956031432650266,114.13470131838064,0.38435483230454054,0.798488597361802,0.19733986258506775,True,False,Standing|Standing|Standing|Standing|Standing
+146,5.004298642533937,Lying,False,Standing,False,0.62,torso_only_sitting,,,31.729577297472048,0.8314073958561186,136.3654673627999,0.37013056460071136,0.798488597361802,0.19552254676818848,True,False,Standing|Standing|Standing|Standing|Sitting
+147,5.0385746606334845,Lying,False,Standing,False,0.62,torso_only_sitting,,,37.45748199885638,0.9816609244338617,167.11114706348852,0.37049135316455833,0.798488597361802,0.18373891711235046,True,False,Standing|Standing|Standing|Sitting|Sitting
+148,5.072850678733032,Lying,False,Standing,False,0.62,torso_only_sitting,,,39.812594450882415,0.8923293211556966,68.71021147165,0.368129698141948,0.798488597361802,0.18036139011383057,True,False,Standing|Standing|Sitting|Sitting|Sitting
+149,5.107126696832579,Lying,False,Standing,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Standing|Sitting|Sitting|Sitting|Unknown
+150,5.141402714932127,Lying,False,Standing,False,0.62,horizontal_torso,,,51.410651424009465,1.2792585570458153,169.18617762779454,0.3431959861418634,0.798488597361802,0.1591024398803711,True,False,Sitting|Sitting|Sitting|Unknown|Lying
+151,5.175678733031674,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,51.61237285318546,0.5706274004358781,5.8852060525275345,0.34949206424906704,0.798488597361802,0.15262183547019958,True,False,Sitting|Sitting|Unknown|Lying|Lying
+152,5.209954751131222,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,52.87353195732217,1.3356590490756712,36.79421280715645,0.356895794520326,0.798488597361802,0.13776803016662598,True,False,Sitting|Unknown|Lying|Lying|Lying
+153,5.24423076923077,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,54.99941077192395,1.6809408801615462,62.022339013463785,0.35586439720931484,0.798488597361802,0.11940565705299377,True,False,Unknown|Lying|Lying|Lying|Lying
+154,5.278506787330317,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,59.15694287548961,1.8112403759352844,121.29565609082864,0.34402936010559315,0.798488597361802,0.10212066769599915,True,False,Lying|Lying|Lying|Lying|Lying
+155,5.3127828054298645,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,59.64095238857689,1.9981231184176527,14.120937609542944,0.3354832775031949,0.798488597361802,0.08429226279258728,True,False,Lying|Lying|Lying|Lying|Lying
+156,5.347058823529412,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,64.35156819192125,0.8734307680258239,137.43182739789998,0.32180976555564234,0.798488597361802,0.08191248774528503,True,False,Lying|Lying|Lying|Lying|Lying
+157,5.381334841628959,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,69.90743894242877,0.8814170360443294,162.09207074088224,0.3176271225839874,0.798488597361802,0.07394814491271973,True,False,Lying|Lying|Lying|Lying|Lying
+158,5.415610859728507,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,72.69349215602233,1.8446039574359097,81.28287263421403,0.31717520306786096,0.798488597361802,0.05445224046707153,True,False,Lying|Lying|Lying|Lying|Lying
+159,5.449886877828055,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,76.98063413716103,0.6643743959488082,125.07701357513457,0.31233914039964755,0.798488597361802,0.05076298117637634,True,False,Lying|Lying|Lying|Lying|Lying
+160,5.484162895927602,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,78.99010644989113,1.1359253435116206,58.626188925855935,0.30604314379424763,0.798488597361802,0.04003569483757019,True,False,Lying|Lying|Lying|Lying|Lying
+161,5.51843891402715,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Lying|Lying|Lying|Unknown
+162,5.552714932126697,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Lying|Lying|Unknown|Unknown
+163,5.5869909502262445,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Lying|Unknown|Unknown|Unknown
+164,5.621266968325792,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Unknown|Unknown|Unknown|Unknown
+165,5.655542986425339,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+166,5.689819004524887,Lying,False,Lying,False,0.65,"torso_only_sitting,slow_lie",,,30.783257761886667,2.107445562025527,234.405138834961,0.32596748125042135,0.798488597361802,0.11535748839378357,True,False,Unknown|Unknown|Unknown|Unknown|Sitting
+167,5.724095022624435,Lying,False,Lying,False,0.65,"torso_only_sitting,slow_lie",,,30.801784199923063,0.36403215248448006,0.5405073011278544,0.3569236893410724,0.798488597361802,0.11839380860328674,True,False,Unknown|Unknown|Unknown|Sitting|Sitting
+168,5.758371040723982,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Sitting|Sitting|Unknown
+169,5.79264705882353,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Unknown|Sitting|Sitting|Unknown|Unknown
+170,5.8269230769230775,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Sitting|Sitting|Unknown|Unknown|Unknown
+171,5.8611990950226245,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Sitting|Unknown|Unknown|Unknown|Unknown
+172,5.895475113122172,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+173,5.92975113122172,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Unknown|Unknown
+174,5.964027149321267,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,54.275148207667215,0.8823984031924219,97.83335116853308,0.24716679263770297,0.798488597361802,0.06716841459274292,True,False,Unknown|Unknown|Unknown|Unknown|Lying
+175,5.998303167420815,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,54.470820012048904,3.1682117468254325,5.708708748297413,0.2049849809759929,0.798488597361802,0.08338487148284912,True,False,Unknown|Unknown|Unknown|Lying|Lying
+176,6.032579185520362,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,,58.32699555823734,2.2338867212462596,112.50360339375037,0.18493851737003728,0.798488597361802,0.07176095247268677,True,False,Unknown|Unknown|Lying|Lying|Lying
+177,6.06685520361991,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Unknown|Lying|Lying|Lying|Unknown
+178,6.1011312217194575,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Lying|Lying|Unknown|Unknown
+179,6.1354072398190045,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Lying|Unknown|Unknown|Unknown
+180,6.169683257918552,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Unknown|Unknown|Unknown|Unknown
+181,6.2039592760181,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",,25.214210457115183,167.88663917495953,5.457055053051737,639.27871258866,0.11339084737738736,0.798488597361802,0.16263428330421448,False,False,Unknown|Unknown|Unknown|Unknown|Lying
+182,6.238235294117647,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Unknown|Unknown|Unknown|Lying|Unknown
+183,6.272511312217195,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",170.46286795433105,81.45266372652013,161.53201259824195,7.5579511776765385,92.69785303330626,0.07989298221111359,0.798488597361802,0.12167966365814209,False,False,Unknown|Unknown|Lying|Unknown|Lying
+184,6.306787330316743,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",146.91018359309467,114.2851196199353,160.37491758054045,0.8456201248387167,33.758151671554806,0.11882557214162791,0.798488597361802,0.12392312288284302,False,False,Unknown|Lying|Unknown|Lying|Lying
+185,6.34106334841629,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",97.12122897266661,144.91604249199167,159.70775954915203,2.5861195033243027,19.464280519715423,0.1394654733429644,0.798488597361802,0.1339685618877411,False,False,Lying|Unknown|Lying|Lying|Lying
+186,6.3753393665158375,Lying,False,Lying,False,0.65,"horizontal_torso,slow_lie",146.2337595027469,126.55715131551204,156.7737084261692,1.8249937160699647,85.60069942959704,0.1464391362135714,0.798488597361802,0.134543776512146,False,False,Unknown|Lying|Lying|Lying|Lying
+187,6.4096153846153845,Lying,False,Lying,False,0.0,lying_persistence,,,,0.0,0.0,,,,,False,Lying|Lying|Lying|Lying|Unknown
+188,6.443891402714932,Lying,False,Lying,False,0.65,"angle_sitting,slow_lie",42.661329847773025,163.21280146774671,169.91660886331994,11.224195228898683,191.721517928074,0.2415000873711394,0.798488597361802,0.3106558918952942,False,False,Lying|Lying|Lying|Unknown|Sitting
+189,6.47816742081448,Lying,False,Lying,False,0.65,"angle_sitting,slow_lie",21.6731032479069,163.24674931467308,169.91643447156497,2.457236707105772,0.005087865062417328,0.17070605657904833,0.798488597361802,0.3250139355659485,False,False,Lying|Lying|Unknown|Sitting|Sitting
+190,6.512443438914027,Lying,False,Lying,False,0.65,"angle_sitting,slow_lie",35.0392158591413,93.97411072610406,169.1336034088094,1.6856192971924864,22.839031665872643,0.1904700759474299,0.798488597361802,0.3155669867992401,False,False,Lying|Unknown|Sitting|Sitting|Sitting
+191,6.546719457013575,Lying,False,Lying,False,0.65,"angle_sitting,slow_lie",0.5552610580856933,172.83487878339275,169.84826087462991,2.5456334064905968,20.8500726001761,0.1919378897762033,0.798488597361802,0.3321799337863922,False,False,Unknown|Sitting|Sitting|Sitting|Sitting
+192,6.580995475113123,Lying,False,Sitting,False,0.62,angle_sitting,15.467235132044511,156.86802841395672,169.53326644809707,0.722163012519323,9.189936404456619,0.18459596434760714,0.798488597361802,0.33057844638824463,False,False,Sitting|Sitting|Sitting|Sitting|Sitting
+193,6.61527149321267,Lying,False,Sitting,False,0.62,fallback_height_sitting,,119.81320113384587,169.77423062526648,0.36001489964136457,7.030109987385083,0.3330399930735209,0.798488597361802,0.3264784514904022,False,False,Sitting|Sitting|Sitting|Sitting|Sitting
+194,6.6495475113122176,Lying,False,Sitting,False,0.0,posture_persistence,,,,0.0,0.0,,,,,False,Sitting|Sitting|Sitting|Sitting|Unknown
+195,6.683823529411765,Lying,False,Sitting,False,0.62,torso_only_sitting,,,30.003469812813726,3.1059028164385407,720.0,0.31457182320286237,0.798488597361802,0.2636664807796478,True,False,Sitting|Sitting|Sitting|Unknown|Sitting
+196,6.718099547511312,Lying,False,Sitting,False,0.62,torso_only_standing,,,29.793957447563244,0.4486592751653043,6.112505969684143,0.3190080981008887,0.798488597361802,0.26549646258354187,True,False,Sitting|Sitting|Unknown|Sitting|Standing
+197,6.75237556561086,Lying,False,Sitting,False,0.62,torso_only_standing,,,28.107099762795944,1.3993404312224524,49.21393377340857,0.31140454448891675,0.798488597361802,0.28033876419067383,True,False,Sitting|Unknown|Sitting|Standing|Standing
+198,6.786651583710407,Lying,False,Sitting,False,0.62,torso_only_standing,,,28.41603034489631,1.147167535906929,9.01302424345638,0.30279433516405496,0.798488597361802,0.2922380864620209,True,False,Unknown|Sitting|Standing|Standing|Standing
+199,6.820927601809955,Lying,False,Sitting,False,0.62,torso_only_standing,,,27.658626211849636,0.44448899376821027,22.097203089546305,0.2988585291417625,0.798488597361802,0.2900857627391815,True,False,Sitting|Standing|Standing|Standing|Standing
+200,6.855203619909503,Lying,False,Standing,False,0.62,torso_only_standing,,,24.457305077663616,3.484555370235512,93.39827995446916,0.297919492169366,0.798488597361802,0.2546490728855133,True,False,Standing|Standing|Standing|Standing|Standing
+201,6.88947963800905,Lying,False,Standing,False,0.62,torso_only_standing,,,24.37585442609588,1.886347095990103,2.376316039137922,0.29097900351387757,0.798488597361802,0.2733195126056671,True,False,Standing|Standing|Standing|Standing|Standing
+202,6.923755656108598,Lying,False,Standing,False,0.62,torso_only_standing,,,23.200210860091996,0.08431597365688431,34.29930403786879,0.3118923879478709,0.798488597361802,0.2741848826408386,True,False,Standing|Standing|Standing|Standing|Standing
+203,6.958031674208145,Lying,False,Standing,False,0.62,torso_only_standing,,,22.689902198310268,4.557288697671955,14.888213102806718,0.32716467431173907,0.798488597361802,0.22334200143814087,True,False,Standing|Standing|Standing|Standing|Standing
+204,6.992307692307692,Lying,False,Standing,False,0.62,torso_only_standing,,,21.038696777743112,3.1799966195446436,48.17378190697655,0.3249025939802598,0.798488597361802,0.2580009996891022,True,False,Standing|Standing|Standing|Standing|Standing
+205,7.02658371040724,,False,Standing,False,0.62,torso_only_standing,,,20.02437428939474,0.22636838713825672,29.592774907589224,0.3179025707310457,0.798488597361802,0.25975602865219116,True,False,Standing|Standing|Standing|Standing|Standing
+206,7.060859728506788,,False,Standing,False,0.62,torso_only_standing,,,19.383314936667137,3.0267831281369872,18.702853723141747,0.3272918511057406,0.798488597361802,0.2258443832397461,True,False,Standing|Standing|Standing|Standing|Standing
+207,7.095135746606335,,False,Standing,False,0.62,torso_only_standing,,,20.69544701707411,2.14798804914659,38.28134518415123,0.34857210815444295,0.798488597361802,0.2506427764892578,True,False,Standing|Standing|Standing|Standing|Standing
+208,7.129411764705883,,False,Standing,False,0.62,torso_only_standing,,,20.857185999890774,1.530071566800219,4.718721478875597,0.32411021338412793,0.798488597361802,0.2665565311908722,True,False,Standing|Standing|Standing|Standing|Standing
+209,7.163687782805431,,False,Standing,False,0.62,torso_only_standing,,,19.387771469147264,3.971980149112087,42.87004769561884,0.32448149553234945,0.798488597361802,0.2226111888885498,True,False,Standing|Standing|Standing|Standing|Standing
+210,7.197963800904978,,False,Standing,False,0.62,torso_only_standing,,,13.808361358933745,0.25416832018881214,162.7788296181133,0.3426800049901667,0.798488597361802,0.22360673546791077,True,False,Standing|Standing|Standing|Standing|Standing
+211,7.232239819004525,,False,Standing,False,0.62,torso_only_standing,,,16.744666146447873,2.8158549554321133,85.66644990635199,0.32270007103735454,0.798488597361802,0.25428059697151184,True,False,Standing|Standing|Standing|Standing|Standing
+212,7.266515837104072,,False,Standing,False,0.62,torso_only_standing,,,16.53842711779228,0.6208189957123611,6.017006644605482,0.3172784863669665,0.798488597361802,0.24758237600326538,True,False,Standing|Standing|Standing|Standing|Standing
+213,7.30079185520362,,False,Standing,False,0.62,torso_only_standing,,,16.6787913481177,0.6430746191810354,4.095114838536889,0.3236300508952051,0.798488597361802,0.25393298268318176,True,False,Standing|Standing|Standing|Standing|Standing
+214,7.335067873303168,,False,Standing,False,0.62,torso_only_standing,,,18.319175530038915,3.5428471420611785,47.85807316232152,0.3298380554030045,0.798488597361802,0.2168903946876526,True,False,Standing|Standing|Standing|Standing|Standing
+215,7.369343891402715,,False,Standing,False,0.62,torso_only_standing,,,16.1200808591935,3.645321071097848,64.15840557846136,0.3834504734750198,0.798488597361802,0.16897976398468018,True,False,Standing|Standing|Standing|Standing|Standing
+216,7.403619909502263,,False,Standing,False,0.62,torso_only_standing,,,15.712508798825896,0.9442456986062728,11.890881233166958,0.3741616910891249,0.798488597361802,0.18099936842918396,True,False,Standing|Standing|Standing|Standing|Standing
+217,7.437895927601811,,False,Standing,False,0.62,torso_only_standing,,,16.021939079734285,1.4328141180680098,9.027602914950931,0.3580182132965168,0.798488597361802,0.19765213131904602,True,False,Standing|Standing|Standing|Standing|Standing

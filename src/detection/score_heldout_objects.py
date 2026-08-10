@@ -83,7 +83,7 @@ def iou(a, b):
     return intersection / union if union > 0 else 0.0
 
 
-def score_model(model_path: Path, ground_truth, conf: float, iou_threshold: float):
+def score_model(model_path: Path, ground_truth, conf: float, iou_threshold: float, imgsz: int):
     """Greedy IoU matching per class. Returns per-class {tp, fp, fn}."""
     from ultralytics import YOLO
 
@@ -91,7 +91,12 @@ def score_model(model_path: Path, ground_truth, conf: float, iou_threshold: floa
     stats = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
 
     for image_path, gt_boxes in ground_truth.items():
-        results = model.predict(str(image_path), conf=conf, verbose=False)
+        # imgsz matters: the merged series (including v3) was trained and
+        # gated at 320 -- Ultralytics silently defaults predict() to 640 when
+        # this isn't passed, which is exactly the resolution the 640px
+        # experiment already measured as failing v3's recall gate. Not passing
+        # this would unfairly deflate any model tuned for a non-default size.
+        results = model.predict(str(image_path), conf=conf, imgsz=imgsz, verbose=False)
         predictions = []
         for result in results:
             for box in result.boxes:
@@ -165,6 +170,11 @@ def main():
                         help="Detection confidence threshold (default 0.25)")
     parser.add_argument("--iou", type=float, default=0.5,
                         help="IoU required to count a detection as a match (default 0.5)")
+    parser.add_argument("--imgsz", type=int, default=320,
+                        help="Inference resolution (default 320, matching what the "
+                             "merged series was trained and gated at -- NOT Ultralytics' "
+                             "own 640 default, which the 640px experiment already found "
+                             "fails v3's recall gate)")
     args = parser.parse_args()
 
     eval_dir = Path(args.eval_dir)
@@ -192,14 +202,14 @@ def main():
 
     n_boxes = sum(len(v) for v in ground_truth.values())
     print(f"eval set: {len(ground_truth)} labelled frames, {n_boxes} hand-drawn boxes")
-    print(f"conf={args.conf}  iou={args.iou}")
+    print(f"conf={args.conf}  iou={args.iou}  imgsz={args.imgsz}")
 
     for model_arg in args.model:
         model_path = Path(model_arg)
         if not model_path.exists():
             print(f"\nSKIP {model_path} -- not found")
             continue
-        stats = score_model(model_path, ground_truth, args.conf, args.iou)
+        stats = score_model(model_path, ground_truth, args.conf, args.iou, args.imgsz)
         print_report(model_path, stats, len(ground_truth))
 
     print("\nThese numbers are scored against human-drawn boxes on footage held out of training.")

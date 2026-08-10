@@ -21,10 +21,56 @@ def find_clips(testing_dir: Path):
     return sorted(p for p in testing_dir.rglob("*") if p.suffix.lower() in VIDEO_EXTENSIONS)
 
 
+# cv2.VideoCapture ignores a video's rotation metadata and hands back the raw,
+# as-stored pixels -- most players (VLC, phone galleries, WhatsApp) apply that
+# metadata automatically, so a portrait clip looks perfectly normal everywhere
+# except here. Left unhandled, a rotated clip shows the detector a sideways or
+# upside-down room and person, and person-detection silently collapses to ~0%
+# despite the footage being completely fine.
+#
+# NOT metadata-driven. CAP_PROP_ORIENTATION_META was tried first and rejected:
+# all 4 clips below report meta=90, but verified visually (Aug 2026) they need
+# THREE different corrections -- Bedroom_Fall and both TV_Lounge_2 clips need
+# opposite directions from each other despite identical metadata, and the
+# metadata=180 clips (Bedroom_Sit/Walk) turned out to already be upright, so
+# "rotate by the metadata value" would have broken those too. The likely cause
+# is each clip being filmed with the phone held differently, which the
+# container's single per-file metadata field can't capture. There is no
+# reliable automatic rule here -- every entry below was confirmed by eye,
+# frame by frame, not inferred.
+_VERIFIED_ROTATIONS = {
+    "Bedroom_Fall.mov": cv2.ROTATE_90_CLOCKWISE,
+    "TV_Lounge_2_Fall.mov": cv2.ROTATE_90_COUNTERCLOCKWISE,
+    "TV_Lounge_2_Sit.mov": cv2.ROTATE_90_CLOCKWISE,
+    "TV_Lounge_2_Walk.mov": cv2.ROTATE_90_CLOCKWISE,
+}
+
+
+def _get_rotation_fix(cap, clip_path: Path):
+    """Returns a cv2.rotate() code (or None) for this clip's frames.
+
+    Looks up the verified table first. For anything not in it, falls back to
+    checking CAP_PROP_ORIENTATION_META purely to WARN -- a non-zero value on an
+    unlisted clip means it likely needs a correction nobody has verified yet,
+    and this prints instead of guessing, since guessing is how the previous
+    version of this function got 3 of 4 corrections wrong."""
+    if clip_path.name in _VERIFIED_ROTATIONS:
+        return _VERIFIED_ROTATIONS[clip_path.name]
+    meta = cap.get(cv2.CAP_PROP_ORIENTATION_META)
+    if meta not in (0, None):
+        print(f"  [rotation] {clip_path.name}: orientation_meta={meta} but this "
+              f"clip has no VERIFIED correction -- leaving frame as-read. Check "
+              f"visually (this metadata field has proven unreliable on this "
+              f"project's footage) and add it to _VERIFIED_ROTATIONS if wrong.")
+    return None
+
+
 def benchmark_clip(detector, clip_path: Path):
     cap = cv2.VideoCapture(str(clip_path))
     if not cap.isOpened():
         return None
+
+    rotate_code = _get_rotation_fix(cap, clip_path)
 
     frame_count = 0
     person_frames = 0
@@ -34,6 +80,8 @@ def benchmark_clip(detector, clip_path: Path):
         ret, frame = cap.read()
         if not ret:
             break
+        if rotate_code is not None:
+            frame = cv2.rotate(frame, rotate_code)
         frame_count += 1
         t0 = time.perf_counter()
         detections = detector.detect(frame)

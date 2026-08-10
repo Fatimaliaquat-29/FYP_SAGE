@@ -27,19 +27,27 @@ def main():
     parser.add_argument("--batch", type=int, default=16)
     parser.add_argument("--project", type=str, default=str(REPO_ROOT / "runs" / "detect"))
     parser.add_argument("--name", type=str, default="sage_person_finetune")
+    parser.add_argument("--resume", action="store_true",
+                         help="Continue an interrupted run. --weights must point at that "
+                              "run's last.pt; Ultralytics reads the rest of the training "
+                              "config (data/epochs/imgsz/batch) back out of its own "
+                              "args.yaml, so those flags are ignored here.")
     args = parser.parse_args()
 
     model = YOLO(args.weights)
-    model.train(
-        data=args.data,
-        epochs=args.epochs,
-        imgsz=args.imgsz,
-        batch=args.batch,
-        project=args.project,
-        name=args.name,
-        device="cpu",
-        patience=10,
-    )
+    if args.resume:
+        model.train(resume=True)
+    else:
+        model.train(
+            data=args.data,
+            epochs=args.epochs,
+            imgsz=args.imgsz,
+            batch=args.batch,
+            project=args.project,
+            name=args.name,
+            device="cpu",
+            patience=10,
+        )
 
 
 if __name__ == "__main__":
