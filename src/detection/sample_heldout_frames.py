@@ -45,6 +45,9 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.detection.footage_paths import RESERVED_ROOT
+from src.detection.footage_rotation import apply as apply_rotation
+from src.detection.footage_rotation import describe as describe_rotation
+from src.detection.footage_rotation import get_rotation, needs_verification
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".mkv"}
@@ -144,6 +147,11 @@ def main():
     parser.add_argument("--max_frames", type=int, default=200,
                         help="Stop after this many frames total (default 200). Hand labelling is "
                              "the bottleneck, not extraction.")
+    parser.add_argument("--exclude", type=str, action="append", default=None,
+                        help="Filename substring to skip; repeatable. Use for footage being "
+                             "held back from THIS analysis but still living under Reserved/ "
+                             "(e.g. --exclude mahaRoom). Reserved/ means 'never trained on'; "
+                             "this is the stricter 'not used yet at all'.")
     parser.add_argument("--dry_run", action="store_true",
                         help="Report what would be extracted without writing anything")
     args = parser.parse_args()
@@ -157,6 +165,11 @@ def main():
     import cv2
 
     clips = list(iter_source_clips(source_dir))
+    if args.exclude:
+        before = len(clips)
+        clips = [(k, p) for k, p in clips
+                 if not any(x.lower() in p.name.lower() for x in args.exclude)]
+        print(f"excluded {before - len(clips)} clip(s) matching {args.exclude}")
     if not clips:
         raise SystemExit(f"No images or videos found under {source_dir}.")
 
@@ -190,6 +203,18 @@ def main():
             print(f"  {key}.jpg  (still image)")
             continue
 
+        # Rotation FIRST: cv2 returns raw stored pixels and ignores the clip's
+        # orientation metadata, so an unrotated portrait clip shows the detector
+        # a sideways room. That silently produced a 0/20 "model is blind to
+        # fallen people" result, and it also corrupts posture labels, since a
+        # standing person in a sideways frame has a wide box and reads as lying.
+        if needs_verification(path):
+            print(f"  SKIP {key}: orientation not verified -- add it to "
+                  "src/detection/footage_rotation.py after looking at a frame. "
+                  "Measuring it unrotated would produce a plausible wrong number.")
+            continue
+        rotation = get_rotation(path)
+
         capture = cv2.VideoCapture(str(path))
         total = int(capture.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
         kept = 0
@@ -202,13 +227,15 @@ def main():
             index += 1
             if index % args.stride:
                 continue
+            frame = apply_rotation(frame, rotation)
             if not args.dry_run:
                 cv2.imwrite(str(images_out / f"{key}_{index:06d}.jpg"), frame)
             grayscales.append(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY).astype("float32"))
             kept += 1
             written += 1
         capture.release()
-        print(f"  {key}: {kept} frames kept of {total or 'unknown'}")
+        print(f"  {key}: {kept} frames kept of {total or 'unknown'}"
+              f"  [rotation: {describe_rotation(rotation)}]")
 
         max_shift, _ = measure_drift(grayscales)
         if not report_drift(max_shift):
