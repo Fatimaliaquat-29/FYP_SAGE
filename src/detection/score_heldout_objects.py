@@ -35,7 +35,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.detection.sage_classes import SAGE_CLASSES
+from src.detection.sage_classes import CLASS_TO_INDEX, SAGE_CLASSES
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 
@@ -83,24 +83,37 @@ def iou(a, b):
     return intersection / union if union > 0 else 0.0
 
 
-def score_model(model_path: Path, ground_truth, conf: float, iou_threshold: float, imgsz: int):
-    """Greedy IoU matching per class. Returns per-class {tp, fp, fn}."""
+def score_model(model_path: Path, ground_truth, conf: float, iou_threshold: float,
+                only_classes=None, imgsz: int = 320):
+    """Greedy IoU matching per class. Returns per-class {tp, fp, fn}.
+
+    only_classes: optional set of SAGE class indices to score. Both predictions
+        AND ground truth are filtered to it, which is what makes a PARTIAL
+        labelling pass valid. If you hand-label only `person` and score every
+        class, each furniture detection becomes an unmatched prediction and is
+        counted as a false positive -- reporting terrible precision for classes
+        you simply had not labelled yet. Restricting both sides keeps the
+        measurement honest about what was actually annotated.
+    """
     from ultralytics import YOLO
 
     model = YOLO(str(model_path))
     stats = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
 
-    for image_path, gt_boxes in ground_truth.items():
-        # imgsz matters: the merged series (including v3) was trained and
-        # gated at 320 -- Ultralytics silently defaults predict() to 640 when
-        # this isn't passed, which is exactly the resolution the 640px
-        # experiment already measured as failing v3's recall gate. Not passing
-        # this would unfairly deflate any model tuned for a non-default size.
+    for image_path, all_gt in ground_truth.items():
+        gt_boxes = [g for g in all_gt if only_classes is None or g[0] in only_classes]
+        # imgsz matters: the merged series (including v3) was trained and gated
+        # at 320, while Ultralytics silently defaults predict() to 640 -- the
+        # resolution the 640px experiment already measured as failing v3's
+        # recall gate. Not passing this unfairly deflates any model tuned for a
+        # non-default size.
         results = model.predict(str(image_path), conf=conf, imgsz=imgsz, verbose=False)
         predictions = []
         for result in results:
             for box in result.boxes:
                 cls = int(box.cls.item())
+                if only_classes is not None and cls not in only_classes:
+                    continue
                 confidence = float(box.conf.item())
                 x1, y1, x2, y2 = (float(v) for v in box.xyxyn[0])
                 predictions.append((confidence, cls, (x1, y1, x2, y2)))
@@ -171,11 +184,27 @@ def main():
     parser.add_argument("--iou", type=float, default=0.5,
                         help="IoU required to count a detection as a match (default 0.5)")
     parser.add_argument("--imgsz", type=int, default=320,
-                        help="Inference resolution (default 320, matching what the "
-                             "merged series was trained and gated at -- NOT Ultralytics' "
-                             "own 640 default, which the 640px experiment already found "
-                             "fails v3's recall gate)")
+                        help="Inference resolution (default 320, matching what the merged "
+                             "series was trained and gated at -- NOT Ultralytics' own 640 "
+                             "default, which the 640px experiment already found fails v3's "
+                             "recall gate). Stock yolov8n.pt is a 640 model, so pass 640 "
+                             "explicitly when scoring it or the comparison is rigged.")
+    parser.add_argument("--classes", type=str, default=None,
+                        help="Comma-separated SAGE class names to score, e.g. 'person'. Filters "
+                             "BOTH predictions and ground truth, so a partial labelling pass "
+                             "(person only) does not report unlabelled furniture as false "
+                             "positives. Omit to score every class.")
     args = parser.parse_args()
+
+    only_classes = None
+    if args.classes:
+        only_classes = set()
+        for raw in args.classes.split(","):
+            name = raw.strip().lower()
+            if name not in CLASS_TO_INDEX:
+                raise SystemExit(f"Unknown class {name!r}. Valid: {', '.join(SAGE_CLASSES)}")
+            only_classes.add(CLASS_TO_INDEX[name])
+        print(f"Scoring ONLY: {args.classes} (both predictions and ground truth filtered)")
 
     eval_dir = Path(args.eval_dir)
     images_dir, labels_dir = eval_dir / "images", eval_dir / "labels"
@@ -209,7 +238,7 @@ def main():
         if not model_path.exists():
             print(f"\nSKIP {model_path} -- not found")
             continue
-        stats = score_model(model_path, ground_truth, args.conf, args.iou, args.imgsz)
+        stats = score_model(model_path, ground_truth, args.conf, args.iou, only_classes, args.imgsz)
         print_report(model_path, stats, len(ground_truth))
 
     print("\nThese numbers are scored against human-drawn boxes on footage held out of training.")

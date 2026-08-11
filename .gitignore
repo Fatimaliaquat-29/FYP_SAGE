@@ -262,12 +262,17 @@ Testing/
 .venv2/
 .vscode/
 
-# Frames extracted from Reserved/ for hand labelling. The IMAGES are
-# regenerable (sample_heldout_frames.py) and may show identifiable people, so
-# they stay out. The LABELS are hand-drawn, irreplaceable, and small -- those
-# are committed deliberately via the negation below.
-eval/**/images/
-!eval/**/labels/
+# Frames extracted from Reserved/ footage for labelling and inspection.
+# Matched by EXTENSION, not by directory: an earlier `eval/**/images/` rule
+# missed eval/fp_inspect/, which holds annotated stills of a real living room.
+# Every still pulled from this footage is regenerable and may show identifiable
+# people or private homes, so none of it goes to GitHub.
+eval/**/*.jpg
+eval/**/*.jpeg
+eval/**/*.png
+eval/**/*.bmp
+# The hand-drawn .txt labels ARE committed: irreplaceable manual work, tiny,
+# and meaningless as personal data on their own (four normalised numbers).
 
 # Regenerable keypoint CSVs must never be committed, including copies that were
 # parked under models/ during the July 2026 retrain experiments (one was 63 MB).

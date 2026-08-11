@@ -1,5 +1,20 @@
 # YOLO Person Detection - Real Footage Benchmark
 
+> **CAUTION — do not read "Falling / lying clips 56.1%" as fall detection working.**
+> That row is a per-frame *any-person-detected* rate over whole clips that
+> **contain** a fall. Most of a fall clip is the subject still upright, and that
+> upright majority is what carries the 56.1%. Scored per box on the frames where
+> the person is actually horizontal, detection is **0 of 65 across three rooms**,
+> for both v3 and v4. See
+> [`reserved_heldout_posture.md`](reserved_heldout_posture.md).
+>
+> The "Held-out clips only" row is also not comparable with the same row in
+> `reserved_people_v4.md` — the two runs held out *different clips*
+> (`TV_Lounge_2_Sit` here, `TV_Lounge_1_Walk` there), so 20.1% -> 68.5% is a
+> change of test set, not an improvement.
+
+
+
 Model: yolov8n_sage_merged_v3.pt, confidence threshold 0.4, imgsz 320
 Clips: 9, total frames: 4903
 Overall person-detection rate: 63.7%
