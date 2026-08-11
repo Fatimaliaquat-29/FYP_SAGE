@@ -111,7 +111,7 @@ def main():
                              f"Pointing this at {RESERVED_ROOT.name}/ is ALLOWED and encouraged -- "
                              "measuring held-out footage is what it is for; only the training-data "
                              "producers refuse it.")
-    parser.add_argument("--conf", type=float, default=0.4)
+    parser.add_argument("--conf", type=float, default=0.25)
     parser.add_argument("--model", type=str, default=None, help="Path to YOLO weights (default: models/yolov8n.pt)")
     parser.add_argument("--imgsz", type=int, default=640, help="Inference image size; match what a fine-tuned model was trained at")
     parser.add_argument(

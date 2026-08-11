@@ -19,7 +19,7 @@ class YOLOObjectDetector:
     def __init__(
         self,
         model_path: Path = DEFAULT_MODEL_PATH,
-        confidence_threshold: float = 0.4,
+        confidence_threshold: float = 0.25,
         device: Optional[str] = None,
         imgsz: int = 640,
     ):
