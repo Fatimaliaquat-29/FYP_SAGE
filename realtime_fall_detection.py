@@ -56,8 +56,10 @@ from src.posture.pipeline_utils import (
     classify_posture_and_fall,
     reset_session_state,
 )
+from src.detection.yolo_objects import YOLOObjectDetector
 
 POSE_MODEL_PATH = str(REPO_ROOT / "models" / "pose_landmarker_full.task")
+DEFAULT_OBJECT_MODEL_PATH = REPO_ROOT / "models" / "yolov8n_sage_merged_v3.pt"
 
 # ── Alert debounce defaults ────────────────────────────────────────────────
 ALERT_WINDOW      = 12    # look at the last N frames
@@ -116,10 +118,28 @@ def _load_lstm(enabled: bool):
     return None
 
 
+def _load_object_detector(enabled: bool, model_path: Path, conf: float, imgsz: int):
+    # Independent of the pose/fall pipeline -- object detection never gates or
+    # feeds the fall alarm (that stays purely posture/LSTM-driven). It only
+    # adds furniture/person-box context on screen. If it fails to load, fall
+    # detection must keep working, so this never raises.
+    if not enabled:
+        return None
+    try:
+        detector = YOLOObjectDetector(model_path=model_path, confidence_threshold=conf, imgsz=imgsz)
+        print(f"[realtime] Object detector loaded ({model_path.name}, conf={conf}, imgsz={imgsz}).")
+        return detector
+    except Exception as e:
+        print(f"[realtime] Could not load object detector ({e}) — running pose-only.")
+        return None
+
+
 def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
         alert_window=ALERT_WINDOW, alert_min_hits=ALERT_MIN_HITS,
         alert_hold=ALERT_HOLD_SECONDS, on_alert=None,
-        min_visibility=MIN_LANDMARK_VISIBILITY):
+        min_visibility=MIN_LANDMARK_VISIBILITY,
+        use_objects=True, object_model_path=DEFAULT_OBJECT_MODEL_PATH,
+        object_conf=0.25, object_imgsz=320):
     """
     Main real-time loop.
 
@@ -134,6 +154,7 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
     """
     detector = _make_detector()
     lstm = _load_lstm(use_lstm)
+    object_detector = _load_object_detector(use_objects, object_model_path, object_conf, object_imgsz)
 
     cap = cv2.VideoCapture(input_source)
     if not cap.isOpened():
@@ -193,6 +214,11 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
             fall_now = bool(result_dict.get("fall_detected", False))
             fall_flags.append(1 if fall_now else 0)
 
+            # Object detection runs alongside pose, not instead of it -- purely
+            # additive context (what furniture/objects are in view). It never
+            # feeds fall_detected above; the alarm stays posture/LSTM-only.
+            objects = object_detector.detect(frame) if object_detector is not None else []
+
             # ── Debounced alert decision ────────────────────────────────────
             hits = sum(fall_flags)
             if not alarm_active and hits >= alert_min_hits:
@@ -226,6 +252,7 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
             if show_display:
                 if show_skeleton:
                     _draw_skeleton(frame, landmarks, visibility, min_visibility)
+                _draw_objects(frame, objects)
                 _draw_overlay(frame, posture, fall_now, alarm_active, fps_ema, hits, alert_window)
                 try:
                     cv2.imshow("S.A.G.E. Real-Time Fall Detection", frame)
@@ -244,6 +271,20 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
         except cv2.error:
             pass
         print(f"[realtime] Stopped after {frame_count} frames.")
+
+
+def _draw_objects(frame, objects):
+    """Draw YOLO's furniture/person boxes. Purely visual context -- these boxes
+    never influence the fall_detected decision, which stays posture/LSTM-only."""
+    if not objects:
+        return
+    blue = (255, 160, 0)
+    for det in objects:
+        x1, y1, x2, y2 = (int(v) for v in det["bbox"])
+        cv2.rectangle(frame, (x1, y1), (x2, y2), blue, 1, cv2.LINE_AA)
+        label = f'{det["class"]} {det["confidence"]:.2f}'
+        cv2.putText(frame, label, (x1, max(0, y1 - 6)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, blue, 1, cv2.LINE_AA)
 
 
 def _draw_skeleton(frame, landmarks, visibility=None,
@@ -312,6 +353,16 @@ def main():
                    help=f"Fall frames within the window needed to alert (default {ALERT_MIN_HITS}).")
     p.add_argument("--alert-hold", type=float, default=ALERT_HOLD_SECONDS,
                    help=f"Seconds to latch the alarm before re-arming (default {ALERT_HOLD_SECONDS}).")
+    p.add_argument("--no-objects", action="store_true",
+                   help="Disable YOLO object/furniture detection (pose-only). It never feeds "
+                        "the fall alarm either way -- this only turns off the on-screen boxes.")
+    p.add_argument("--object-model", type=str, default=str(DEFAULT_OBJECT_MODEL_PATH),
+                   help=f"YOLO weights for object detection (default {DEFAULT_OBJECT_MODEL_PATH.name}).")
+    p.add_argument("--object-conf", type=float, default=0.25,
+                   help="Object-detection confidence threshold (default 0.25 -- 0.4 was found to "
+                        "under-detect a person overlapping a bed on the merged v4 model).")
+    p.add_argument("--object-imgsz", type=int, default=320,
+                   help="Object-detection inference size (default 320, matches training/gating).")
     args = p.parse_args()
 
     source = int(args.input) if str(args.input).isdigit() else args.input
@@ -323,6 +374,10 @@ def main():
         alert_window=args.alert_window,
         alert_min_hits=args.alert_min_hits,
         alert_hold=args.alert_hold,
+        use_objects=not args.no_objects,
+        object_model_path=Path(args.object_model),
+        object_conf=args.object_conf,
+        object_imgsz=args.object_imgsz,
     )
 
 
