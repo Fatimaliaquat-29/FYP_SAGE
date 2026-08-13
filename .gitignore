@@ -279,3 +279,8 @@ eval/**/*.bmp
 # Rebuild with src/data_processing/build_lstm_datasets.py.
 models/**/*.csv
 models/**/*.npz
+# MediaPipe 'heavy' pose model (30 MB). Downloaded while investigating the
+# labeller and measured as WORSE than 'full' for this footage (more boxes, but
+# precision 0.39 vs 0.71). Not used by any script; re-fetch if needed from
+# storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/
+models/pose_landmarker_heavy.task

@@ -184,6 +184,7 @@ def process_clip(detector, clip_path, images_dir, labels_dir, stride, min_visibi
     cap = cv2.VideoCapture(str(clip_path))
     if not cap.isOpened():
         print(f"  Warning: could not open {clip_path}")
+        detector.close()
         return 0
 
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
@@ -228,6 +229,7 @@ def process_clip(detector, clip_path, images_dir, labels_dir, stride, min_visibi
         written += 1
 
     cap.release()
+    detector.close()   # per-clip detector; do not leak tracking state
     return written
 
 
@@ -298,8 +300,6 @@ def main():
             print(f"  wrote {written} labeled frames")
             split_total += written
         totals[split_name] = split_total
-
-    detector.close()
 
     data_yaml = out_dir / "data.yaml"
     # With pseudo-labels the files contain object class indices too, so the yaml
