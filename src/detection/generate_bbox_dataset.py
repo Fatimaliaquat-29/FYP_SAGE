@@ -140,13 +140,53 @@ def build_object_labeler(model_path: Path, confidence: float):
     return label_objects
 
 
+def make_pose_detector():
+    """A fresh VIDEO-mode PoseLandmarker. One per clip -- see process_clip."""
+    return mp.tasks.vision.PoseLandmarker.create_from_options(
+        mp.tasks.vision.PoseLandmarkerOptions(
+            base_options=mp.tasks.BaseOptions(model_asset_path=str(POSE_MODEL_PATH)),
+            running_mode=mp.tasks.vision.RunningMode.VIDEO,
+        )
+    )
+
+
 def process_clip(detector, clip_path, images_dir, labels_dir, stride, min_visibility, pad_fraction, clip_stem,
                  object_labeler=None, stats=None):
+    """Label one clip. `detector` MUST be a fresh VIDEO-mode landmarker for this clip.
+
+    VIDEO mode, not IMAGE mode. MediaPipe Pose is two-stage: a person detector
+    finds an ROI, then landmarks are regressed inside it. IMAGE mode re-runs
+    that detector from scratch every frame with no memory; VIDEO mode seeds the
+    ROI from the previous frame's pose. When someone falls -- dark, on
+    furniture, occluded, in a pose unlike any training photo -- stage one fails
+    and IMAGE mode emits nothing, while VIDEO mode carries tracking through
+    from the frames before the fall, when the person was easy to see.
+
+    Measured over the 14 fall/lying training clips: coverage 0.70 -> 0.83,
+    +60 labelled frames. The gain lands where it is needed -- Fall_and_lie
+    0.23 -> 0.61, Side_fall 0.50 -> 0.88, Foward_fall 0.57 -> 0.93 -- and the
+    recovered boxes were checked by eye to sit correctly on the subject.
+    Two clips regress slightly (Occluded_fall -0.09, Backward_fall -0.05) where
+    tracking holds a stale ROI; far outweighed.
+
+    realtime_fall_detection.py and evaluate_real_footage.py were switched to
+    VIDEO mode in b566685. This script -- which generates every training label
+    -- was missed, so the training data was built by the unfixed path. That is
+    why fallen people are under-represented in it.
+
+    Two consequences for the loop below:
+      * Detection runs on EVERY frame, not every Nth. Skipping frames before
+        detect_for_video() breaks the tracking chain, which is the entire
+        point. `stride` now controls only which frames get WRITTEN.
+      * The detector must be fresh per clip, or tracking state bleeds across
+        clips and seeds one room's ROI into the next.
+    """
     cap = cv2.VideoCapture(str(clip_path))
     if not cap.isOpened():
         print(f"  Warning: could not open {clip_path}")
         return 0
 
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     frame_idx = 0
     written = 0
 
@@ -155,12 +195,14 @@ def process_clip(detector, clip_path, images_dir, labels_dir, stride, min_visibi
         if not ret:
             break
         frame_idx += 1
-        if frame_idx % stride != 0:
-            continue
 
+        # Every frame goes through the tracker, even ones we will not write.
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-        result = detector.detect(mp_image)
+        result = detector.detect_for_video(mp_image, int(frame_idx / fps * 1000))
+
+        if frame_idx % stride != 0:
+            continue
         if not result.pose_landmarks:
             continue
 
@@ -226,14 +268,9 @@ def main():
     train_clips, val_clips = split_clips(clips, val_every=args.val_every)
     print(f"Clips: {len(clips)} total -> {len(train_clips)} train, {len(val_clips)} val")
 
-    BaseOptions = mp.tasks.BaseOptions
-    PoseLandmarker = mp.tasks.vision.PoseLandmarker
-    PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-    options = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=str(POSE_MODEL_PATH)),
-        running_mode=mp.tasks.vision.RunningMode.IMAGE,
-    )
-    detector = PoseLandmarker.create_from_options(options)
+    # Detector is created PER CLIP inside the loop below: VIDEO mode carries
+    # tracking state, and reusing one detector across clips would seed one
+    # room's ROI into the next. See process_clip.
 
     object_labeler = None
     label_stats = {"object_boxes": 0}
@@ -252,7 +289,7 @@ def main():
         for clip in split_clips_list:
             print(f"[{split_name}] {clip.relative_to(testing_dir)} ...")
             written = process_clip(
-                detector, clip, images_dir, labels_dir,
+                make_pose_detector(), clip, images_dir, labels_dir,
                 args.stride, args.min_visibility, args.pad_fraction,
                 clip_key(clip, testing_dir),
                 object_labeler=object_labeler,
