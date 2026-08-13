@@ -1,19 +1,23 @@
 # YOLO Person Detection - Real Footage Benchmark
 
-> **CAUTION — do not read "Falling / lying clips 56.1%" as fall detection working.**
-> That row is a per-frame *any-person-detected* rate over whole clips that
-> **contain** a fall. Most of a fall clip is the subject still upright, and that
-> upright majority is what carries the 56.1%. Scored per box on the frames where
-> the person is actually horizontal, detection is **0 of 65 across three rooms**,
-> for both v3 and v4. See
-> [`reserved_heldout_posture.md`](reserved_heldout_posture.md).
+> **CAUTION — read [`reserved_heldout_posture.md`](reserved_heldout_posture.md) first.**
 >
-> The "Held-out clips only" row is also not comparable with the same row in
-> `reserved_people_v4.md` — the two runs held out *different clips*
-> (`TV_Lounge_2_Sit` here, `TV_Lounge_1_Walk` there), so 20.1% -> 68.5% is a
-> change of test set, not an improvement.
-
-
+> "Falling / lying clips 56.1%" is a per-frame *any-person-detected* rate over
+> whole clips that **contain** a fall, most of which is the subject still
+> upright. Scored per clip against hand-drawn boxes at imgsz 640, v3 detects
+> **0.25–0.45** of person boxes on fall clips versus **0.83–1.00** on walk/sit
+> clips — five fall clips, three rooms, no overlap between the two groups.
+> Do not read 56.1% as evidence that falls are detected.
+>
+> **Resolution is decisive and invisible in this table.** The same weights lose
+> about a third of their detections at imgsz 320. This benchmark runs at 640,
+> which is correct — but the offline scoring scripts defaulted to 320, which is
+> why they disagreed with these numbers for a long time.
+>
+> The "Held-out clips only" row is NOT comparable with the same row in
+> `reserved_people_v4.md`: the two runs held out *different clips*
+> (`TV_Lounge_2_Sit` here, `TV_Lounge_1_Walk` there) — a change of test set,
+> not an improvement.
 
 Model: yolov8n_sage_merged_v3.pt, confidence threshold 0.4, imgsz 320
 Clips: 9, total frames: 4903

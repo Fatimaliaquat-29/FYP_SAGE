@@ -1,190 +1,195 @@
-# Held-out person detection by POSTURE — v3 vs v4
+# Held-out person detection: fall clips vs everything else
 
 Measured 11 Aug 2026 against **hand-drawn** boxes on footage held out of every
-training run. Settings identical for both models: `conf 0.4`, `imgsz 320`,
-IoU 0.5 for a match.
+training run. `conf 0.4`, `imgsz 640`, IoU 0.5. **179 person boxes across 11
+clips in 3 rooms.**
 
-> **Read this before citing the 56.1% figure in
-> [`reserved_people_v3.md`](reserved_people_v3.md).** See "Reconciling with
-> 56.1%" below. Short version: that number is measured over whole clips that
-> *contain* a fall, most of which is the person still upright. Scored on the
-> frames where the person is actually horizontal, detection is **0%**.
+> **This file has been rewritten twice.** An earlier version reported "both
+> models are blind to falls, 0/65", produced by three measurement faults. A
+> second version framed the result by box aspect ratio, which turned out to be
+> a broken proxy. Both are superseded. See "What was wrong before".
 
 ---
 
-## Headline
+## The result
 
-| | v3 | v4 |
+Detection rate per clip, v3 @ 640:
+
+| clip | detected | rate |
 |---|---|---|
-| Upright recall (standing / sitting) | **0.905** (67/74) | 0.757 (56/74) |
-| **Lying recall (horizontal)** | **0.000** (0/65) | **0.000** (0/65) |
-| Empty-room false-positive rate | 2.70% (172/6366) | **0.39%** (25/6366) |
+| `Bedroom_Walk` | 14/14 | **1.00** |
+| `TV_Lounge_1_Sit` | 14/14 | **1.00** |
+| `TV_Lounge_1_Walk` | 1/1 | **1.00** |
+| `people` | 17/18 | **0.94** |
+| `people_(2)` | 30/32 | **0.94** |
+| `Bedroom_Sit` | 20/24 | **0.83** |
+| | | |
+| `TV_Lounge_2_Fall` | 5/11 | **0.45** |
+| `TV_Lounge_2_Fall2` | 5/13 | **0.38** |
+| `Bedroom_Fall` | 7/20 | **0.35** |
+| `TV_Lounge_1_Fall` | 4/16 | **0.25** |
+| `TV_Lounge_1_Fall2` | 4/16 | **0.25** |
 
-**Neither model detects a fallen person. 0 out of 65, across three rooms.**
+**Walk/Sit: 0.83–1.00. Fall: 0.25–0.45. No overlap.**
 
-This is not degradation, it is absence: the misses are total non-detections,
-not localisation errors. Scored per box, the best-IoU distribution is perfectly
-bimodal — the model either finds the person and localises them well (IoU ≥ 0.75)
-or emits no person box at all. Zero boxes landed in the 0.30–0.49 near-miss
-band, so this is not an artefact of the IoU threshold or of box tightness.
+Five fall clips, three rooms, two recording sessions, two camera setups — no
+exceptions. Fall footage loses roughly 60–75% of person detections regardless
+of room. This is a split by *activity*, not by location.
 
-For a fall-detection product this is the defining failure mode: the system
-tracks a person reliably right up to the moment they fall, then loses them
-completely.
+All 51 misses are **IoU 0.00** — the model emits no person box at all, rather
+than a poorly-placed one. It is not a localisation problem.
 
 ---
 
-## v3 per clip
+## Why the misses happen
 
-| clip | room | upright | lying |
+The 51 missed frames are saved in `eval/missed_falls/`. Looking at them
+directly, the causes are visible and are **not** what was originally assumed:
+
+**Motion blur is not the cause.** Only 2 of 51 frames are blurred. The rest are
+sharp, static frames of a person already at rest after the fall.
+
+What the missed frames actually share:
+
+1. **The person is lying ON furniture, not on open floor** — curled on a bed,
+   sprawled along a sofa, stretched prone across a bench. Their outline merges
+   with the object supporting them.
+2. **Foreground occlusion.** A glass coffee table cuts horizontally across the
+   body in every missed `TV_Lounge_1_Fall` frame.
+3. **Low contrast.** Dark clothing against dark furniture in dim rooms — black
+   against a dark headboard, navy against a shadowed sofa.
+4. **Poses unlike any COCO training photo** — foetal curl, prone plank across a
+   narrow bench.
+
+The controlling comparison is `people_(2)` at **0.94**: also a fallen person,
+also horizontal, but on an **open floor**, in **light clothing**, unoccluded,
+side-on to camera. Detected almost perfectly.
+
+**So the failure mode is not "the person is fallen". It is "the person is
+merged with furniture in low contrast".** Falling just happens to be the
+activity that reliably produces that situation, because people land on and
+against furniture.
+
+---
+
+## Model comparison
+
+Same 148-box subset, both resolutions (this table predates the 31 extra fall
+labels; the per-clip table above is the current one):
+
+| model | imgsz | detection rate |
+|---|---|---|
+| v3 | 320 | 0.514 |
+| **v3** | **640** | **0.736** |
+| v4 | 320 | 0.439 |
+| v4 | 640 | 0.520 |
+| merged_640 | 320 | 0.405 |
+| merged_640 | 640 | **0.770** |
+| stock | 640 | 0.588 |
+
+**Inference resolution is the single largest factor.** At 320 the same weights
+lose roughly a third of their detections. The runtime code was already correct
+(`YOLOObjectDetector` and `benchmark_footage.py` both default to 640); the 320
+default lived only in the *scoring* scripts, which is why offline evaluation
+disagreed with the runtime for so long.
+
+**v4 should not ship.** It is worse than v3 at every resolution on this data.
+Its only advantage is a lower empty-room false-positive rate (0.39% vs 2.70%,
+measured at imgsz 320 — needs re-running at 640).
+
+### Latency
+
+Interleaved round-robin, 72 timings per config, on a loaded laptop CPU:
+
+| model | imgsz | median ms | IQR |
 |---|---|---|---|
-| Bedroom_Walk | Bedroom | 14/14 | — |
-| TV_Lounge_1_Sit | TV Lounge 1 | 14/14 | — |
-| people | Fatima's room | 18/18 | — |
-| TV_Lounge_1_Walk | TV Lounge 1 | 1/1 | — |
-| Bedroom_Sit | Bedroom | 17/23 | 0/1 |
-| TV_Lounge_1_Fall | TV Lounge 1 | 3/4 | **0/12** |
-| Bedroom_Fall | Bedroom | — | **0/20** |
-| people_(2) | Fatima's room | — | **0/32** |
-| **TOTAL** | 3 rooms | **67/74** | **0/65** |
+| v3 | 320 | 81.3 | 78–87 |
+| merged_640 | 320 | 79.3 | 76–83 |
+| v3 | 640 | 150.3 | 145–159 |
+| merged_640 | 640 | 150.2 | 144–156 |
 
-v3 is genuinely good at what it was trained for — 0.905 upright recall on rooms
-it has never seen, with three clips perfect. The failure is specific, not general.
+**v3@640 and merged_640@640 cost exactly the same** (150.3 vs 150.2 ms). They
+are the same architecture at the same input size. `merged_640` was rejected for
+failing an 85.9 ms latency gate — but that was never a property of that
+checkpoint, it is the price of running at 640. **v3 at 640 pays it too.**
 
-## v4 per clip
-
-Identical frames, identical settings.
-
-| clip | upright | lying |
-|---|---|---|
-| Bedroom_Walk | 14/14 | — |
-| TV_Lounge_1_Sit | 14/14 | — |
-| TV_Lounge_1_Fall | 4/4 | 0/12 |
-| people | 17/18 | — |
-| TV_Lounge_1_Walk | 1/1 | — |
-| **Bedroom_Sit** | **6/23** | 0/1 |
-| Bedroom_Fall | — | 0/20 |
-| people_(2) | — | 0/32 |
-| **TOTAL** | **56/74** | **0/65** |
-
-v4's upright loss is concentrated almost entirely in `Bedroom_Sit`
-(17/23 → 6/23). Lying is unchanged at zero.
+The latency gate therefore does not discriminate between checkpoints. It
+discriminates between resolutions. Absolute values here are unusable (the same
+config measured 33.8 ms and 81.3 ms on different runs of the same machine);
+only the ~2x ratio between 320 and 640 should be expected to transfer.
+Re-measure on the deployment device.
 
 ---
 
-## False positives — every frame of 9 held-out empty rooms
+## What was wrong before
 
-Empty rooms need no labels: the room is empty, so that IS the ground truth and
-every `person` detection is an error by definition. Run over **every** frame
-(`--stride 1`), not a sampled subset — see the note on sampling below.
+Four faults, each of which produced a *believable wrong number* rather than an
+error. Recorded because each was invisible until specifically looked for.
 
-| clip | frames | v3 | v4 |
-|---|---|---|---|
-| **living room.mov** | 809 | **172 (21.26%)** | **25 (3.09%)** |
-| Bedroom_Empty | 854 | 0 | 0 |
-| TV_Lounge_1_Empty | 826 | 0 | 0 |
-| TV_Lounge_2_Empty | 497 | 0 | 0 |
-| beds | 861 | 0 | 0 |
-| lonuge | 595 | 0 | 0 |
-| empty_ground_mahaRoom | 1012 | 0 | 0 |
-| WhatsApp 5.49 / 7.44 | 912 | 0 | 0 |
-| **ALL** | **6366** | **172 (2.70%)** | **25 (0.39%)** |
+**1. Inference resolution.** Scoring ran at imgsz 320 because that is what the
+merged series was trained at. Sensible-sounding, and wrong for inference.
 
-Both models fail on **exactly one room**. `living room.mov` contains an armchair
-with a cream cushion which v3 boxes as a person at up to 0.78 confidence. Eight
-other held-out rooms, including all three new 4K ones, are clean at 0.00%.
+**2. Frame rotation.** `cv2.VideoCapture` ignores rotation metadata.
+`Bedroom_Fall.mov` is stored portrait and needs 90° CW, so every extracted
+frame was sideways. Worse, posture was derived from box aspect ratio, so in a
+rotated frame a **standing** person is wide and was counted as lying. Those 20
+labels were deleted and redrawn. Now handled by
+`src/detection/footage_rotation.py`, an eye-verified per-clip table.
 
-A narrow, reproducible confusion is good news — it is fixable with targeted
-data, unlike general trigger-happiness.
+**3. Orphaned labels.** Re-extraction renamed images, so 50 hand-drawn labels
+silently stopped matching any frame and dropped out of scoring — including all
+32 boxes of the one clip where detection works.
 
----
+**4. Aspect ratio as a posture proxy.** `w/h > 1` was used to mean "lying". It
+does not: three of five fall clips produce **zero** wide boxes, because a
+person who falls onto a bed or toward the camera keeps a tall box. The "0/52
+lying" figure was measuring *wide boxes*, not fallen people. Detection rate per
+clip needs no proxy and is used instead.
 
-## Reconciling with 56.1%
+Also caught: v3 was once compared at `conf 0.25` against v4 at `conf 0.4`,
+inflating v3's false-positive rate to 49.32% (21.26% at matched settings).
 
-[`reserved_people_v3.md`](reserved_people_v3.md) reports **56.1% on "falling /
-lying clips"**. That appears to contradict the 0/65 above. It does not — the two
-measure different things.
-
-| | that report | this report |
-|---|---|---|
-| unit | one frame | one hand-drawn box |
-| population | every frame of a clip that *contains* a fall | only frames where the person is actually horizontal |
-| ground truth | none — "did the model emit any person box?" | hand-drawn boxes |
-
-A fall clip is mostly **not** a fall. The subject walks in, stands, sits, and is
-upright for the majority of the runtime; the horizontal portion is a minority of
-frames at the end. v3 detects the upright majority almost perfectly, and that is
-what carries the 56.1%.
-
-**So 56.1% is largely a measurement of the upright footage inside fall clips.
-On the fall itself, detection is 0%.**
-
-> **Do not cite 56.1% as evidence that fall detection works.** It is a valid
-> number for what it measures — overall person-detection rate across
-> fall-containing clips — but it says nothing about whether a fallen person is
-> detected. Measured directly, that is 0 of 65 across three rooms and both models.
-
-The same caution applies to the "Held-out clips only" rows in
-`reserved_people_v3.md` (20.1%) and `reserved_people_v4.md` (68.5%): those two
-runs held out **different clips** (`TV_Lounge_2_Sit` vs `TV_Lounge_1_Walk`), so
-20.1% → 68.5% is a change of test set, not an improvement.
-
----
-
-## Which model should ship
-
-**v3.** v4 buys a 7× false-alarm reduction (2.70% → 0.39%) by giving up 15% of
-real upright detections (0.905 → 0.757), and fixes nothing on lying. For a fall
-detector a missed person costs more than a false alarm, so v4's headline gain is
-on the metric that matters less.
-
-Neither model addresses the fallen-person case.
-
----
-
-## Why this is a data problem, not a modelling one
-
-1. **Three training rooms.** All own-footage training data comes from 3
-   recording sessions. Furniture and viewpoint diversity are close to nil.
-2. **The person labels come from MediaPipe**, which is itself weakest on fallen
-   and occluded poses — so the training set barely contains correctly-labelled
-   fallen people. The model cannot learn what it was never shown.
-3. `generate_bbox_dataset.py` exists specifically to fix fallen-person
-   detection — its docstring names that as the weakness it targets. It works on
-   the training rooms and does not transfer.
-
-The fix is footage of fallen people in rooms the model has not seen, with boxes
-a human drew.
+**Rule:** compare models at the same `--conf` and `--imgsz`, on frames with
+verified orientation, with labels confirmed to match their images, and do not
+derive semantics from box geometry.
 
 ---
 
 ## Method
 
-- **Recall**: `src/detection/score_heldout_objects.py --classes person`.
-  `--classes` filters predictions *and* ground truth, so a person-only labelling
-  pass does not report unlabelled furniture as false positives.
-- **False positives**: `src/detection/score_empty_false_positives.py`, `--stride 1`.
-- Posture is classified from the hand-drawn box aspect ratio: `w/h > 1`
-  (wide) = horizontal. Confounded with size — lying boxes average 4.2% of frame
-  area versus 12.6% upright — so some of the miss rate is small-object detection
-  rather than posture as such. The two cannot be fully separated with this
-  footage. What survives the caveat: whatever the mechanism, detection of fallen
-  people in an unseen room is zero.
-- Labels: 50 frames drawn by Fatima (`people`, `people_(2)`), the remainder from
-  the team's `Bedroom_*` / `TV_Lounge_1_*` set already in the repo.
+- `src/detection/score_heldout_objects.py --classes person`
+- Labels: 385 label files, all verified to match an existing image. 50 frames
+  by Fatima (`people`, `people_(2)`), 38 on the `Fall2` re-shoots, 31 on
+  `Bedroom_Fall` / `TV_Lounge_2_Fall`, remainder from the team's
+  `Bedroom_*` / `TV_Lounge_1_*` set.
+- `mahaRoom` footage deliberately excluded (`--exclude mahaRoom`).
 
-### Two settings mistakes worth not repeating
+### Caveats
 
-Both were made and corrected while producing this report:
+- 179 person boxes, 11 clips, 3 rooms. The activity split is unambiguous, but
+  the sample is small and from two recording sessions by the same people.
+- `TV_Lounge_1_Walk` contributes a single box; its 1.00 is not meaningful alone.
+- Empty-room false-positive rates were measured at imgsz 320 and need
+  re-running at 640 before use as a gate. **Open item.**
 
-- **imgsz.** Ultralytics' `predict()` defaults to 640; the merged series is
-  trained and gated at **320**. Scoring v3 at 640 reported its precision as
-  0.391 when the correct figure is 0.581. `--imgsz` is now a required
-  consideration in both scripts.
-- **conf.** v3 was first scanned at `conf 0.25` and v4 at `conf 0.4`, which made
-  v4 look like it had almost eliminated the armchair false positive. At matched
-  settings the real comparison is 21.26% → 3.09%. The earlier **49.32%** figure
-  for v3 came from that mismatched run and should not be quoted.
+---
 
-Any two models must be compared at the same `--conf` **and** `--imgsz`, each at
-the resolution it was trained for.
+## What this means for improving v3
+
+The failure is tied to an identifiable visual situation, not to a room or to
+"falls" as such. That makes it more tractable than a generic recall problem.
+
+Training data almost certainly lacks people lying **on** furniture, in low
+contrast, partly occluded by foreground objects. COCO's people are upright and
+unoccluded; our own footage is three rooms of mostly-upright activity, and its
+person labels come from MediaPipe, which is itself weakest on exactly these
+poses — so those frames are likely missing or mislabelled in training too.
+
+Targeted next steps, cheapest first:
+
+1. **Record people lying on furniture** — sofas, beds, benches — in dark
+   clothing, in dim light, with foreground objects between camera and subject.
+   That is the specific gap, and it is much narrower than "more rooms".
+2. **Check whether MediaPipe labels these poses at all** in the existing
+   training footage. If it does not, the fine-tune never saw them.
+3. Re-measure false positives at 640 to complete the picture.

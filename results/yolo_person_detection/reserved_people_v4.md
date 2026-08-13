@@ -1,19 +1,19 @@
 # YOLO Person Detection - Real Footage Benchmark
 
-> **CAUTION — see [`reserved_heldout_posture.md`](reserved_heldout_posture.md).**
+> **CAUTION — read [`reserved_heldout_posture.md`](reserved_heldout_posture.md) first.**
+>
+> **v4 is worse than v3 at every resolution** on hand-labelled held-out footage
+> (0.520 vs 0.736 overall detection rate at imgsz 640). Its only advantage is a
+> lower empty-room false-positive rate (0.39% vs 2.70%, measured at imgsz 320
+> and still to be re-checked at 640). For a fall detector a missed person costs
+> more than a false alarm, so **v3 is preferred over v4**.
+>
 > "Falling / lying clips 35.4%" is a per-frame rate over clips that *contain* a
-> fall, most of which is upright footage. On frames where the person is actually
-> horizontal, v4 detects **0 of 65**, the same as v3.
+> fall, most of which is upright footage — it is not a fall-detection rate.
 >
 > The "Held-out clips only 68.5%" row is NOT comparable with the 20.1% in
-> `reserved_people_v3.md`: the two runs held out different clips
-> (`TV_Lounge_1_Walk` here, `TV_Lounge_2_Sit` there). That is a change of test
-> set, not an improvement.
->
-> At matched settings v4 also loses upright recall versus v3 (0.905 -> 0.757)
-> while buying a lower false-positive rate (2.70% -> 0.39%).
-
-
+> `reserved_people_v3.md`: different clips were held out in each run
+> (`TV_Lounge_1_Walk` here, `TV_Lounge_2_Sit` there).
 
 Model: yolov8n_sage_merged_v4.pt, confidence threshold 0.4, imgsz 320
 Clips: 10, total frames: 5850
