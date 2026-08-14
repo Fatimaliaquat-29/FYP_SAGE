@@ -97,7 +97,17 @@ def score_model(model_path: Path, ground_truth, conf: float, iou_threshold: floa
     """
     from ultralytics import YOLO
 
-    model = YOLO(str(model_path))
+    return score_loaded_model(YOLO(str(model_path)), ground_truth, conf,
+                              iou_threshold, only_classes, imgsz)
+
+
+def score_loaded_model(model, ground_truth, conf: float, iou_threshold: float,
+                       only_classes=None, imgsz: int = 320):
+    """As score_model, but takes an already-loaded YOLO.
+
+    --per_clip scores the same weights once per clip. Reloading them each time
+    would dominate the runtime and change nothing about the numbers.
+    """
     stats = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
 
     for image_path, all_gt in ground_truth.items():
@@ -139,6 +149,70 @@ def score_model(model_path: Path, ground_truth, conf: float, iou_threshold: floa
         for gi in unmatched:
             stats[gt_boxes[gi][0]]["fn"] += 1
     return stats
+
+
+def group_by_clip(ground_truth):
+    """Split the eval set into clips using the frame-number filename suffix.
+
+    sample_heldout_frames.py writes `<clip>_<6-digit frame>.jpg`, so dropping
+    the last underscore-separated field recovers the clip. Returns an ordered
+    {clip: {image_path: boxes}}.
+    """
+    clips = defaultdict(dict)
+    for image_path, boxes in ground_truth.items():
+        clip, _, frame = image_path.stem.rpartition("_")
+        if not clip or not frame.isdigit():
+            clip = image_path.stem
+        clips[clip][image_path] = boxes
+    return dict(sorted(clips.items()))
+
+
+def print_per_clip_report(model_path: Path, model, ground_truth, conf,
+                          iou_threshold, only_classes, imgsz):
+    """Detection rate per clip -- the view that separates activity from model.
+
+    An aggregate recall hides the thing that matters most in this project: fall
+    clips and walk/sit clips behave completely differently, and a single number
+    averages the two into something that describes neither. See
+    results/yolo_person_detection/reserved_heldout_posture.md.
+
+    The denominator is tp + fn -- boxes of the scored classes only. Counting
+    every line in the label file instead would include furniture and silently
+    understate every rate.
+    """
+    print(f"\n=== {model_path.name} per clip ===")
+    header = (f"{'clip':<34} {'boxes':>6} {'detected':>10} {'rate':>7} {'FP':>5}")
+    print(header)
+    print("-" * len(header))
+
+    rows = []
+    for clip, clip_gt in group_by_clip(ground_truth).items():
+        stats = score_loaded_model(model, clip_gt, conf, iou_threshold,
+                                   only_classes, imgsz)
+        tp = sum(s["tp"] for s in stats.values())
+        fp = sum(s["fp"] for s in stats.values())
+        fn = sum(s["fn"] for s in stats.values())
+        if tp + fn == 0:
+            # No labelled boxes of the scored classes. Reporting a rate here
+            # would be a division by zero dressed up as 0%; the clip simply
+            # does not participate in recall. Its FPs still count.
+            rows.append((clip, 0, tp, None, fp))
+            continue
+        rows.append((clip, tp + fn, tp, tp / (tp + fn), fp))
+
+    rows.sort(key=lambda r: (r[3] is None, -(r[3] or 0)))
+    for clip, n, tp, rate, fp in rows:
+        rate_text = "     --" if rate is None else f"{rate:>7.2f}"
+        detected = "--" if rate is None else f"{tp}/{n}"
+        print(f"{clip[:33]:<34} {n:>6} {detected:>10} {rate_text} {fp:>5}")
+
+    print("-" * len(header))
+    total_n = sum(r[1] for r in rows)
+    total_tp = sum(r[2] for r in rows if r[3] is not None)
+    total_fp = sum(r[4] for r in rows)
+    overall = f"{total_tp / total_n:>7.2f}" if total_n else "     --"
+    print(f"{'ALL':<34} {total_n:>6} {str(total_tp) + '/' + str(total_n):>10} "
+          f"{overall} {total_fp:>5}")
 
 
 def print_report(model_path: Path, stats, n_images):
@@ -194,6 +268,10 @@ def main():
                              "BOTH predictions and ground truth, so a partial labelling pass "
                              "(person only) does not report unlabelled furniture as false "
                              "positives. Omit to score every class.")
+    parser.add_argument("--per_clip", action="store_true",
+                        help="Also break the result down by clip. Fall clips and walk/sit "
+                             "clips have very different detection rates, so the aggregate "
+                             "describes neither -- see reserved_heldout_posture.md.")
     args = parser.parse_args()
 
     only_classes = None
@@ -238,8 +316,14 @@ def main():
         if not model_path.exists():
             print(f"\nSKIP {model_path} -- not found")
             continue
-        stats = score_model(model_path, ground_truth, args.conf, args.iou, only_classes, args.imgsz)
+        from ultralytics import YOLO
+        model = YOLO(str(model_path))
+        stats = score_loaded_model(model, ground_truth, args.conf, args.iou,
+                                   only_classes, args.imgsz)
         print_report(model_path, stats, len(ground_truth))
+        if args.per_clip:
+            print_per_clip_report(model_path, model, ground_truth, args.conf,
+                                  args.iou, only_classes, args.imgsz)
 
     print("\nThese numbers are scored against human-drawn boxes on footage held out of training.")
     print("Unlike the merged val split, they are not circular -- see report_label_sources.py")

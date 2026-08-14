@@ -1,5 +1,34 @@
 # YOLO Person Detection - Real Footage Benchmark
 
+> **These percentages are NOT recall and must not be compared between
+> checkpoints as if they were.**
+>
+> `benchmark_footage.py` scores a frame as "person detected" if the model emits
+> **any** person box anywhere in it — see the `any(d["class"] == "person" ...)`
+> test at `src/detection/benchmark_footage.py:89`. There is no ground truth, no
+> IoU check and no position check, so a false positive counts exactly like a
+> correct detection. The metric also assumes a person is present in every frame
+> of a "with people" clip, which is not true frame-by-frame.
+>
+> What it therefore measures is **coverage and latency** — how often the model
+> fires, and how fast. That is a useful signal, and the latency columns below
+> are sound.
+>
+> On this particular comparison the **direction** below held up under
+> ground-truth scoring: `Bedroom_Fall` at 38.2% → 67.3% here corresponds to
+> 0.35 → 0.75 against hand-drawn boxes at IoU 0.3. That agreement is a fact
+> about this run, not a property of the metric — the metric cannot distinguish a
+> tight box from a loose one or from a hallucination, so it could not have
+> established that on its own.
+>
+> The `Bedroom_Sit` / `TV_Lounge_2_Sit` "regressions" below **are** artifacts:
+> `Bedroom_Sit` improves against real labels (0.83 → 0.88 at IoU 0.5).
+>
+> For recall comparisons use `score_heldout_objects.py --classes person`, which
+> scores against hand-drawn boxes with IoU matching. Result, including the
+> threshold sensitivity that dominates this run:
+> [`reserved_heldout_posture_v5.md`](reserved_heldout_posture_v5.md).
+
 Model: yolov8n_sage_merged_v5.pt, confidence threshold 0.4, imgsz 640
 Clips: 10, total frames: 5850
 Overall person-detection rate: 70.4%
