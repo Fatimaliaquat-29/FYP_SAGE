@@ -100,9 +100,14 @@ recall comparisons — it has no ground truth and cannot tell a loose box from a
 tight one or from a hallucination — but on this clip its signal was real, and
 the strict-IoU gate is what obscured it.
 
-The `Bedroom_Sit` / `TV_Lounge_2_Sit` "regressions" flagged in `19b1139` remain
-artifacts: `Bedroom_Sit` is 0.83 → 0.88 at IoU 0.5 and flat at IoU 0.3, never
-worse.
+`Bedroom_Sit`, one of the two "regressions" flagged in `19b1139`, is an
+artifact: it is 0.83 → 0.88 at IoU 0.5 and flat at IoU 0.3, never worse.
+
+**`TV_Lounge_2_Sit`, the other one, is unverified — not refuted.** That clip has
+no hand labels, so it appears in none of the tables above and nothing measured
+here speaks to it. Its 19 extracted frames sit unlabelled in
+`eval/heldout_objects/images/`. Until they are labelled, the only evidence about
+that clip is the coverage metric, which cannot settle it either way.
 
 ---
 
