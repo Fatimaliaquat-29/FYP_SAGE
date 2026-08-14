@@ -1,327 +1,269 @@
-# v5 vs v3 on held-out hand-drawn labels: v5 finds more fallen people — ship it
+# v5 vs v3 on held-out hand-drawn labels: ship v5
 
-Measured 14 Aug 2026, against the same **hand-drawn** boxes and the same
-procedure as [`reserved_heldout_posture.md`](reserved_heldout_posture.md).
-`conf 0.4`, `imgsz 640`. **179 person boxes across 11 clips in 3 rooms.**
+Measured 14 Aug 2026 against **hand-drawn** boxes on footage held out of every
+training run. `conf 0.4`, `imgsz 640`. **388 person boxes across 11 clips in 3
+rooms**, from 569 labelled frames.
+
+Supersedes the first version of this file, which was computed on 179 boxes
+before the fall clips were densified from stride 30 to stride 10. Three of its
+numbers were wrong and are corrected below.
 
 This is the run [`docs/TRAINING_v5_CONTEXT.md`](../../docs/TRAINING_v5_CONTEXT.md)
 specified as the gate:
 
 > If v5 lifts the fall column and holds the walk/sit column, the fix worked.
 
-**The answer depends entirely on the IoU threshold, and that turns out to be the
-finding.** At the project's standard IoU 0.5 the fall column does not move at
-all. At IoU 0.3 it moves a lot. Both numbers come from the same predictions on
-the same frames.
+**It lifts the fall column and improves the walk/sit column — but only at
+IoU 0.3.** At IoU 0.5 the fall column does not move. That threshold sensitivity
+is the central finding, and it is a property of v5's box placement, not of its
+detection.
 
 ---
 
-## The result at both thresholds
+## Headline
 
-Detection rate per clip, both models on identical frames:
+| IoU 0.5 | recall | precision | FP |
+|---|---|---|---|
+| v3 | 179/388 · **0.461** | **0.937** | 12 |
+| v5 | 181/388 · **0.466** | 0.879 | 25 |
 
-| clip | v3 @ IoU 0.5 | v5 @ IoU 0.5 | v3 @ IoU 0.3 | v5 @ IoU 0.3 |
-|---|---|---|---|---|
-| `Bedroom_Walk` | 14/14 · 1.00 | 14/14 · 1.00 | 14/14 · 1.00 | 14/14 · 1.00 |
-| `TV_Lounge_1_Sit` | 14/14 · 1.00 | 14/14 · 1.00 | 14/14 · 1.00 | 14/14 · 1.00 |
-| `TV_Lounge_1_Walk` | 1/1 · 1.00 | 1/1 · 1.00 | 1/1 · 1.00 | 1/1 · 1.00 |
-| `people` | 17/18 · 0.94 | 16/18 · 0.89 | 18/18 · 1.00 | 18/18 · 1.00 |
-| `people_(2)` | 30/32 · 0.94 | 31/32 · 0.97 | 30/32 · 0.94 | 31/32 · 0.97 |
-| `Bedroom_Sit` | 20/24 · 0.83 | 21/24 · 0.88 | 21/24 · 0.88 | 21/24 · 0.88 |
-| | | | | |
-| `TV_Lounge_2_Fall` | 5/11 · 0.45 | 4/11 · 0.36 | 5/11 · 0.45 | 4/11 · 0.36 |
-| `TV_Lounge_2_Fall2` | 5/13 · 0.38 | 6/13 · 0.46 | 5/13 · 0.38 | 6/13 · 0.46 |
-| **`Bedroom_Fall`** | 7/20 · 0.35 | 7/20 · 0.35 | 7/20 · 0.35 | **15/20 · 0.75** |
-| `TV_Lounge_1_Fall` | 4/16 · 0.25 | 4/16 · 0.25 | 4/16 · 0.25 | 4/16 · 0.25 |
-| `TV_Lounge_1_Fall2` | 4/16 · 0.25 | 4/16 · 0.25 | 4/16 · 0.25 | 4/16 · 0.25 |
+| IoU 0.3 | recall | precision | FP |
+|---|---|---|---|
+| v3 | 182/388 · **0.469** | 0.953 | 9 |
+| **v5** | 204/388 · **0.526** | **0.990** | **2** |
 
-Aggregated by activity:
+At IoU 0.3 v5 wins on **both** axes decisively: +0.057 recall and a precision of
+**0.990** — two false positives across 206 predictions. At IoU 0.5 it reads as a
+tie on recall and a loss on precision. Same predictions, same frames.
+
+---
+
+## Per clip
+
+| clip | boxes | v3 @ 0.5 | v5 @ 0.5 | v3 @ 0.3 | v5 @ 0.3 |
+|---|---|---|---|---|---|
+| `Bedroom_Walk` | 14 | 1.00 | 1.00 | 1.00 | 1.00 |
+| `TV_Lounge_1_Walk` | 1 | 1.00 | 1.00 | 1.00 | 1.00 |
+| `people` | 18 | 1.00 | 1.00 | 1.00 | 1.00 |
+| `people_(2)` | 32 | 0.94 | 0.97 | 0.94 | 0.97 |
+| `TV_Lounge_1_Sit` | 16 | 0.88 | **1.00** | 0.88 | **1.00** |
+| `Bedroom_Sit` | 24 | 0.83 | 0.88 | 0.88 | 0.88 |
+| | | | | | |
+| `TV_Lounge_2_Fall` | 35 | 0.46 | 0.43 | 0.46 | 0.43 |
+| `TV_Lounge_2_Fall2` | 41 | 0.39 | 0.41 | 0.39 | 0.41 |
+| **`Bedroom_Fall`** | 62 | 0.35 | 0.32 | 0.39 | **0.68** |
+| `TV_Lounge_1_Fall2` | 48 | 0.27 | 0.25 | 0.27 | 0.25 |
+| `TV_Lounge_1_Fall` | 97 | 0.15 | 0.16 | 0.15 | **0.18** |
+
+By activity:
 
 | group | boxes | v3 @ 0.5 | v5 @ 0.5 | v3 @ 0.3 | v5 @ 0.3 |
 |---|---|---|---|---|---|
-| walk / sit / upright | 103 | 0.932 | 0.942 | 0.951 | 0.961 |
-| **fall** | 76 | **0.329** | **0.329** | **0.329** | **0.434** |
-| all | 179 | 0.676 | 0.682 | 0.687 | **0.737** |
-
-Person false positives, with-people frames:
-
-| | v3 | v5 |
-|---|---|---|
-| IoU 0.5, as scored | 9 | 15 |
-| IoU 0.5, excluding label gaps (see below) | 8 | 11 |
-| IoU 0.3, as scored | 7 | **5** |
-
-**At IoU 0.5, v5 looks like no gain and worse precision. At IoU 0.3, v5 is
-better on both.** Same model, same frames, same confidence threshold.
-
-**Neither model produced a single genuine hallucination on with-people frames.**
-Every unmatched prediction from either model either overlaps a real person or
-lands on a real person the labeller missed. There are no boxes on empty
-furniture, walls or floor.
+| walk / sit / upright | 105 | 0.924 | **0.962** | 0.933 | **0.962** |
+| **fall** | 283 | 0.290 | 0.283 | 0.297 | **0.364** |
+| all | 388 | 0.461 | 0.466 | 0.469 | **0.526** |
 
 ---
 
-## What is actually going on
+## What the densification corrected
 
-v5 detects the fallen person in roughly eight more `Bedroom_Fall` frames than
-v3 does. It places the box **loosely** — overlapping the person, but not tightly
-enough to clear IoU 0.5.
+The fall clips were previously sampled at stride 30 — about 3% of their frames.
+Re-extracting at stride 10 and hand-labelling took the fall evidence from 76
+boxes to 283. Three claims changed:
 
-Every one of v5's eight `Bedroom_Fall` "false positives" at IoU 0.5 overlaps a
-real hand-drawn person box, at IoU **0.33 – 0.47**. None is a hallucination, and
-none is somewhere else in the frame:
+**1. `TV_Lounge_1_Fall` was overstated.** Reported at 0.25 for both models on 16
+boxes; on **97 boxes it is 0.15 (v3) / 0.18 (v5)**. The small sample was
+optimistic by ten points. This is now clearly the hardest clip in the set for
+both models.
 
-| frame | conf | best IoU with a real person |
-|---|---|---|
-| `Bedroom_Fall_000240` | 0.43 | 0.40 |
-| `Bedroom_Fall_000390` | 0.41 | 0.33 |
-| `Bedroom_Fall_000420` | 0.47 | 0.34 |
-| `Bedroom_Fall_000450` | 0.44 | 0.34 |
-| `Bedroom_Fall_000480` | 0.48 | 0.34 |
-| `Bedroom_Fall_000510` | 0.48 | 0.33 |
-| `Bedroom_Fall_000540` | 0.47 | 0.35 |
-| `Bedroom_Fall_000570` | 0.46 | 0.36 |
+**2. The `TV_Lounge_2` swings were noise, as suspected.** The earlier −0.09 on
+`TV_Lounge_2_Fall` and +0.08 on `TV_Lounge_2_Fall2` were single-box differences
+on 11 and 13 boxes. At 35 and 41 boxes the two models sit within one or two
+boxes of each other on both clips — 0.46/0.43 and 0.39/0.41. Neither is a real
+difference.
 
-That cluster sitting just under the threshold is the whole disagreement between
-this file and the coverage benchmark. The IoU-0.5 gate scores these eight frames
-as *both* a miss and a false positive — penalising v5 twice for finding a person
-v3 misses entirely.
+**3. `Bedroom_Fall` held.** 0.35 → **0.75** on 20 boxes became 0.39 → **0.68**
+on 62. The effect regressed slightly toward the mean, as a small sample should,
+and survived tripling the data.
 
-**So the earlier reading of this run — "v5 emits more boxes while finding no
-additional people" — was wrong.** It is finding additional people. The boxes are
-poorly fitted.
-
-### This vindicates the coverage benchmark's direction
-
-[`reserved_people_v5_640.md`](reserved_people_v5_640.md) reported `Bedroom_Fall`
-rising 38.2% → 67.3%. Against hand-drawn labels at IoU 0.3 the same clip goes
-0.35 → 0.75. Those agree closely. The coverage metric still cannot be used for
-recall comparisons — it has no ground truth and cannot tell a loose box from a
-tight one or from a hallucination — but on this clip its signal was real, and
-the strict-IoU gate is what obscured it.
-
-`Bedroom_Sit`, one of the two "regressions" flagged in `19b1139`, is an
-artifact: it is 0.83 → 0.88 at IoU 0.5 and flat at IoU 0.3, never worse.
-
-**`TV_Lounge_2_Sit`, the other one, is unverified — not refuted.** That clip has
-no hand labels, so it appears in none of the tables above and nothing measured
-here speaks to it. Its 19 extracted frames sit unlabelled in
-`eval/heldout_objects/images/`. Until they are labelled, the only evidence about
-that clip is the coverage metric, which cannot settle it either way.
+**Consequence: `Bedroom_Fall` is the only clip where v5 genuinely separates from
+v3.** That is a narrower claim than the first version of this file made, and it
+is the claim the next round of footage should target.
 
 ---
 
-## Four "false positives" are missing labels, not errors
+## Why the threshold decides the verdict
 
-Four frames carry a high-confidence person detection against a label file
-containing **only furniture** — no person box at all. All four were inspected
-directly. **A person is plainly present in every one**, walking past the camera
-at close range in dark navy clothing, occupying a large fraction of the frame:
+v5 finds the fallen person in ~22 more `Bedroom_Fall` frames than v3 and places
+the box **loosely** — overlapping the person, but under 0.5 IoU.
 
-| frame | v5 conf | v3 conf | labels present | person actually in frame? |
-|---|---|---|---|---|
-| `TV_Lounge_1_Sit_000090` | 0.85 | — | 1 × table, 2 × couch | **yes** |
-| `TV_Lounge_1_Sit_000540` | 0.89 | — | 1 × table, 3 × couch | **yes** |
-| `TV_Lounge_1_Fall_000090` | 0.88 | — | 1 × table, 3 × couch | **yes** |
-| `TV_Lounge_1_Fall_000120` | 0.66 | 0.69 | 1 × table, 2 × couch | **yes** |
+On `Bedroom_Fall`, v5 records **22 false positives at IoU 0.5 and 0 at IoU 0.3.**
+Every one is a real detection on the real person. The strict gate scores those
+frames as *both* a miss and a false positive, penalising v5 twice for finding
+someone v3 misses entirely. That is the whole of v5's apparent precision loss:
+its FP count falls 25 → 2 when the threshold moves.
 
-Both models are **correct** on these frames and were penalised for it. The
-labeller annotated the furniture and skipped the person — plausibly because a
-torso filling half the frame does not look like the small, whole-body figures
-the rest of the pass contains.
+Measured on the earlier sample, the loose boxes were ~2.3× oversized with a
+consistent centre offset, most plausibly enclosing the person together with the
+bed they are lying on — the same person/furniture merging identified as the
+root failure mode in [`reserved_heldout_posture.md`](reserved_heldout_posture.md).
+Where both models fire, v5 localises as tightly as v3; there is no general
+localisation regression.
 
-Consequences:
+**IoU 0.5 is therefore a load-bearing choice, not a neutral default.** It is the
+sole reason this run can be read as "no improvement".
 
-- Precision is understated for both models, more so for v5 (4 of its 15
-  IoU-0.5 false positives are these; 2 of v3's 9, counting the one it also
-  fires on plus one in an empty room).
-- Recall is unaffected in the numbers above — a frame with no person label
-  contributes nothing to the denominator — but the eval set is missing at
-  least four real people, so 179 understates the true box count.
-- The gap is **systematic, not random**: all four are the same situation
-  (person very close to the lens in `TV_Lounge_1`). Other close-range frames in
-  the set may be unlabelled in the same way.
+---
 
-**These frames should be labelled before the eval set is used for a precision
-gate.** They are fine for the recall comparison above.
+## Four label gaps, now closed
+
+Four frames carried a high-confidence person detection against a label file
+containing only furniture. All four were inspected: **a person is plainly
+present in every one**, at close range in dark clothing, filling much of the
+frame. Both models were correct and were being scored as false positives for it.
+
+They are now labelled, and the effect is visible in `TV_Lounge_1_Sit`:
+
+| `TV_Lounge_1_Sit` (16 boxes) | detected | FP |
+|---|---|---|
+| v3 | 14/16 · 0.88 | 4 |
+| **v5** | **16/16 · 1.00** | **0** |
+
+v5 detects both close-range people; v3 misses them and is charged 4 false
+positives. The gap was hidden while the ground truth was wrong.
 
 ---
 
 ## Empty-room false positives at 640
 
-Closes the open item carried in `reserved_heldout_posture.md` (previously
-measured only at imgsz 320). Every frame of all 11 held-out empty clips,
-`--stride 1`, 7,200 frames per model, `conf 0.4`, `imgsz 640`:
+Closes the open item carried in `reserved_heldout_posture.md`. Every frame of
+all 11 held-out empty clips, `--stride 1`, 7,200 frames per model:
 
-| model | FP frames | FP rate | boxes |
-|---|---|---|---|
-| v3 | 28 | 0.39% | 28 |
-| **v5** | **0** | **0.00%** | **0** |
+| model | FP frames | FP rate |
+|---|---|---|
+| v3 | 28 | 0.39% |
+| **v5** | **0** | **0.00%** |
 
-All 28 of v3's are in `living room.mov`, up to conf 0.59. **v5 is strictly
-better and hallucinates no people at all in empty rooms.**
+All 28 of v3's are in `living room.mov`. **v5 hallucinates no people at all in
+empty rooms.**
 
-This also corrects the empty-room claim in `19b1139` ("0.00% for both v3 and
-v5"). v3 is 0.39% here. The likely cause is clip coverage — this sweep runs all
-11 clips in `yolo_testing/Reserved/Empty/`, and the one clip that produces every
-false positive is `living room.mov`; a run that did not include it would report
-0.00% for both models.
-
----
-
-## What this rules in and out
-
-**Confirmed:**
-
-- v5 finds meaningfully more fallen people than v3 on `Bedroom_Fall`
-  (0.35 → 0.75 at IoU 0.3), and the VIDEO-mode label fix is the plausible cause.
-- v5 hallucinates less: 0.00% vs 0.39% on empty rooms, and fewer false positives
-  on with-people frames once loose boxes are not double-counted.
-- Walk/sit did not regress at either threshold.
-- v5 was trained from stock `yolov8n.pt`: its head carries all 13 classes
-  (`person`…`refrigerator`), so it did not repeat v4's collapse to one class.
-
-**Ruled out:**
-
-- **The label fix is not a general fix for falls.** `TV_Lounge_1_Fall` and
-  `TV_Lounge_1_Fall2` sit at exactly 4/16 for both models at *both* thresholds.
-  `TV_Lounge_1_Fall` already had 100% MediaPipe coverage before the fix, so
-  there were no missing labels there to recover. The furniture-occlusion
-  diagnosis in `reserved_heldout_posture.md` stands for those clips.
-
-**New:**
-
-- **v5 does not localise worse in general.** On the seven `Bedroom_Fall` frames
-  both models detect, v5's boxes are as tight as v3's or tighter (IoU 0.76–0.91
-  vs 0.71–0.92; area ratio ~1.0 for both). There is no localisation regression
-  on the cases v3 already handles.
-- **The looseness is confined to the eight frames only v5 detects**, and it has
-  a consistent signature — the box is **~2.3× too large** with a repeated
-  centre offset:
-
-  | frame | IoU | pred area ÷ true area | centre Δx | centre Δy |
-  |---|---|---|---|---|
-  | `Bedroom_Fall_000240` | 0.40 | 2.19 | +0.054 | +0.029 |
-  | `Bedroom_Fall_000390` | 0.33 | 2.33 | +0.038 | +0.040 |
-  | `Bedroom_Fall_000420` | 0.34 | 2.34 | +0.039 | +0.040 |
-  | `Bedroom_Fall_000450` | 0.34 | 2.30 | +0.037 | +0.041 |
-  | `Bedroom_Fall_000480` | 0.34 | 2.31 | +0.039 | +0.038 |
-  | `Bedroom_Fall_000510` | 0.33 | 2.38 | +0.039 | +0.043 |
-  | `Bedroom_Fall_000540` | 0.35 | 2.24 | +0.039 | +0.037 |
-  | `Bedroom_Fall_000570` | 0.36 | 2.17 | +0.039 | +0.033 |
-
-  The tight clustering across a contiguous run of frames points at one cause,
-  most plausibly the box enclosing the person **together with the bed they are
-  lying on** — the same person/furniture merging that
-  `reserved_heldout_posture.md` identified as the failure mode. v5 now finds
-  the person there but cannot separate them from the furniture.
-
-- **IoU 0.5 is a load-bearing choice**, not a neutral default. It was inherited
-  without argument and it is the sole reason this run reads as "no
-  improvement".
+This also corrects the "0.00% for both" reported in `19b1139`, most likely a
+clip-coverage difference — the one clip producing every false positive is the
+one a partial local copy would be missing.
 
 ---
 
 ## What consumes these boxes
 
-Traced before recommending, because the value of a loose box depends entirely
-on who reads it.
+Traced before recommending, because a loose box only matters if something reads
+it.
 
-**Today: nothing reads the geometry.** The only consumer of `bbox` outside
+**Today nothing reads the geometry.** The only consumer of `bbox` outside
 `src/detection/` is the on-screen rectangle at
-`realtime_fall_detection.py:283`. `detect()` is called at line 220 and its
-result flows only to `_draw_objects`. The code says so explicitly at lines
-217–219 — *"purely additive context … It never feeds `fall_detected` above; the
-alarm stays posture/LSTM-only."* `hybrid_evaluate.py` does not reference YOLO
-at all; it runs heuristic and LSTM over MediaPipe pose.
+`realtime_fall_detection.py:283`. The code states it at lines 217–219: *"purely
+additive context … It never feeds `fall_detected` above; the alarm stays
+posture/LSTM-only."* `hybrid_evaluate.py` does not reference YOLO at all.
 
-**Planned: class and confidence, not geometry.** `docs/IMPLEMENTATION_PLAN.md`
-§2 defines the deliverable as *"person confidence"* for the Hybrid Approach
-report's Structured Event Schema, cross-checked against MediaPipe's own
-tracking confidence (*"high-confidence pose + low-confidence bottle =
-skeptical"*). That is presence and confidence — exactly what v5 improves, and
-it reads no box coordinates.
+**The planned integration reads class and confidence.**
+`docs/IMPLEMENTATION_PLAN.md` §2 defines the deliverable as *"person
+confidence"* for the Structured Event Schema, cross-checked against MediaPipe's
+tracking confidence. No box coordinates.
 
-**Already rejected: geometry as semantics.** Fault #4 in
+**Geometry-as-semantics is already rejected** — fault #4 in
 `reserved_heldout_posture.md` establishes that box aspect ratio does not encode
-posture and must not be used as a proxy. The project has already decided not to
-derive meaning from box shape.
+posture.
 
-**The one future consumer that would care** is medication adherence — deciding
-whether a person is *near* a container requires a spatial relation between two
-boxes, and a 2.3×-inflated person box would overlap objects the person is not
-touching. That work is blocked on recording and labelling a container dataset
-(`MEDICATION_DETECTION_SCOPE.md`: *"Blocked on: recording and labeling. Nothing
-else."*), and containers appear zero times in current footage. It is not a
-reason to hold back v5 now, but it is a reason to re-check box quality before
-that feature is built.
+**Medication adherence is the one future consumer that would care**, since
+"is the person near the container" is a spatial relation. It is blocked on
+recording and labelling a container dataset and is not a reason to hold v5 now.
 
 ---
 
 ## Recommendation
 
-**Ship v5.** The condition attached to the earlier draft of this file is
-resolved: nothing downstream reads box geometry, now or in the planned
-integration.
+**Ship v5.**
 
-On the axes that are actually consumed, v5 is better or equal on every one:
+| axis | v3 | v5 |
+|---|---|---|
+| fall detection rate (IoU 0.3) | 0.297 | **0.364** |
+| walk/sit detection rate | 0.933 | **0.962** |
+| overall precision (IoU 0.3) | 0.953 | **0.990** |
+| empty-room false positives | 0.39% | **0.00%** |
+| close-range people (`TV_Lounge_1_Sit`) | 0.88, 4 FP | **1.00, 0 FP** |
+| localisation where both fire | IoU 0.71–0.92 | IoU 0.76–0.91 |
 
-| axis | consumed by | v3 | v5 |
-|---|---|---|---|
-| fall detection rate (IoU 0.3) | event schema presence | 0.329 | **0.434** |
-| walk/sit detection rate | event schema presence | 0.951 | **0.961** |
-| empty-room false positives | alert credibility | 0.39% | **0.00%** |
-| hallucinations on with-people frames | alert credibility | none | none |
-| localisation where both fire | nothing today | IoU 0.71–0.92 | IoU 0.76–0.91 |
+Better or equal on every axis that anything downstream consumes.
 
-Two things to carry forward rather than treat as blockers:
+Carry-forwards, not blockers:
 
-1. **The on-screen boxes will look visibly wrong on fallen-person frames** —
-   roughly double size, enclosing the bed. Cosmetic today, since drawing is the
-   only consumer, but it will be conspicuous in a live demo.
-2. **Re-check box quality before medication adherence is built.** That is the
-   first feature that would read geometry.
+1. **The drawn boxes will look wrong on fallen-person frames** — roughly double
+   size, enclosing the furniture. Cosmetic today, conspicuous in a live demo.
+2. **Re-check box quality before medication adherence is built.**
 
-Do not ship on the strength of `reserved_people_v5_640.md` alone; its agreement
-with this file on `Bedroom_Fall` is not something that metric could have
-established by itself.
+---
+
+## What this does not fix
+
+`TV_Lounge_1_Fall` sits at 0.15/0.18 on 97 boxes, and `TV_Lounge_1_Fall2` at
+0.27/0.25 on 48. Both models fail on the majority of fall frames in that room,
+and relabelling cannot fix it — `TV_Lounge_1_Fall` already had 100% MediaPipe
+coverage before the v5 label fix, so there were no missing labels to recover.
+
+The failure profile in `reserved_heldout_posture.md` stands: person lying **on**
+furniture, low contrast, foreground occlusion. Two training runs have now failed
+to move it by changing labels on existing footage.
+
+A useful counter-example arrived from `people_ground_mahaRoom` — a room in no
+training run and no hand-labelled set. It shows a person lying full-length on a
+bed, brightly lit, in a light-striped shirt, unoccluded. **Both models detect it
+in ~100% of frames with tight boxes** (v5 947/947, v3 938/947; v5 box area
+varies over a 2.2-point range vs v3's 8.9), and both produce **zero** false
+positives across 1,012 frames of the same room empty.
+
+So *lying on furniture* alone does not break either model. The binding factors
+are the others — dark clothing on dark furniture, dim light, foreground
+occlusion. **New footage should cross those factors deliberately rather than
+recording more falls**, so the next analysis can attribute the failure instead
+of re-observing it.
 
 ---
 
 ## Method
 
 - `src/detection/score_heldout_objects.py --classes person --imgsz 640
-  --conf 0.4 --per_clip`. The `--per_clip` flag was added for this run; the v3
-  column it produces reproduces `reserved_heldout_posture.md` box-for-box,
-  which is what validates the harness.
-- Denominator is person boxes only (`tp + fn`). The label files also carry
-  `chair` / `bed` boxes; counting those inflates the denominator and understates
-  every rate.
-- Empty rooms: `src/detection/score_empty_false_positives.py --imgsz 640
-  --conf 0.4 --stride 1`.
-- 148 of 533 extracted frames have no `.txt` and were excluded as unlabelled,
-  not scored as empty.
-- `mahaRoom` footage excluded from the recall measurement, as in v3's.
+  --conf 0.4 --per_clip`, at `--iou 0.5` and `--iou 0.3`.
+- Fall clips re-extracted at stride 10 via `sample_heldout_frames.py`. Stride 10
+  keeps the stride-30 frames at identical filenames, so no existing label was
+  orphaned — the failure recorded as fault #3 in `reserved_heldout_posture.md`.
+- Denominator is person boxes only (`tp + fn`); label files also carry
+  `chair` / `bed` boxes.
+- Empty rooms: `score_empty_false_positives.py --imgsz 640 --conf 0.4
+  --stride 1`.
+- 148 of 717 extracted frames have no `.txt` and were excluded as unlabelled,
+  not scored as empty. All are walk/sit or empty-room frames; **every fall frame
+  is labelled.**
 
 ### Caveats
 
-- 179 person boxes, 11 clips, 3 rooms, two recording sessions by the same
-  people. Small sample; single-box clips like `TV_Lounge_1_Walk` mean nothing
-  alone. The headline `Bedroom_Fall` result rests on 20 boxes in one clip.
-- IoU 0.3 is reported here to expose a localisation effect, **not** proposed as
-  the new gate. Picking the threshold that flatters a checkpoint after seeing
-  the results is exactly the trap this results directory has fallen into before.
-- Four frames are unlabelled people, counted as false positives throughout —
-  see the section above. Precision here is a floor, not an estimate.
+- 388 boxes, 11 clips, 3 rooms, two recording sessions by the same people.
+  Single-box clips like `TV_Lounge_1_Walk` mean nothing alone.
+- Fall clips are sampled at stride 10, walk/sit at stride 30, so the eval set is
+  now 73% fall boxes. **The ALL row is not comparable to the 179-box version of
+  this file** (0.676 there vs 0.469 here for v3) — that is a change in
+  composition, not in the model. Per-clip rates are comparable.
+- Frames 0.4 s apart remain correlated. Densifying reduces sampling noise; it
+  does not give 3× independent evidence.
+- IoU 0.3 is reported to expose a localisation effect, **not** proposed as the
+  new gate. Choosing the threshold that flatters a checkpoint after seeing the
+  results is a trap this directory has fallen into before.
 - Latency not re-measured. This machine is CPU-only (174 ms/frame at 640); the
-  13.5 ms/frame in `reserved_people_v5_640.md` came from a CUDA machine and the
-  two are not comparable.
+  13.5 ms/frame in `reserved_people_v5_640.md` came from a CUDA machine.
 
 ---
 
 ## Related
 
-- [`reserved_heldout_posture.md`](reserved_heldout_posture.md) — the v3 baseline this reproduces, and the four measurement faults corrected along the way
-- [`reserved_people_v5_640.md`](reserved_people_v5_640.md) — the coverage/latency benchmark, and why it is not recall
+- [`reserved_heldout_posture.md`](reserved_heldout_posture.md) — the v3 baseline and the four measurement faults corrected along the way
+- [`reserved_people_v5_640.md`](reserved_people_v5_640.md) / [`reserved_people_v3_640.md`](reserved_people_v3_640.md) — the coverage/latency benchmark, and why it is not recall
 - [`labeler_video_mode_fix.md`](labeler_video_mode_fix.md) — the IMAGE/VIDEO root cause that motivated v5
 - [`docs/TRAINING_v5_CONTEXT.md`](../../docs/TRAINING_v5_CONTEXT.md) — the runbook that set this gate
