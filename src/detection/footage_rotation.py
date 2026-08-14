@@ -71,6 +71,20 @@ VERIFIED_ROTATIONS = {
     "TV_Lounge_2_Empty.mov": None,
     "empty_ground_mahaRoom.MOV": None,
     "people_ground_mahaRoom.MOV": None,
+    # --- round 5: dark / low-contrast / occluded falls (Aug 2026, TRAINING) ---
+    # Recorded to fill the gap reserved_heldout_posture_v5.md identifies: a person
+    # lying ON furniture, in dark clothing, in a dim room, partly occluded.
+    #
+    # The bedroom pair needs 90 CCW -- the OPPOSITE of the Reserved
+    # `Bedroom_Fall.mov`, which needs 90 CW despite both reporting meta=90 and
+    # both being stored 1080x1920. That is why these carry distinct filenames:
+    # this table is keyed on the name alone, so a reused name would have applied
+    # the wrong correction silently and rotated every frame 180 degrees out.
+    "Bedroom_Falll.mov": cv2.ROTATE_90_COUNTERCLOCKWISE,
+    "Bedroom_Emptyy.mov": cv2.ROTATE_90_COUNTERCLOCKWISE,
+    # Landscape, ceiling fan already at the top -- upright despite meta=180.
+    "TV_Lounge_Fallll.mov": None,
+    "TV_Lounge_Emptyy.mov": None,
 }
 
 

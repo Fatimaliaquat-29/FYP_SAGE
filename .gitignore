@@ -271,6 +271,14 @@ eval/**/*.jpg
 eval/**/*.jpeg
 eval/**/*.png
 eval/**/*.bmp
+# Same rule for hand-labelled TRAINING frames. handlabels/ is deliberately a
+# separate tree from eval/: these come from yolo_testing/Training/ footage, and
+# letting them anywhere near eval/heldout_objects/ would make the held-out
+# measurement circular.
+handlabels/**/*.jpg
+handlabels/**/*.jpeg
+handlabels/**/*.png
+handlabels/**/*.bmp
 # The hand-drawn .txt labels ARE committed: irreplaceable manual work, tiny,
 # and meaningless as personal data on their own (four normalised numbers).
 
