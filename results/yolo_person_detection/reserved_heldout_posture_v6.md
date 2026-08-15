@@ -1,4 +1,21 @@
-# v6 vs v5 vs v3 on held-out hand-drawn labels: ship v6
+# v6 vs v5 vs v3 on held-out hand-drawn labels: ship v6 — SEE CAVEAT
+
+> ## ⚠ DO NOT DEPLOY v6 OVER v5 ON THE STRENGTH OF THIS FILE ALONE
+>
+> **Added 16 Aug 2026, after four new dim-lighting clips were benchmarked.**
+> Everything measured below still holds. The *conclusion* drawn from it was too
+> broad.
+>
+> On new footage in `yolo_testing/held_out/`, **v6 detects nobody at all in
+> `laying_dim.MOV` — 0 of 620 frames — where v5 detects the person in 69.5%.**
+> Not a threshold effect: v6 finds no person there even at `conf 0.10`. v6 also
+> trails v5 on the other lying clip, 80.8% vs 90.7%.
+>
+> Both clips are the same failure signature this file says v6 improved on:
+> a person lying on furniture, dark clothing, dim room, foreground occlusion.
+>
+> See [Superseding evidence](#superseding-evidence-v6-regresses-on-new-dim-footage)
+> below before acting on the recommendation.
 
 Measured 16 Aug 2026 against **hand-drawn** boxes on footage held out of every
 training run. `conf 0.4`, `imgsz 640`. **388 person boxes across 11 clips in 3
@@ -177,9 +194,93 @@ rooms.
 
 ---
 
+## Superseding evidence: v6 regresses on new dim footage
+
+Four clips recorded after this evaluation, benchmarked 16 Aug 2026 at
+`conf 0.4`, `imgsz 640`, in `yolo_testing/held_out/`. **Coverage — the fraction
+of frames the model fires at all. There are no labels yet, so this is not
+recall**, and a confident detection on the wrong thing counts the same as a
+correct one.
+
+| clip | frames | v6 | v5 | stock |
+|---|---|---|---|---|
+| `IMG_9435` — lying, floor mattress | 1,208 | 80.8% | **90.7%** | 26.8% |
+| `IMG_9439` — sitting, sofa | 565 | 100% | 100% | 100% |
+| `laying_dim` — lying, sofa, occluded | 620 | **0.0%** | **69.5%** | 83.9% |
+| `sitting_dim` — sitting, chair | 923 | 100% | 100% | 100% |
+
+The two sitting clips saturate at 100% for all three models and discriminate
+nothing. **The two lying clips are the informative ones, and v5 beats v6 on
+both.**
+
+`laying_dim` was inspected frame by frame rather than taken on trust:
+
+- v6 returns **no person box at any confidence down to 0.10**. This is not a
+  borderline miss.
+- v5 returns a correct, tight box on the subject at ~0.45.
+- Stock's 83.9% is **inflated**: a large share of it is a near-full-frame box on
+  the blurred foreground object, not the person. Its true rate on the subject is
+  much lower. Ranking on this clip is v5 correct, stock partly spurious, v6
+  blind.
+
+### The likely mechanism, and why this file missed it
+
+v6 bought its precision gain (0.879 → 0.966 at IoU 0.5) by becoming **more
+conservative**, and on genuinely low-contrast lying people that conservatism
+turns into total misses rather than loose boxes.
+
+The held-out set could not expose this. There, v5's extra firings were *loose*
+boxes, penalised as false positives at IoU 0.5 — so v6's unwillingness to fire
+scored as a pure win. Coverage on unlabelled footage asks a different question,
+"does it fire at all", and v6 answers worse.
+
+**Both measurements are correct. They are measuring different things**, and
+shipping decisions need the second one too.
+
+---
+
+## Next steps
+
+In order. Nothing here should be skipped on the basis of the tables above.
+
+1. **Hand-label `laying_dim` and `IMG_9435`** — the two discriminating clips.
+   Skip `IMG_9439` and `sitting_dim`: saturated at 100% for every model, so
+   labels there buy nothing. Use `sample_heldout_frames.py`; the rotations are
+   registered and eye-verified (all four upright).
+
+2. **Run a v5-vs-v6 diagnostic on the same frames, BEFORE any retraining.**
+   `laying_dim` is a better handle on this failure than anything previously
+   available: it is the exact signature that has defeated three model versions
+   on `TV_Lounge_1_Fall`, but with a model that *succeeds* on it. Comparing what
+   v5 fires on against what v6 does not can identify what v6 lost. No amount of
+   new footage answers that.
+
+3. **Only then decide on a round 7.** Note the ordering constraint: **training
+   on `laying_dim` destroys its value as the control.** Once v6 has seen it, it
+   can no longer answer "what does v6 lack that v5 has". Spend it as evidence
+   first.
+
+4. **Re-run this gate plus a coverage benchmark for any future checkpoint.**
+   The lesson is not "v6 is bad" — it is that IoU-scored recall on hand-drawn
+   boxes and coverage on unlabelled hard footage disagree, and a checkpoint can
+   win the first while losing the second.
+
+---
+
 ## Recommendation
 
-**Ship v6.**
+**Ship v6 — but not over v5 for deployment, pending step 2 above.**
+
+The tables in this file are unchanged and still support everything they claim
+about the held-out set. What changed is scope: they were read as "v6 is better
+at detecting fallen people", and the new clips show that does not generalise to
+the hardest low-contrast cases, where v6 is materially worse than v5.
+
+If a single checkpoint must be chosen for a live demo today, **choose v5**: an
+over-large box on a detected person degrades gracefully, whereas v6's failure
+mode on `laying_dim` is silence, and this is a fall-detection system.
+
+The original recommendation, for the record:
 
 | axis | v3 | v5 | v6 |
 |---|---|---|---|
@@ -202,6 +303,10 @@ Honest framing for anyone quoting this:
   clip; outside `Bedroom_Fall` the fall column moved 0.276 → 0.294.
 - **"Round 5 solved the dark/occluded fall case"** is not supported. The clip it
   was recorded for did not move.
+- **"v6 is the better detector of fallen people"** is **contradicted** by the
+  new dim clips above. It is the better detector *as scored by IoU against
+  hand-drawn boxes on this eval set*. On the hardest unlabelled footage it
+  misses people v5 finds.
 
 ---
 
@@ -233,6 +338,10 @@ Honest framing for anyone quoting this:
   before the run. v6 happens to be insensitive to the choice, which is itself
   the finding.
 - Latency not re-measured. CPU-only machine.
+- **The dim-clip figures are coverage, not recall**, on four clips with no
+  ground truth, two of which discriminate nothing. They are enough to block a
+  deployment decision and not enough to rank the models. That is what step 1 of
+  Next Steps is for.
 
 ---
 
