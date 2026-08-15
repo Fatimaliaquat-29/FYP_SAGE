@@ -41,6 +41,9 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.detection.footage_paths import TRAINING_EMPTY, assert_not_reserved
+from src.detection.footage_rotation import apply as apply_rotation
+from src.detection.footage_rotation import describe as describe_rotation
+from src.detection.footage_rotation import get_rotation, needs_verification
 from src.detection.sage_classes import CLASS_TO_INDEX, SAGE_CLASSES
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
@@ -196,6 +199,14 @@ def collect_empty_frames(empty_dir: Path, out_dir: Path, val_every: int, stride:
     discovery in generate_bbox_dataset.py and benchmark_footage.py assigns
     train/val BY POSITION in the sorted listing, so which directory you point
     at changes which clips are held out.
+
+    Rotation is applied here for the same reason it is applied everywhere else
+    (see footage_rotation): cv2 hands back raw stored pixels. A negative is a
+    picture of an empty room, and a sideways picture of an empty room is a
+    picture of a room this camera will never see -- so it spends dataset budget
+    without buying any of the false-positive suppression it was added for.
+    There are no boxes to misalign here, which is precisely why this would never
+    have surfaced as an error.
     """
     if not empty_dir or not empty_dir.is_dir():
         return
@@ -203,6 +214,7 @@ def collect_empty_frames(empty_dir: Path, out_dir: Path, val_every: int, stride:
     import cv2
 
     frames = []
+    unverified = []
     for path in sorted(empty_dir.rglob("*")):
         # Key on the path relative to empty_dir, not the bare stem: two rooms
         # filed as bedroom/room.mp4 and kitchen/room.mp4 would otherwise
@@ -219,6 +231,16 @@ def collect_empty_frames(empty_dir: Path, out_dir: Path, val_every: int, stride:
             if image is not None:
                 frames.append((key, image))
         elif path.suffix.lower() in VIDEO_EXTENSIONS:
+            rotation = get_rotation(path)
+            # Unverified clips are processed as stored rather than skipped:
+            # most of the existing negatives are unverified, and dropping them
+            # would trade a possible orientation problem for a certain loss of
+            # false-positive suppression. Reported so it is a known risk.
+            if needs_verification(path):
+                unverified.append(path.name)
+            elif rotation is not None:
+                print(f"  {path.name}: rotating {describe_rotation(rotation)}")
+
             cap = cv2.VideoCapture(str(path))
             idx = 0
             while True:
@@ -227,8 +249,13 @@ def collect_empty_frames(empty_dir: Path, out_dir: Path, val_every: int, stride:
                     break
                 idx += 1
                 if idx % stride == 0:  # thin out near-duplicate frames
-                    frames.append((f"{key}_{idx:06d}", frame))
+                    frames.append((f"{key}_{idx:06d}", apply_rotation(frame, rotation)))
             cap.release()
+
+    if unverified:
+        print(f"  WARNING: {len(unverified)} empty clip(s) look rotated but are unverified, so")
+        print("           they are used as stored. Verify by eye and add them to")
+        print(f"           src/detection/footage_rotation.py: {', '.join(sorted(unverified))}")
 
     keys = [k for k, _ in frames]
     if len(set(keys)) != len(keys):
