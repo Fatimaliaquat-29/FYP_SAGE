@@ -236,21 +236,27 @@ has already fallen into.
 From [`reserved_heldout_posture_v5.md`](../results/yolo_person_detection/reserved_heldout_posture_v5.md),
 388 hand-drawn boxes, 11 clips, 3 rooms:
 
-| | v3 | v5 | v6 |
+| | v3 | v5 | v6 (measured) |
 |---|---|---|---|
-| fall detection rate @ IoU 0.3 | 0.297 | **0.364** | ? |
-| fall detection rate @ IoU 0.5 | 0.290 | 0.283 | ? |
-| walk/sit detection rate | 0.933 | **0.962** | ? |
-| overall precision @ IoU 0.3 | 0.953 | **0.990** | ? |
-| empty-room FP rate | 0.39% | **0.00%** | ? |
+| fall detection rate @ IoU 0.3 | 0.297 | 0.364 | **0.438** |
+| fall detection rate @ IoU 0.5 | 0.290 | 0.283 | **0.431** |
+| walk/sit detection rate | 0.933 | 0.962 | **0.981** |
+| overall precision @ IoU 0.3 | 0.953 | **0.990** | 0.978 |
+| empty-room FP rate | 0.39% | **0.00%** | **0.00%** |
 
 Per clip, the two that decide it:
 
-| clip | boxes | v3 @ 0.3 | v5 @ 0.3 | v6 |
+| clip | boxes | v3 @ 0.3 | v5 @ 0.3 | v6 @ 0.3 |
 |---|---|---|---|---|
-| **`TV_Lounge_1_Fall`** | 97 | 0.15 | 0.18 | ? |
-| `TV_Lounge_1_Fall2` | 48 | 0.27 | 0.25 | ? |
-| `Bedroom_Fall` | 62 | 0.39 | **0.68** | ? |
+| **`TV_Lounge_1_Fall`** | 97 | 0.15 | 0.18 | **0.18** |
+| `TV_Lounge_1_Fall2` | 48 | 0.27 | 0.25 | **0.31** |
+| `Bedroom_Fall` | 62 | 0.39 | 0.68 | **0.95** |
+
+**Result: ship v6, but the fall headline is one clip.** Overall recall 0.526 →
+0.585, and v5's loose-box problem is gone — v6 scores the same at IoU 0.5 and
+0.3, where v5 needed the lenient threshold. `TV_Lounge_1_Fall` did not move.
+Full analysis, including what round 5 ruled out, in
+[`reserved_heldout_posture_v6.md`](../results/yolo_person_detection/reserved_heldout_posture_v6.md).
 
 **`TV_Lounge_1_Fall` is the number to watch.** It is the clip round 5 was
 recorded to match, both models find ~1 in 6 boxes there, and it cannot be fixed
@@ -263,6 +269,12 @@ it is v5's one genuine win and v6 must not lose it.
 ---
 
 ## Expectations — be honest about these
+
+> **Outcome, 16 Aug 2026.** These predictions are left as written. Two were
+> wrong in an instructive way: overall recall moved much more than "a small
+> effect or none" (0.526 → 0.585), and the biggest gain was not recall at all
+> but **box placement** — a variable this section did not consider. The
+> prediction that held was the one about `TV_Lounge_1_Fall`: it did not move.
 
 **208 hand-drawn person boxes against v5's 19,432 is +1.1%.** The round-5 frames
 are 236 of 13,793 images — 1.7% of the dataset. The fall/lying share of our own
