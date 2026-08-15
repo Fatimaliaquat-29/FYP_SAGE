@@ -85,6 +85,16 @@ VERIFIED_ROTATIONS = {
     # Landscape, ceiling fan already at the top -- upright despite meta=180.
     "TV_Lounge_Fallll.mov": None,
     "TV_Lounge_Emptyy.mov": None,
+    # --- round 6 candidates: dim-lighting people footage (Aug 2026) ---
+    # yolo_testing/held_out/. All four checked frame-by-eye and confirmed
+    # upright: floor at the bottom, door/wall/headboard at the top. IMG_9435
+    # reports meta=180 and is upright anyway -- the same mismatch already seen
+    # on the TV_Lounge_1 re-shoots, and the reason this table is eye-verified
+    # rather than derived from metadata.
+    "IMG_9435.MOV": None,
+    "IMG_9439.MOV": None,
+    "laying_dim.MOV": None,
+    "sitting_dim.MOV": None,
 }
 
 

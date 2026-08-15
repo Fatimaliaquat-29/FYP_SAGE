@@ -11,6 +11,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.detection.footage_paths import RESERVED_ROOT, TRAINING_PEOPLE, is_reserved
+from src.detection.footage_rotation import get_rotation, needs_verification
 from src.detection.generate_bbox_dataset import is_fall_lying_clip, split_clips
 from src.detection.yolo_objects import YOLOObjectDetector
 
@@ -38,30 +39,29 @@ def find_clips(testing_dir: Path):
 # container's single per-file metadata field can't capture. There is no
 # reliable automatic rule here -- every entry below was confirmed by eye,
 # frame by frame, not inferred.
-_VERIFIED_ROTATIONS = {
-    "Bedroom_Fall.mov": cv2.ROTATE_90_CLOCKWISE,
-    "TV_Lounge_2_Fall.mov": cv2.ROTATE_90_COUNTERCLOCKWISE,
-    "TV_Lounge_2_Sit.mov": cv2.ROTATE_90_CLOCKWISE,
-    "TV_Lounge_2_Walk.mov": cv2.ROTATE_90_CLOCKWISE,
-}
-
-
 def _get_rotation_fix(cap, clip_path: Path):
     """Returns a cv2.rotate() code (or None) for this clip's frames.
 
-    Looks up the verified table first. For anything not in it, falls back to
-    checking CAP_PROP_ORIENTATION_META purely to WARN -- a non-zero value on an
-    unlisted clip means it likely needs a correction nobody has verified yet,
-    and this prints instead of guessing, since guessing is how the previous
-    version of this function got 3 of 4 corrections wrong."""
-    if clip_path.name in _VERIFIED_ROTATIONS:
-        return _VERIFIED_ROTATIONS[clip_path.name]
-    meta = cap.get(cv2.CAP_PROP_ORIENTATION_META)
-    if meta not in (0, None):
+    Reads the SHARED table in footage_rotation.py. This module used to keep its
+    own copy, which drifted to 4 entries while the shared one grew to 26 -- so
+    benchmarking Bedroom_Falll or the TV_Lounge_2 re-shoots silently measured
+    sideways frames, which does not error, it just returns a bad number. One
+    table, one place to add a clip.
+
+    For anything unverified, CAP_PROP_ORIENTATION_META is consulted purely to
+    WARN: a flagged clip likely needs a correction nobody has confirmed, and
+    this prints instead of guessing, since guessing is how the previous version
+    of this function got 3 of 4 corrections wrong.
+    """
+    rotation = get_rotation(clip_path)
+    if rotation is not None:
+        return rotation
+    if needs_verification(clip_path, cap):
+        meta = cap.get(cv2.CAP_PROP_ORIENTATION_META)
         print(f"  [rotation] {clip_path.name}: orientation_meta={meta} but this "
               f"clip has no VERIFIED correction -- leaving frame as-read. Check "
               f"visually (this metadata field has proven unreliable on this "
-              f"project's footage) and add it to _VERIFIED_ROTATIONS if wrong.")
+              f"project's footage) and add it to src/detection/footage_rotation.py.")
     return None
 
 
