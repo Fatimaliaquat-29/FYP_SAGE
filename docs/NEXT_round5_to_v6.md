@@ -1,12 +1,22 @@
 # Round 5 → v6: what is left
 
+> **CLOSED, 15 Aug 2026.** Both tasks below are done and
+> `datasets/sage_merged_v6/` is built. The runbook for the training run is
+> [`TRAINING_v6_CONTEXT.md`](TRAINING_v6_CONTEXT.md); read that instead. This
+> file is kept for the reasoning that led here, and for two claims in it that
+> turned out to be wrong — see "Corrections" at the end.
+
 Handoff note, 15 Aug 2026. Round-5 footage is recorded, rotation-verified and
 hand-labelled (`55bad29`). **Nothing has been wired into a dataset yet.** Two
 tasks remain, in this order.
 
 ---
 
-## 1. Extract the empty clips as background negatives
+## 1. Extract the empty clips as background negatives — DONE
+
+*They needed no new flag: `--empty_dir` already rglobs them. What they needed
+was rotation, which that path did not apply. 59 background frames added,
+`Bedroom_Emptyy` rotating 90 CCW.*
 
 `yolo_testing/Training/Empty/Bedroom_Emptyy.mov` (345 frames) and
 `TV_Lounge_Emptyy.mov` (565 frames) were recorded alongside the fall clips and
@@ -24,7 +34,12 @@ verified by eye. Do not re-derive them from metadata.
 
 ---
 
-## 2. Build a merge path for hand-drawn labels
+## 2. Build a merge path for hand-drawn labels — DONE
+
+*`src/detection/handlabels.py` plus `--handlabels_dir` / `--handlabels_only` /
+`--extra_clip` on the generator. All four requirements below are met; all 118
+frames reached the dataset and verified pixel-identical to the frames the boxes
+were drawn on.*
 
 **This is the real work, and without it round 5 was pointless.**
 
@@ -99,8 +114,37 @@ from v3 — if v6 widens that to more clips, the round worked.
 
 ---
 
+## Corrections
+
+Two things above were stated as fact and were wrong. Recorded rather than
+silently edited, because both were reasonable inferences from the code.
+
+**1. "The train/val split will shift" — it does not.** That assumed
+`generate_bbox_dataset.py` discovers clips under `yolo_testing/Training/With
+people`. It does not: `TRAINING_PEOPLE` points at `Testing/` (see
+`footage_paths.py`), so the default `--testing_dir` never looks in that
+directory and adding clips there shifts nothing. Round-5 reaches the dataset via
+the new `--extra_clip`, which appends *after* the sorted listing and assigns to
+train, so **v6's split is identical to v5's** and its val metrics are
+comparable. The held-out set is still the right basis for cross-model claims.
+
+**2. Rotation was not "already registered" in any path that mattered.**
+`footage_rotation.py` did have the round-5 entries, but
+`generate_bbox_dataset.py` never called it — only `sample_heldout_frames.py`
+did. Since the hand labels were drawn on rotated frames (`Bedroom_Falll` is
+stored 1080×1920 portrait, the labelled frames are 1920×1080), wiring the labels
+in without first teaching the generator to rotate would have put every box 90°
+out. Both dataset builders now apply rotation, and the merge verifies each
+regenerated frame against the frame its boxes were drawn on.
+
+One thing above was right and worth repeating: the held-out set is clean, and
+scoring v6 on it stays non-circular.
+
+---
+
 ## Related
 
+- [`TRAINING_v6_CONTEXT.md`](TRAINING_v6_CONTEXT.md) — the runbook this note fed into
 - [`results/yolo_person_detection/reserved_heldout_posture_v5.md`](../results/yolo_person_detection/reserved_heldout_posture_v5.md) — current model comparison, and why IoU 0.5 vs 0.3 changes the verdict
 - [`TRAINING_v5_CONTEXT.md`](TRAINING_v5_CONTEXT.md) — the v5 runbook; the Colab procedure still applies
 - [`YOLO_Merged_Training_Runbook.md`](YOLO_Merged_Training_Runbook.md) — end-to-end dataset build
