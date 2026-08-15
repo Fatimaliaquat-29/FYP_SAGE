@@ -306,6 +306,12 @@ def main():
                              "MediaPipe's, at any --stride, with object pseudo-labelling skipped. "
                              "A label no clip claims is a hard error, not a warning -- see "
                              "src/detection/handlabels.py.")
+    parser.add_argument("--allow_protected_footage", action="store_true",
+                        help="Permit footage under yolo_testing/Reserved/ or yolo_testing/held_out/ "
+                             "to enter this training set. OFF by default and it should stay off: "
+                             "the value of that footage is that no model has seen it, and one "
+                             "training run ends that permanently. Pass this only after deciding "
+                             "deliberately that specific clips should be promoted to training.")
     parser.add_argument("--handlabels_only", action="store_true",
                         help="For clips a hand-label set covers, write ONLY the hand-labelled "
                              "frames -- no MediaPipe fallback on their remaining frames. Use when "
@@ -331,7 +337,7 @@ def main():
 
     testing_dir = Path(args.testing_dir)
     # This script PRODUCES training data, so reserved footage must never reach it.
-    assert_not_reserved(testing_dir, "training-dataset generation")
+    assert_not_reserved(testing_dir, "training-dataset generation", args.allow_protected_footage)
     warn_if_shallow(testing_dir)
     out_dir = Path(args.out_dir)
     clips = find_clips(testing_dir)
@@ -350,7 +356,7 @@ def main():
     # waste the only footage recorded for that gap.
     for raw_path in args.extra_clip or []:
         extra = Path(raw_path)
-        assert_not_reserved(extra, "training-dataset generation")
+        assert_not_reserved(extra, "training-dataset generation", args.allow_protected_footage)
         if not extra.is_file():
             sys.exit(f"--extra_clip {extra} not found.")
         if extra in clip_keys:

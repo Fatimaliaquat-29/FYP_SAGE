@@ -289,6 +289,11 @@ def main():
                              "backgrounds end up over ~15%% of the dataset)")
     parser.add_argument("--out_dir", type=str, default=str(REPO_ROOT / "datasets" / "sage_merged"))
     parser.add_argument("--val_every", type=int, default=5, help="Every Nth empty-room frame goes to val")
+    parser.add_argument("--allow_protected_footage", action="store_true",
+                        help="Permit footage under yolo_testing/Reserved/ or yolo_testing/held_out/ "
+                             "to be used as background negatives. OFF by default and it should stay "
+                             "off: one training run permanently ends that footage's value as an "
+                             "honest measurement.")
     parser.add_argument("--strict", action="store_true",
                         help="Abort if a source contains any class not in SAGE_CLASSES")
     parser.add_argument("--coco_val_every", type=int, default=10,
@@ -310,7 +315,8 @@ def main():
     # leaving a half-built dataset behind and burning minutes to report an
     # error that was knowable from the arguments alone.
     if args.empty_dir:
-        assert_not_reserved(Path(args.empty_dir), "background negatives")
+        assert_not_reserved(Path(args.empty_dir), "background negatives",
+                            args.allow_protected_footage)
 
     if out_dir.exists():
         raise SystemExit(f"{out_dir} already exists -- remove it first so a stale merge can't be trained on.")
