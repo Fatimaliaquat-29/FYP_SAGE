@@ -227,20 +227,68 @@ __marimo__/
 # Ignore datasets folder
 datasets/
 
+# Ignore Ultralytics training run output (checkpoints, plots) -- fully
+# regenerable via src/detection/generate_bbox_dataset.py + finetune_person.py
+runs/
+
 # Ignore generated keypoint/window data (large, fully regenerable via
 # src/data_processing/build_lstm_datasets.py + src/posture/lstm/lstm_dataset.py)
 data/
 
-# Ignore recorded test/validation footage and its ground truth (large video
-# files, some containing identifiable people; already covered for videos by
-# the *.mp4/*.mov/etc. rules above, but excluded wholesale here too)
+# All recorded footage (large video files, some containing identifiable
+# people). One rule now covers the whole tree:
+#
+#   yolo_testing/
+#       Training/           may be used for training
+#           Empty/              empty rooms -> background negatives
+#           With people/        person + fall footage
+#       Reserved/           NEVER trained on; the only honest measurements
+#           Empty/              held-out empty room -> false-positive gate
+#           With people/        held-out room+person -> recall test
+#
+# Reserved/ sits inside yolo_testing/, so it is protected by code rather than by
+# location: assert_not_reserved() in src/detection/footage_paths.py aborts any
+# training-data producer pointed at it. See that module for why.
+yolo_testing/
+
+# The SHARED session archive (person + fall footage plus its _gt.csv sidecars).
+# Both spellings are listed on purpose: the directory is `testing/` on disk but
+# is written `Testing/` throughout the code and docs, and gitignore pattern
+# matching is case-sensitive even where the filesystem is not. Missing this rule
+# would publish ~149 MB of footage containing identifiable people.
+testing/
 Testing/
 
 .venv2/
 .vscode/
+
+# Frames extracted from Reserved/ footage for labelling and inspection.
+# Matched by EXTENSION, not by directory: an earlier `eval/**/images/` rule
+# missed eval/fp_inspect/, which holds annotated stills of a real living room.
+# Every still pulled from this footage is regenerable and may show identifiable
+# people or private homes, so none of it goes to GitHub.
+eval/**/*.jpg
+eval/**/*.jpeg
+eval/**/*.png
+eval/**/*.bmp
+# Same rule for hand-labelled TRAINING frames. handlabels/ is deliberately a
+# separate tree from eval/: these come from yolo_testing/Training/ footage, and
+# letting them anywhere near eval/heldout_objects/ would make the held-out
+# measurement circular.
+handlabels/**/*.jpg
+handlabels/**/*.jpeg
+handlabels/**/*.png
+handlabels/**/*.bmp
+# The hand-drawn .txt labels ARE committed: irreplaceable manual work, tiny,
+# and meaningless as personal data on their own (four normalised numbers).
 
 # Regenerable keypoint CSVs must never be committed, including copies that were
 # parked under models/ during the July 2026 retrain experiments (one was 63 MB).
 # Rebuild with src/data_processing/build_lstm_datasets.py.
 models/**/*.csv
 models/**/*.npz
+# MediaPipe 'heavy' pose model (30 MB). Downloaded while investigating the
+# labeller and measured as WORSE than 'full' for this footage (more boxes, but
+# precision 0.39 vs 0.71). Not used by any script; re-fetch if needed from
+# storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/
+models/pose_landmarker_heavy.task

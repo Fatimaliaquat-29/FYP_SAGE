@@ -1,0 +1,496 @@
+"""Builds a YOLO fine-tuning dataset (single 'person' class) from yolo_testing/ footage.
+
+No manual bounding-box labeling needed: MediaPipe already extracts 33 body
+keypoints per frame for the existing posture pipeline, so a padded box drawn
+around those keypoints becomes a free bounding-box label. This targets YOLO's
+main real-footage weakness found during benchmarking -- it frequently fails to
+detect a person once they are lying/fallen, because COCO's training photos are
+almost all upright people.
+
+Whole clips (not individual frames) are assigned to train or val, to avoid
+near-duplicate frames from the same clip leaking across the split.
+
+Where the free labels run out
+-----------------------------
+MediaPipe covers only ~46% of the hardest fall frames even in VIDEO mode --
+dark clothing, lying on furniture, foreground occlusion -- so on exactly the
+footage this project exists for, "free" means "absent". `--handlabels_dir`
+takes a directory of hand-drawn boxes and lets them override the auto-labeller
+frame by frame; see src/detection/handlabels.py.
+"""
+
+import argparse
+import sys
+from pathlib import Path
+
+import cv2
+import mediapipe as mp
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.detection.footage_paths import TRAINING_PEOPLE, assert_not_reserved, warn_if_shallow
+from src.detection.footage_rotation import apply as apply_rotation
+from src.detection.footage_rotation import describe as describe_rotation
+from src.detection.footage_rotation import get_rotation, needs_verification
+from src.detection.handlabels import load_all as load_hand_labels
+from src.detection.sage_classes import CLASS_TO_INDEX, SAGE_CLASSES
+
+VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".mkv"}
+POSE_MODEL_PATH = REPO_ROOT / "models" / "pose_landmarker_full.task"
+STOCK_YOLO_PATH = REPO_ROOT / "models" / "yolov8n.pt"
+DEFAULT_OUT_DIR = REPO_ROOT / "datasets" / "sage_person_finetune"
+
+# Clips whose ground truth is dominated by a fallen/lying person -- exactly the
+# case the baseline benchmark showed YOLO struggling with. Keeping this list
+# explicit (rather than data-driven) mirrors how the real-footage benchmark
+# report categorized clips, so before/after comparisons stay apples-to-apples.
+FALL_LYING_KEYWORDS = ("fall", "lying")
+
+
+def find_clips(testing_dir: Path):
+    return sorted(p for p in testing_dir.rglob("*") if p.suffix.lower() in VIDEO_EXTENSIONS)
+
+
+def is_fall_lying_clip(clip_path: Path) -> bool:
+    name = clip_path.stem.lower()
+    return any(kw in name for kw in FALL_LYING_KEYWORDS)
+
+
+def split_clips(clips, val_every=5):
+    """Assign whole clips to train/val, stratified by upright vs fall/lying,
+    so val isn't accidentally all-upright or all-fall/lying."""
+    upright = [c for c in clips if not is_fall_lying_clip(c)]
+    fall_lying = [c for c in clips if is_fall_lying_clip(c)]
+
+    train, val = [], []
+    for group in (upright, fall_lying):
+        for i, clip in enumerate(group):
+            (val if (i % val_every == val_every - 1) else train).append(clip)
+    return train, val
+
+
+def landmarks_to_bbox(landmarks, min_visibility, pad_fraction):
+    xs = [lm.x for lm in landmarks if lm.visibility >= min_visibility]
+    ys = [lm.y for lm in landmarks if lm.visibility >= min_visibility]
+    if len(xs) < 4:
+        return None
+
+    x_min, x_max = min(xs), max(xs)
+    y_min, y_max = min(ys), max(ys)
+
+    pad_x = (x_max - x_min) * pad_fraction
+    pad_y = (y_max - y_min) * pad_fraction
+    x_min = max(0.0, x_min - pad_x)
+    x_max = min(1.0, x_max + pad_x)
+    y_min = max(0.0, y_min - pad_y)
+    y_max = min(1.0, y_max + pad_y)
+
+    width = x_max - x_min
+    height = y_max - y_min
+    if width <= 0 or height <= 0:
+        return None
+
+    x_center = x_min + width / 2
+    y_center = y_min + height / 2
+    return x_center, y_center, width, height
+
+
+def clip_key(clip_path: Path, testing_dir: Path) -> str:
+    """Filename-safe key that is unique across the whole yolo_testing/ tree.
+
+    The clip's own stem is NOT enough: several folders reuse names like
+    `normal` and `old`, so keying on the stem alone made later clips silently
+    overwrite earlier ones' frames. Including the parent folders keeps
+    same-named clips from different sessions distinct.
+    """
+    try:
+        relative = clip_path.resolve().relative_to(testing_dir.resolve())
+    except ValueError:
+        relative = Path(clip_path.name)
+    parts = list(relative.parts[:-1]) + [relative.stem]
+    return "_".join(parts).replace(" ", "_").replace("-", "_")
+
+
+def build_object_labeler(model_path: Path, confidence: float):
+    """Returns frame -> list of YOLO label lines for OBJECT classes only.
+
+    Why this exists: MediaPipe can only label people, so every chair and bed in
+    our frames was previously left unlabeled -- and YOLO treats unlabeled pixels
+    as background. Training on that taught the merged model that furniture
+    exists in COCO images but not in SAGE rooms, which is why it detected zero
+    objects in our footage despite handling COCO images correctly.
+
+    Stock COCO YOLOv8n supplies those missing object boxes automatically.
+
+    Stock's own `person` detections are deliberately DISCARDED: stock is the
+    model that cannot see a fallen person (49.7% recall on fall/lying), so its
+    person boxes would be both redundant and systematically missing exactly the
+    poses this project cares about. MediaPipe owns the person class here.
+    """
+    from ultralytics import YOLO
+
+    model = YOLO(str(model_path))
+
+    def label_objects(frame):
+        height, width = frame.shape[:2]
+        lines = []
+        for result in model.predict(frame, conf=confidence, verbose=False):
+            for box in result.boxes or []:
+                name = result.names[int(box.cls[0])].strip().lower()
+                if name == "person" or name not in CLASS_TO_INDEX:
+                    continue
+                x1, y1, x2, y2 = [float(v) for v in box.xyxy[0]]
+                bw, bh = (x2 - x1) / width, (y2 - y1) / height
+                xc, yc = (x1 + x2) / 2 / width, (y1 + y2) / 2 / height
+                if bw <= 0 or bh <= 0:
+                    continue
+                lines.append(f"{CLASS_TO_INDEX[name]} {xc:.6f} {yc:.6f} {bw:.6f} {bh:.6f}")
+        return lines
+
+    return label_objects
+
+
+def make_pose_detector():
+    """A fresh VIDEO-mode PoseLandmarker. One per clip -- see process_clip."""
+    return mp.tasks.vision.PoseLandmarker.create_from_options(
+        mp.tasks.vision.PoseLandmarkerOptions(
+            base_options=mp.tasks.BaseOptions(model_asset_path=str(POSE_MODEL_PATH)),
+            running_mode=mp.tasks.vision.RunningMode.VIDEO,
+        )
+    )
+
+
+def process_clip(detector, clip_path, images_dir, labels_dir, stride, min_visibility, pad_fraction, clip_stem,
+                 object_labeler=None, stats=None, rotation=None, hand_labels=None, hand_labels_only=False):
+    """Label one clip. `detector` MUST be a fresh VIDEO-mode landmarker for this clip.
+
+    VIDEO mode, not IMAGE mode. MediaPipe Pose is two-stage: a person detector
+    finds an ROI, then landmarks are regressed inside it. IMAGE mode re-runs
+    that detector from scratch every frame with no memory; VIDEO mode seeds the
+    ROI from the previous frame's pose. When someone falls -- dark, on
+    furniture, occluded, in a pose unlike any training photo -- stage one fails
+    and IMAGE mode emits nothing, while VIDEO mode carries tracking through
+    from the frames before the fall, when the person was easy to see.
+
+    Measured over the 14 fall/lying training clips: coverage 0.70 -> 0.83,
+    +60 labelled frames. The gain lands where it is needed -- Fall_and_lie
+    0.23 -> 0.61, Side_fall 0.50 -> 0.88, Foward_fall 0.57 -> 0.93 -- and the
+    recovered boxes were checked by eye to sit correctly on the subject.
+    Two clips regress slightly (Occluded_fall -0.09, Backward_fall -0.05) where
+    tracking holds a stale ROI; far outweighed.
+
+    realtime_fall_detection.py and evaluate_real_footage.py were switched to
+    VIDEO mode in b566685. This script -- which generates every training label
+    -- was missed, so the training data was built by the unfixed path. That is
+    why fallen people are under-represented in it.
+
+    Two consequences for the loop below:
+      * Detection runs on EVERY frame, not every Nth. Skipping frames before
+        detect_for_video() breaks the tracking chain, which is the entire
+        point. `stride` now controls only which frames get WRITTEN.
+      * The detector must be fresh per clip, or tracking state bleeds across
+        clips and seeds one room's ROI into the next.
+
+    `rotation` is applied before anything else touches the frame. cv2 returns
+    raw stored pixels and ignores a clip's orientation metadata, so a portrait
+    clip reaches MediaPipe sideways -- which is not a cosmetic problem here, it
+    is the exact input on which pose detection collapses. See footage_rotation.
+
+    `hand_labels`, when given, OVERRIDES MediaPipe for any frame a human
+    labelled, and does so regardless of `stride`. Both parts are deliberate:
+      * Override, because these frames were hand-drawn precisely where the
+        auto-labeller is known to fail. Preferring a guess over ground truth on
+        the hardest frames is what left v5's fall column flat.
+      * Regardless of stride, because the hand labels were sampled at their own
+        stride. Requiring the two to divide evenly would mean a stride change
+        silently orphaned irreplaceable manual work.
+    Object pseudo-labelling is skipped on these frames too -- their furniture is
+    already hand-drawn, and adding stock-YOLO boxes on top would duplicate it.
+    """
+    cap = cv2.VideoCapture(str(clip_path))
+    if not cap.isOpened():
+        print(f"  Warning: could not open {clip_path}")
+        detector.close()
+        return 0
+
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    frame_idx = 0
+    written = 0
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame_idx += 1
+        frame = apply_rotation(frame, rotation)
+        stem = f"{clip_stem}_{frame_idx:06d}"
+
+        # Every frame goes through the tracker, even ones we will not write --
+        # including hand-labelled ones, or the tracking chain breaks at each of
+        # them and the frames after would be detected as if from a cold start.
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+        result = detector.detect_for_video(mp_image, int(frame_idx / fps * 1000))
+
+        hand_lines = hand_labels.take(stem) if hand_labels is not None else None
+        if hand_lines is not None:
+            if hand_labels.verify_frame(stem, frame) and stats is not None:
+                stats["hand_frames_verified"] += 1
+            cv2.imwrite(str(images_dir / f"{stem}.jpg"), frame)
+            (labels_dir / f"{stem}.txt").write_text(
+                ("\n".join(hand_lines) + "\n") if hand_lines else "", encoding="utf-8")
+            if stats is not None:
+                stats["hand_frames"] += 1
+                stats["hand_boxes"] += len(hand_lines)
+                stats["hand_person_boxes"] += sum(1 for line in hand_lines if line.startswith("0 "))
+            written += 1
+            continue
+
+        # `hand_labels_only` still runs the tracker above (cheap to keep, and it
+        # keeps this clip's behaviour identical if the flag is later dropped),
+        # but writes nothing MediaPipe produced for this clip.
+        if hand_labels_only:
+            continue
+
+        if frame_idx % stride != 0:
+            continue
+        if not result.pose_landmarks:
+            continue
+
+        bbox = landmarks_to_bbox(result.pose_landmarks[0], min_visibility, pad_fraction)
+        if bbox is None:
+            continue
+
+        image_path = images_dir / f"{stem}.jpg"
+        label_path = labels_dir / f"{stem}.txt"
+
+        cv2.imwrite(str(image_path), frame)
+        x_center, y_center, width, height = bbox
+        lines = [f"0 {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}"]
+
+        if object_labeler is not None:
+            object_lines = object_labeler(frame)
+            lines.extend(object_lines)
+            if stats is not None:
+                stats["object_boxes"] += len(object_lines)
+
+        label_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        written += 1
+
+    cap.release()
+    detector.close()   # per-clip detector; do not leak tracking state
+    return written
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate a YOLO person-detection fine-tuning dataset from yolo_testing/Training footage")
+    parser.add_argument("--testing_dir", type=str, default=str(TRAINING_PEOPLE),
+                        help="Footage to build training data from. Defaults to "
+                             "yolo_testing/Training/'With people' -- deliberately one level below "
+                             "Training/, because train/val is assigned by position in the sorted "
+                             "clip listing and folding Empty/ in would shift every index. "
+                             "Anything under yolo_testing/Reserved/ is refused.")
+    parser.add_argument("--extra_clip", type=str, action="append", default=None,
+                        help="Path to one additional clip, repeatable. Appended AFTER the "
+                             "--testing_dir listing and always assigned to train, so it cannot "
+                             "shift the index-based train/val split of the clips already there. "
+                             "Use this to add specific footage (e.g. the round-5 fall clips in "
+                             "yolo_testing/Training/'With people') without sweeping in every "
+                             "other clip beside it. Reserved/ paths are refused.")
+    parser.add_argument("--handlabels_dir", type=str, action="append", default=None,
+                        help="Directory of hand-drawn labels (classes.txt + labels/), repeatable. "
+                             "Any frame labelled here is written with the human's boxes instead of "
+                             "MediaPipe's, at any --stride, with object pseudo-labelling skipped. "
+                             "A label no clip claims is a hard error, not a warning -- see "
+                             "src/detection/handlabels.py.")
+    parser.add_argument("--allow_protected_footage", action="store_true",
+                        help="Permit footage under yolo_testing/Reserved/ or yolo_testing/held_out/ "
+                             "to enter this training set. OFF by default and it should stay off: "
+                             "the value of that footage is that no model has seen it, and one "
+                             "training run ends that permanently. Pass this only after deciding "
+                             "deliberately that specific clips should be promoted to training.")
+    parser.add_argument("--handlabels_only", action="store_true",
+                        help="For clips a hand-label set covers, write ONLY the hand-labelled "
+                             "frames -- no MediaPipe fallback on their remaining frames. Use when "
+                             "a clip was hand-labelled BECAUSE the auto-labeller is unreliable on "
+                             "it: at --stride 2 a 600-frame clip contributes ~300 MediaPipe frames "
+                             "against ~60 hand-drawn ones, so the guesses outvote the ground truth "
+                             "5:1 on the exact footage the guesses were known to get wrong. Other "
+                             "clips are unaffected.")
+    parser.add_argument("--out_dir", type=str, default=str(DEFAULT_OUT_DIR))
+    parser.add_argument("--stride", type=int, default=2, help="Keep every Nth frame (reduces near-duplicate frames)")
+    parser.add_argument("--min_visibility", type=float, default=0.3)
+    parser.add_argument("--pad_fraction", type=float, default=0.12, help="Padding added around the keypoint-derived box")
+    parser.add_argument("--val_every", type=int, default=5, help="Every Nth clip (per category) goes to val")
+    parser.add_argument("--pseudo_objects", action="store_true",
+                        help="Also label furniture/containers in our frames using stock YOLOv8n. Without "
+                             "this, those objects are unlabeled and therefore train as BACKGROUND, which "
+                             "is why the merged model detected no objects in SAGE footage.")
+    parser.add_argument("--object_model", type=str, default=str(STOCK_YOLO_PATH),
+                        help="Weights used for object pseudo-labels (must be the stock COCO model)")
+    parser.add_argument("--object_conf", type=float, default=0.5,
+                        help="Confidence floor for pseudo-labels; higher keeps them cleaner (default 0.5)")
+    args = parser.parse_args()
+
+    testing_dir = Path(args.testing_dir)
+    # This script PRODUCES training data, so reserved footage must never reach it.
+    assert_not_reserved(testing_dir, "training-dataset generation", args.allow_protected_footage)
+    warn_if_shallow(testing_dir)
+    out_dir = Path(args.out_dir)
+    clips = find_clips(testing_dir)
+    if not clips:
+        print(f"No clips found under {testing_dir}")
+        sys.exit(1)
+
+    train_clips, val_clips = split_clips(clips, val_every=args.val_every)
+    clip_keys = {clip: clip_key(clip, testing_dir) for clip in clips}
+
+    # Extra clips are keyed on their own stem (not their position under some
+    # root) so the key matches the frame naming a hand-label set already uses,
+    # and they go straight to train: they are added BECAUSE a specific gap needs
+    # covering in training, and spending a hand-labelled clip on val -- where
+    # metrics are already non-comparable once the clip list changes -- would
+    # waste the only footage recorded for that gap.
+    for raw_path in args.extra_clip or []:
+        extra = Path(raw_path)
+        assert_not_reserved(extra, "training-dataset generation", args.allow_protected_footage)
+        if not extra.is_file():
+            sys.exit(f"--extra_clip {extra} not found.")
+        if extra in clip_keys:
+            sys.exit(f"--extra_clip {extra} is already covered by --testing_dir {testing_dir}.")
+        key = clip_key(extra, extra.parent)
+        if key in set(clip_keys.values()):
+            sys.exit(f"--extra_clip {extra} produces key {key!r}, which collides with a clip "
+                     f"already in the listing; its frames would overwrite the other's.")
+        clip_keys[extra] = key
+        train_clips.append(extra)
+
+    print(f"Clips: {len(clips)} discovered + {len(args.extra_clip or [])} extra "
+          f"-> {len(train_clips)} train, {len(val_clips)} val")
+
+    # Rotation is resolved up front so an unverified clip is reported once, here,
+    # rather than as a surprise in the middle of a long run. Unverified clips are
+    # still processed (refusing them would silently gut the training set), but
+    # this is the warning that stops a sideways room being trained on unnoticed.
+    rotations = {clip: get_rotation(clip) for clip in train_clips + val_clips}
+    rotated = {c: r for c, r in rotations.items() if r is not None}
+    if rotated:
+        print("Rotation corrections applied:")
+        for clip, rotation in sorted(rotated.items()):
+            print(f"  {clip.name}: {describe_rotation(rotation)}")
+    unverified = sorted(c.name for c in rotations if needs_verification(c))
+    if unverified:
+        print(f"WARNING: {len(unverified)} clip(s) look rotated but are unverified, so they are")
+        print("         processed as stored. If any is actually sideways, MediaPipe will emit")
+        print("         few or no poses for it and its frames will be quietly under-represented.")
+        print("         Verify by eye and add to src/detection/footage_rotation.py:")
+        print(f"           {', '.join(unverified)}")
+
+    hand_labels = None
+    if args.handlabels_dir:
+        hand_labels = load_hand_labels(args.handlabels_dir)
+        for label_set in hand_labels.sets:
+            print(f"Hand labels: {len(label_set)} frames from {label_set.root} "
+                  f"(clips: {', '.join(label_set.clip_stems())})")
+        missing = sorted(set(hand_labels.clip_stems()) - set(clip_keys.values()))
+        if missing:
+            sys.exit(
+                f"Hand labels reference clip(s) not in this run: {', '.join(missing)}\n"
+                "  Their frames would never be visited, so the boxes would be silently dropped.\n"
+                "  Add the clip with --extra_clip, or point --testing_dir at it."
+            )
+
+    # Detector is created PER CLIP inside the loop below: VIDEO mode carries
+    # tracking state, and reusing one detector across clips would seed one
+    # room's ROI into the next. See process_clip.
+
+    object_labeler = None
+    label_stats = {"object_boxes": 0, "hand_frames": 0, "hand_boxes": 0,
+                   "hand_person_boxes": 0, "hand_frames_verified": 0}
+    if args.pseudo_objects:
+        print(f"Object pseudo-labeling ON, using {args.object_model} at conf {args.object_conf}")
+        object_labeler = build_object_labeler(Path(args.object_model), args.object_conf)
+
+    totals = {}
+    for split_name, split_clips_list in (("train", train_clips), ("val", val_clips)):
+        images_dir = out_dir / "images" / split_name
+        labels_dir = out_dir / "labels" / split_name
+        images_dir.mkdir(parents=True, exist_ok=True)
+        labels_dir.mkdir(parents=True, exist_ok=True)
+
+        split_total = 0
+        for clip in split_clips_list:
+            print(f"[{split_name}] {clip_keys[clip]} ...")
+            written = process_clip(
+                make_pose_detector(), clip, images_dir, labels_dir,
+                args.stride, args.min_visibility, args.pad_fraction,
+                clip_keys[clip],
+                object_labeler=object_labeler,
+                stats=label_stats,
+                rotation=rotations[clip],
+                hand_labels=hand_labels,
+                # Only clips the hand labels actually cover are restricted; the
+                # rest of the listing keeps its MediaPipe labels either way.
+                hand_labels_only=(args.handlabels_only and hand_labels is not None
+                                  and clip_keys[clip] in set(hand_labels.clip_stems())),
+            )
+            print(f"  wrote {written} labeled frames")
+            split_total += written
+        totals[split_name] = split_total
+
+    # Fail BEFORE writing data.yaml. Without it the output cannot be trained on,
+    # so a run that loses hand-drawn boxes leaves an unusable directory rather
+    # than a plausible dataset that is quietly missing the work it existed for.
+    if hand_labels is not None:
+        orphans = hand_labels.unconsumed()
+        if orphans:
+            sys.exit(
+                f"{len(orphans)} hand-drawn label(s) matched no frame in any clip:\n"
+                f"  {', '.join(orphans[:10])}{' ...' if len(orphans) > 10 else ''}\n"
+                "  Frame names are <clip_stem>_<1-based index, 6 digits>, so this usually means\n"
+                "  the labels were drawn on frames sampled from a different clip, or the clip\n"
+                "  has since been re-encoded and its frame count changed. Either way these\n"
+                "  boxes are irreplaceable manual work and would have been dropped silently."
+            )
+
+    data_yaml = out_dir / "data.yaml"
+    # With pseudo-labels or hand labels the files contain object class indices
+    # too, so the yaml must declare the full SAGE list or those indices would be
+    # out of range.
+    class_names = SAGE_CLASSES if (args.pseudo_objects or hand_labels is not None) else ["person"]
+    data_yaml.write_text(
+        "path: {}\ntrain: images/train\nval: images/val\nnames:\n{}\n".format(
+            out_dir.resolve().as_posix(),
+            "\n".join(f"  {i}: {name}" for i, name in enumerate(class_names)),
+        ),
+        encoding="utf-8",
+    )
+
+    print(f"\nTotal labeled frames: train={totals['train']}, val={totals['val']}")
+    if hand_labels is not None:
+        print(f"Hand-labelled frames used: {label_stats['hand_frames']}/{len(hand_labels)} "
+              f"({label_stats['hand_person_boxes']} person + "
+              f"{label_stats['hand_boxes'] - label_stats['hand_person_boxes']} object boxes), "
+              "overriding MediaPipe")
+        if label_stats["hand_frames_verified"]:
+            print(f"  {label_stats['hand_frames_verified']} verified pixel-identical to the frames "
+                  "the boxes were drawn on")
+        else:
+            print("  NOT verified against the labelled frames: no local copies under "
+                  "handlabels/**/images/.")
+            print("  That is expected on a fresh clone (they are gitignored), but it means the")
+            print("  rotation and frame indexing used here are assumed, not checked.")
+    if args.pseudo_objects:
+        print(f"Object pseudo-labels added: {label_stats['object_boxes']} boxes")
+        if label_stats["object_boxes"] == 0:
+            print("  WARNING: zero object boxes found. The merged model will again learn that")
+            print("           SAGE rooms contain no furniture. Lower --object_conf and re-check.")
+    print(f"Dataset written to {out_dir}")
+    print(f"data.yaml: {data_yaml}")
+
+
+if __name__ == "__main__":
+    main()

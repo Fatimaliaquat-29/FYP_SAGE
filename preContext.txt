@@ -1,0 +1,605 @@
+# S.A.G.E. — YOLO & Object Detection Context for Hussain
+# Branch: YOLO_fatima
+# Written: August 2026
+# Who wrote this: Fatima (with AI pair-programming assistance via Antigravity/Claude)
+#
+# This file is a complete, self-contained briefing on every YOLO and
+# object-detection decision made on this branch. Read it top-to-bottom
+# before touching any code in src/detection/ or any model in models/.
+
+=============================================================================
+1. WHAT THIS BRANCH ADDED (SCOPE AS GIVEN)
+=============================================================================
+
+From the Continuation Plan's Phase 5 prerequisite, this branch was scoped to:
+  - Get YOLOv8 running per-frame alongside (not replacing) MediaPipe
+  - Produce reliable person-detection confidence scores
+  - Take a first-pass look at COCO-adjacent classes as furniture/container
+    placeholders
+  - Measure real per-frame latency on the dev machine
+  - DO NOT wire into realtime_fall_detection.py — that's a later integration
+    step and is explicitly out of scope for this branch
+
+The plan expected stock COCO person detection to be "close to 100%."
+It was NOT. That single discovery drove everything that followed.
+
+
+=============================================================================
+2. WHAT WAS BUILT — src/detection/ MODULE
+=============================================================================
+
+All new code lives in a self-contained module. Zero edits were made to any
+pre-existing pipeline file.
+
+  src/detection/
+  ├── __init__.py
+  ├── yolo_objects.py          ← YOLOObjectDetector class (the deliverable)
+  ├── detect_test.py           ← Standalone webcam/clip viewer with live latency
+  ├── benchmark_footage.py     ← Batch benchmark over a Testing/ tree → .md report
+  ├── generate_bbox_dataset.py ← Auto-labels a YOLO training set from MediaPipe keypoints
+  ├── finetune_person.py       ← Fine-tunes YOLOv8n on that auto-labeled dataset
+  ├── sage_classes.py          ← Canonical 13-class list (person at index 0)
+  ├── fetch_coco_subset.py     ← Downloads a class-filtered COCO subset via FiftyOne
+  └── build_merged_dataset.py  ← Merges our frames + COCO + empty-room negatives
+
+YOLOObjectDetector interface (yolo_objects.py):
+  - Constructor: YOLOObjectDetector(model_path, confidence_threshold=0.4,
+                                    device=None, imgsz=640)
+  - Single method: detect(frame: np.ndarray) -> List[{"class", "confidence", "bbox"}]
+  - Deliberately minimal — wiring into realtime_fall_detection.py is mechanical.
+
+
+=============================================================================
+3. BASELINE FINDING — STOCK YOLO LOSES THE PERSON WHEN IT MATTERS MOST
+=============================================================================
+
+Ran benchmark_footage.py over all 28 clips in Testing/ (9,188 frames),
+confidence 0.4, CPU only (Intel i5-10310U @ 1.7GHz, no CUDA).
+
+  Stock YOLOv8n overall person-detection rate: 82.3%
+
+  BUT broken down by posture:
+  ┌─────────────────────────────────┬────────┬────────────────────────┐
+  │ Activity state                  │ Frames │ Person detection rate  │
+  ├─────────────────────────────────┼────────┼────────────────────────┤
+  │ Upright (standing/sitting)      │ 6,834  │ 93.5%                  │
+  │ Falling / lying clips           │ 2,354  │ 49.7%                  │
+  └─────────────────────────────────┴────────┴────────────────────────┘
+
+  Lying_straight.mov (147 frames of a person lying still) → 0.0% detection
+
+COCO's training images are overwhelmingly upright people. The stock model's
+confidence collapses once someone is on the floor. The moment YOLO is most
+useful for a fall-detection system is the moment it stops working.
+
+
+=============================================================================
+4. THE FIX — FINE-TUNING ON AUTO-LABELED FALLEN-PERSON FRAMES
+=============================================================================
+
+Key insight: MediaPipe already extracts 33 body keypoints per frame for the
+existing posture pipeline. A padded box around those keypoints IS a
+bounding-box label. generate_bbox_dataset.py turns the entire Testing/ tree
+into a YOLO training set for free — no manual labeling required.
+
+Dataset built:
+  - 1,832 train / 1,837 val labeled frames (every 2nd frame, 28 clips)
+  - Split by WHOLE CLIP, not by frame — adjacent frames are near-duplicates,
+    so a frame-level split would have leaked. Mirrors the StratifiedGroupKFold
+    lesson from the LSTM phase.
+
+Training config: 12 epochs, imgsz=320, CPU, ~80 min.
+Best epoch 11: mAP50 = 98.7%, val recall = 93.9%
+Saved to: models/yolov8n_sage_person.pt
+
+Results across all 9,188 frames:
+  ┌──────────────────────────┬─────────┬─────────┬─────────────┬────────────┐
+  │ Config                   │ Overall │ Upright │ Fall/lying  │ Latency    │
+  ├──────────────────────────┼─────────┼─────────┼─────────────┼────────────┤
+  │ Stock YOLOv8n @640       │  82.3%  │  93.5%  │   49.7%     │ 98.8 ms    │
+  │ Stock YOLOv8n @320       │  72.8%  │  84.7%  │   38.4%     │ 46.2 ms    │
+  │ Fine-tuned @320          │  96.9%  │  97.5%  │   95.2%     │ 41.2 ms    │
+  └──────────────────────────┴─────────┴─────────┴─────────────┴────────────┘
+
+The stock-@320 row is intentional: without it we couldn't tell whether the
+gain came from fine-tuning or just smaller image size. Shrinking input HURTS
+the stock model; the improvement is genuinely from fine-tuning.
+
+Lying_straight.mov: 0.0% → 100% detection. ✅
+
+HOWEVER: this person-only model has a serious problem — see Section 5.
+
+
+=============================================================================
+5. DATA INTEGRITY ISSUES FOUND ALONG THE WAY
+=============================================================================
+
+Two bugs caught by cross-checking image counts (nothing failed loudly):
+
+(a) Testing/ contains DUPLICATE footage.
+    - Hussain Testing 7-23-26/normal.mp4 == Sanawar Testing 7-22-26/normal.mov
+      (byte-identical, same MD5)
+    - Same for the two "old" clips.
+    - The benchmark therefore counted 999 frames twice.
+    - Real corpus: 26 unique clips / 8,189 unique frames (not 28 / 9,188).
+    - Both duplicated clips are easy upright footage, so they mildly inflated
+      every config equally — conclusions don't change.
+
+(b) A filename collision silently discarded 499 training frames.
+    - generate_bbox_dataset.py originally keyed output frames on clip stem
+      only, so same-named clips in different folders overwrote each other.
+    - The script REPORTED 2,331 train frames while only 1,832 reached disk.
+    - In this case harmless (overwritten frames were duplicates anyway), but
+      with genuinely different clips it would have destroyed real training data.
+    - FIX ALREADY APPLIED: frames are now keyed on the clip's full path
+      relative to Testing/, verified to produce 28 unique keys for 28 clips.
+    - CHECK YOUR OWN PIPELINES for this pattern.
+
+
+=============================================================================
+6. THE PERSON-ONLY MODEL IS NOT DEPLOYABLE — FALSE POSITIVE PROBLEM
+=============================================================================
+
+Three empty-room clips were recorded specifically to test false positives
+(4 videos, 1,950 frames, three rooms that appear NOWHERE in training).
+Every frame was verified by eye to contain no person.
+Sampling every 10th frame at confidence 0.4:
+
+  ┌────────────────────────────────┬──────────────────────────────────┐
+  │ Model                          │ FP rate on 194 empty-room frames │
+  ├────────────────────────────────┼──────────────────────────────────┤
+  │ Stock YOLOv8n @640             │  1.0%                            │
+  │ Fine-tuned person-only @320    │  11.9%                           │
+  └────────────────────────────────┴──────────────────────────────────┘
+
+The fine-tuned model boxes a WATER DISPENSER at 0.59 confidence and a
+SOFA ARM at 0.37 confidence as "person."
+
+The headline recall gain (49.7% → 95.2%) came at roughly 12× worse false-
+positive rate on rooms the model has not seen.
+
+WHY: the person-only training set contained zero background images, so
+nothing ever taught the model what ISN'T a person.
+
+IMPORTANT: This also caused the person-only model to LOSE ALL OTHER CLASSES.
+  Passing a 1-class dataset made Ultralytics log:
+    "Overriding model.yaml nc=80 with nc=1"
+  This structurally REPLACED the detection head — there is no longer a "chair"
+  output neuron at all. The fine-tuned person-only model cannot detect furniture
+  or any COCO class. This is NOT catastrophic forgetting (which could be
+  countered with a lower learning rate or EWC). The only fix is to keep a
+  multi-class label space.
+
+DO NOT DEPLOY models/yolov8n_sage_person.pt in production.
+
+
+=============================================================================
+7. THE MERGED RETRAIN SERIES — HOW WE GOT TO v3
+=============================================================================
+
+Each model fixed a defect the previous model's measurement exposed.
+
+  ┌───┬─────────────────────────┬──────────────────────────────┬──────────────────────────────────┐
+  │ # │ Model                   │ Fixed                        │ Broke                            │
+  ├───┼─────────────────────────┼──────────────────────────────┼──────────────────────────────────┤
+  │ 0 │ stock YOLOv8n           │ —                            │ Blind to fallen people (49.7%)   │
+  │ 1 │ person-only fine-tune   │ Recall → 95.2%               │ Deleted all 79 object classes;   │
+  │   │                         │                              │ 5.4% FP rate on unseen rooms     │
+  │ 2 │ v1 merged (COCO re-add) │ Objects on COCO images       │ Still ZERO objects in our rooms  │
+  │ 3 │ v2 (+ object pseudo-    │ Objects in our rooms; FP → 0 │ Fall recall slipped to 94.7%     │
+  │   │    labels from stock)   │                              │                                  │
+  │ 4 │ v3 (person re-weighted) │ Recall → 95.9%               │ NOTHING — all gates pass ✅      │
+  │ 5 │ 640px experiment        │ Containers +59% mAP          │ Fails recall (90.6%) & latency   │
+  └───┴─────────────────────────┴──────────────────────────────┴──────────────────────────────────┘
+
+--- v1 merged: why objects didn't appear in our footage ---
+The merged model detected all 13 classes correctly on COCO images. But it
+detected ZERO objects in SAGE footage. Reason: our 1,832 auto-labeled frames
+carry "person" as their ONLY label (MediaPipe can only label people). Every
+chair, bed, couch visible in them is unlabeled = treated as background.
+The model learned "furniture exists in COCO-looking images, not in SAGE rooms."
+
+--- v2: pseudo-labeling fix ---
+Fix: run stock YOLOv8n over our own frames, keep its furniture/container
+boxes, then merge those with MediaPipe's person boxes. Both sources are fully
+automatic. Stock YOLO cannot see fallen people, but MediaPipe covers person.
+v2 added 4,599 pseudo-labeled object boxes to our own frames.
+
+  False-positive question was SETTLED properly in v2:
+  A fourth empty room (dining area, 569 frames) was recorded and NEVER passed
+  to --empty_dir, so it stayed out of training entirely. First honest precision
+  measurement in the project.
+  - Person-only FP: 3/56 (5.4%) ← confirmed real, not a fit artifact
+  - Both merged models: 0/56 ← genuinely fixed
+
+But v2 dropped held-out fall/lying recall: 95.9% → 94.7% (below the ≥95% gate)
+Likeliest cause: 12 object classes competing with person in a nano-sized model.
+
+--- v3: person class re-weighting ---
+Cheap fix tried first (instead of jumping to yolov8s): rebuild with
+  --own_repeat 2
+This doubles our own frames in train (person boxes 16,716 → 19,047) while
+leaving COCO and empty-room portions untouched.
+
+Result: held-out recall recovers 94.7% → 95.9% ✅
+False positives stay at 0/56 ✅
+Object detection stays at 120 boxes ✅
+
+The cheap fix worked. Reaching for a larger model first would have cost
+latency and obscured the real cause (class balance, not capacity).
+
+Model files saved:
+  models/yolov8n_sage_merged.pt      ← v1 (superseded)
+  models/yolov8n_sage_merged_v2.pt   ← v2 (superseded)
+  models/yolov8n_sage_merged_v3.pt   ← v3 USE THIS ONE ✅
+  models/yolov8n_sage_person.pt      ← person-only (DO NOT DEPLOY)
+  models/yolov8n.pt                  ← original stock weights (untouched)
+
+
+=============================================================================
+8. FINAL GATE RESULTS (models/yolov8n_sage_merged_v3.pt)
+=============================================================================
+
+  ┌──────────────────────────────────────────┬────────┬─────────────────┐
+  │ Gate                                     │ Target │ v3 Result       │
+  ├──────────────────────────────────────────┼────────┼─────────────────┤
+  │ FP, room HELD BACK from training         │ ~0%    │ 0/56 (0.0%) ✅  │
+  │ FP, unseen Normal_Fall_2 empty tail      │ 0      │ 0/40 ✅         │
+  │ Fall/lying recall, held-out clips        │ ≥95%   │ 95.9% ✅        │
+  │ Objects detected in SAGE footage         │ any    │ 120 boxes ✅    │
+  │ Latency (idle machine)                   │ —      │ 42.1 ms / 23.8 FPS │
+  └──────────────────────────────────────────┴────────┴─────────────────┘
+
+Held-out clips for the person-detection gate:
+  Foward_fall.mp4: stock 57.1% → v3 97.4%
+  newTest.mov:     stock 92.6% → v3 95.0%
+  Sit_2.mov:       stock 99.3% → v3 100%
+  Normal_Fall_2:   see note below — 40 out-of-frame frames skewed raw number
+
+Normal_Fall_2.mov metric note:
+  The subject slides out of the bottom of the frame for the last 40 of 131
+  frames. Both models are CORRECT to return nothing there. Corrected recall
+  on person-present frames only (91 frames): stock 85.7% → v3 93.4%.
+  False-positive rate on the empty 40-frame tail: 0.0% for both models.
+
+Object-detection quality on val set (mAP50, IoU-based, real COCO labels):
+  ┌──────────────┬───────────┬────────┬────────┐
+  │ Class        │ Precision │ Recall │ mAP50  │
+  ├──────────────┼───────────┼────────┼────────┤
+  │ person       │  0.87     │  0.85  │  0.884 │
+  │ bed          │  0.86     │  0.65  │  0.838 │
+  │ chair        │  0.80     │  0.65  │  0.788 │
+  │ toilet       │  0.65     │  0.67  │  0.694 │
+  │ refrigerator │  0.59     │  0.63  │  0.610 │
+  │ couch        │  0.58     │  0.49  │  0.536 │
+  │ tv           │  0.60     │  0.45  │  0.453 │
+  │ bowl         │  0.57     │  0.38  │  0.382 │
+  │ cup          │  0.53     │  0.34  │  0.357 │
+  │ dining table │  0.64     │  0.29  │  0.301 │
+  │ sink         │  0.56     │  0.34  │  0.293 │
+  │ bottle       │  0.48     │  0.21  │  0.242 │
+  │ wine glass   │  0.44     │  0.23  │  0.226 │
+  │ ALL          │  0.63     │  0.48  │  0.508 │
+  └──────────────┴───────────┴────────┴────────┘
+
+chair and bed — the only two classes that actually occur in SAGE rooms — are
+the model's best object classes. Detections in our footage rest on genuinely
+competent detection, not noise.
+
+
+=============================================================================
+9. THE 640px EXPERIMENT AND CONTAINER DETECTION
+=============================================================================
+
+Why it was run:
+  bottle: only 21% recall on COCO val despite ~4,160 training boxes. Large
+  objects (bed, chair) detect fine; small objects don't. Pattern implicates
+  imgsz=320. The experiment ran BEFORE labeling containers, precisely so that
+  2-5 hours of labeling wouldn't be wasted on a 320px model that fundamentally
+  can't resolve small objects.
+
+Result: every container class improved substantially on CLEAN COCO labels:
+  bottle +59%, wine glass +63%, cup +33%, bowl +29%
+  Gain understated (only 15 epochs vs v3's 30).
+
+BUT the 640 model FAILS THE FALL GATES:
+  Fall/lying recall (held-out): 95.9% → 90.6% ❌ (5.3pp below ≥95% gate)
+  Latency: 42.1 ms → 85.9 ms ❌ (nearly blows entire 66.7 ms budget alone)
+
+Latency is DECISIVE regardless of future training: at 85.9 ms for YOLO alone,
+plus MediaPipe's ~110 ms, total is ~196 ms = ~5.1 FPS. Not close to 15 FPS.
+
+CONCLUSION: Container detection needs a SEPARATE, higher-resolution model
+on a LOW DUTY CYCLE. Medication adherence happens over seconds to minutes —
+it does not need 15 FPS. This sidesteps the latency conflict entirely.
+
+Model saved as: models/yolov8n_sage_merged_640.pt (experiment record, not deployable)
+
+
+=============================================================================
+10. MEDICINE CONTAINER DETECTION — CURRENT STATUS AND WHAT'S NEEDED
+=============================================================================
+
+Status: NOT STARTED. Scoping only on this branch.
+
+The gap is MEASURED, not assumed. Sampling every 60th frame across all 28
+Testing/ clips with stock YOLOv8n:
+  At confidence 0.50: 0 container detections (bottle, cup, bowl, wine glass)
+  At confidence 0.35: 0 container detections
+
+COCO's "bottle" class is water/wine/soda bottles — wrong scale, context and
+shape from pill bottles on a nightstand. It is not a detector for this task.
+
+What the work actually requires:
+  1. Record footage (est. 2-4 hours):
+     - Pill bottles, blister packs, pill organizers
+     - In the same rooms, lighting, camera angles as fall footage
+     - Multiple positions, distances, partial occlusions
+
+  2. Decide the class list:
+     - pill_bottle (indices 13 in sage_classes.py)
+     - blister_pack (index 14)
+     - pill_organizer (index 15)
+     CRITICAL: Append to sage_classes.py at indices 13+. NEVER reorder
+     existing indices. Index order is part of every checkpoint's contract
+     and changing it silently invalidates prior models.
+
+  3. Label (~600 images for proof-of-concept, est. 2-5 hours):
+     Use tracking-assisted tooling: CVAT (free, self-hosted) or Roboflow
+     (easier setup, free tier). Containers are largely static so interpolation
+     cuts the effort several-fold. Export YOLO-format .txt labels.
+
+  4. Merge and train (est. 1 hour + one Colab run at imgsz=640):
+     python src/detection/build_merged_dataset.py \
+         --coco_dir datasets/coco_subset \
+         --empty_dir Testing_EmptyRooms \
+         --container_dir datasets/containers   # new source, same remap-by-name
+
+  Definition of done:
+  - [ ] Container classes appended to SAGE_CLASSES as indices 13+ with
+        existing indices untouched
+  - [ ] ≥150 labeled instances per class
+  - [ ] Held-out clips reserved that were never labeled OR trained on
+  - [ ] Person/fall gates re-run and NOT regressed
+  - [ ] FP rate re-measured on held-back empty rooms
+
+Full detail in: docs/MEDICATION_DETECTION_SCOPE.md
+
+
+=============================================================================
+11. LATENCY REALITY — MEDIAPIPE IS THE BOTTLENECK, NOT YOLO
+=============================================================================
+
+15 FPS target → budget = 66.7 ms/frame total.
+
+  MediaPipe (pose_landmarker_full.task): ~110 ms/frame
+  YOLO v3 @320:                           42.1 ms/frame
+  Sequential total:                      ~152 ms = ~6.6 FPS
+
+  MediaPipe ALONE blows the entire 66.7 ms budget before YOLO runs at all.
+  Even if YOLO were free, the ceiling is ~9.1 FPS.
+  Frame-skipping YOLO every 4th frame: ~152 ms → ~120 ms ≈ 8.3 FPS — still short.
+
+NO AMOUNT OF YOLO OPTIMIZATION REACHES THE JETSON TARGET.
+
+The lever that actually matters is the POSE MODEL, not the detector. Options:
+  - pose_landmarker_lite instead of _full
+  - Reduced pose input resolution
+  - Running pose estimation on a duty cycle
+
+This is a decision for whoever owns the pose pipeline. It should be made
+before anyone invests further in YOLO-side optimization.
+
+(All figures are laptop CPU. Jetson will differ. The ratio between the two
+stages is the point, not the absolute numbers.)
+
+
+=============================================================================
+12. HONEST LIMITATIONS (READ BEFORE TRUSTING NUMBERS)
+=============================================================================
+
+1. Small held-out set. The 95.9% recall rests on 245 person-present frames
+   across 2 fall/lying clips. Wide error bars — consistent across 4 model
+   variants, which is reassuring, but thin.
+
+2. One held-back room, 56 frames. Enough to separate 0% from 5.4% FP. Not
+   enough to claim a precise false-positive rate.
+
+3. Same rooms, same few people. Generalization to new environments and new
+   subjects is largely untested.
+
+4. Person labels are MediaPipe-derived. The person class partly measures
+   agreement with MediaPipe rather than ground truth. Frames where MediaPipe
+   found no pose produced no label and were absent from training — so the
+   fine-tuned model inherits MediaPipe's blind spots.
+
+5. chair/bed/person validation is partly circular — majority pseudo-labels.
+   Container classes (bottle, cup, etc.) in the val set are clean (100% real
+   COCO annotation, zero pseudo-label contamination).
+
+6. Only chair and bed detect reliably in our footage, because they're nearly
+   the only SAGE classes present in it.
+
+7. hybrid_evaluate.py regression was NEVER RUN. TensorFlow has no wheel for
+   this machine's Python 3.14, so the LSTM half would be silently disabled.
+   This branch touches no pipeline files, so it's a formality — but it is
+   formally untested.
+
+
+=============================================================================
+13. WHAT IS IN GIT vs. WHAT YOU NEED LOCALLY
+=============================================================================
+
+--- Files committed and in git (you get these from clone/pull) ---
+All source code in src/detection/ (yolo_objects.py, benchmark_footage.py,
+build_merged_dataset.py, detect_test.py, fetch_coco_subset.py,
+finetune_person.py, generate_bbox_dataset.py, sage_classes.py)
+
+All evaluation scripts at repo root:
+  evaluate_real_footage.py, hybrid_evaluate.py, realtime_fall_detection.py,
+  verify_labels.py
+
+All documentation in docs/:
+  YOLO_Phase_Summary.md, YOLO_Branch_Progress_Report.md,
+  YOLO_Merged_Training_Runbook.md, MEDICATION_DETECTION_SCOPE.md,
+  LSTM_Phase_Summary.md, setup.md, sanity_check_clips.md, etc.
+
+All result markdown files in results/yolo_person_detection/:
+  baseline_320_results.md, baseline_640_results.md, finetuned_320_results.md,
+  merged_320_results.md, merged_v2_320_results.md, merged_v3_320_results.md
+
+Trained model weights in models/:
+  yolov8n.pt (stock, untouched)
+  yolov8n_sage_person.pt (person-only, do not deploy)
+  yolov8n_sage_merged.pt (v1)
+  yolov8n_sage_merged_v2.pt (v2)
+  yolov8n_sage_merged_v3.pt (v3 — USE THIS)
+  yolov8n_sage_merged_640.pt (640px experiment — NOT deployable)
+  lstm_posture.keras + lstm_label_encoder.json (LSTM model + encoder)
+  lstm_posture_before_lefd.keras + lstm_label_encoder_before_lefd.json (backup)
+  pose_landmarker_full.task (MediaPipe pose model)
+
+--- Files NOT in git (excluded by .gitignore) — you need these separately ---
+
+Testing/                ← ALL VALIDATION FOOTAGE (large video files)
+  Sanawar Testing 7-22-26/  — original 16-clip regression set
+  Hussain Testing 7-23-26/  — contains normal.mp4 and old.mp4 (byte-identical
+                               to the .mov files in the Sanawar folder above)
+  Sanawar Testing 7-25-26/  — 9 unseen clips: Forward/Backward/Side/Slow/
+                               Chair/Far/Off-axis/Occluded falls + newTest
+
+Testing_EmptyRooms/     ← 4 empty-room clips used as YOLO negatives in training
+                          (intentionally outside Testing/ so clip discovery
+                          doesn't disturb the train/val split)
+
+Testing_EmptyHeldOut/   ← The held-back dining room (56 frames). NEVER pass
+                          this to --empty_dir. This is the honest FP test.
+
+Testing_HeldOutEval/    ← Held-out evaluation room. NEVER pass to --testing_dir
+                          or --empty_dir. See its README.md.
+
+datasets/               ← All training datasets (gitignored, large)
+  sage_person_finetune/ ← Auto-labeled person frames from Testing/ (1,832+1,837)
+  sage_merged/          ← The final merged training set (10,317 images, 13 cls)
+  sage_merged.zip       ← Zipped version (2 GB) — used to upload to Colab
+  coco_subset/          ← Filtered COCO images for 13 SAGE classes
+
+data/                   ← Generated keypoints and LSTM windows (gitignored)
+  processed_keypoints/pose_keypoints.csv
+  processed_keypoints/posture_output.csv
+  lstm_dataset.npz
+  → Regenerate with: src/data_processing/build_lstm_datasets.py
+                 and: src/posture/lstm/lstm_dataset.py
+
+runs/                   ← Ultralytics training run output (gitignored, regenerable)
+  detect/sage_person_finetune_v1/weights/best.pt  ← person-only training weights
+  (training plots, confusion matrices, etc.)
+
+datasets/LeFD/          ← Le2i Fall Detection dataset (130 videos, gitignored)
+  Used for LSTM training — NOT for YOLO. Contains Coffee_room, Home scenes.
+  Download separately from: https://le2i.cnrs.fr/Fall-detection-Dataset
+  Note: only Coffee_room_01/02 and Home_01/02 have per-frame annotations.
+  Lecture_room and Office have no ground truth and were excluded from ingestion.
+
+--- HOW TO GET THE VIDEO DATA ---
+Ask Fatima. The Testing/ footage was recorded by the team and shared directly.
+The empty-room clips (Testing_EmptyRooms/, Testing_EmptyHeldOut/,
+Testing_HeldOutEval/) were also team-recorded. These cannot be regenerated.
+
+--- HOW TO REGENERATE DATASETS ---
+Person fine-tune dataset (from Testing/ footage):
+  python src/detection/generate_bbox_dataset.py \
+      --testing_dir Testing \
+      --output_dir datasets/sage_person_finetune
+
+COCO subset (requires FiftyOne):
+  python src/detection/fetch_coco_subset.py \
+      --output_dir datasets/coco_subset
+
+Merged training dataset:
+  python src/detection/build_merged_dataset.py \
+      --own_dir datasets/sage_person_finetune \
+      --coco_dir datasets/coco_subset \
+      --empty_dir Testing_EmptyRooms \
+      --output_dir datasets/sage_merged \
+      --own_repeat 2
+
+LSTM keypoints and windows:
+  See docs/setup.md and INSTRUCTIONS.md
+
+
+=============================================================================
+14. TRAINING ON COLAB (NOT YOUR LOCAL MACHINE)
+=============================================================================
+
+YOLO was trained on Google Colab, not locally. CPU training on the dev machine
+was attempted and is too slow. Use Colab or another GPU machine.
+
+Key notes from YOLO_Merged_Training_Runbook.md:
+  - Zip datasets/sage_merged/ → upload as sage_merged.zip to Colab
+  - Install: pip install ultralytics fiftyone
+  - The zip/unzip workflow is documented step-by-step in the runbook
+  - Always train from STOCK yolov8n.pt — the person-only checkpoint cannot
+    regrow classes its head no longer has
+  - Batch=16 for imgsz=640 (needs ~4x activation memory vs 320px)
+  - After training: download weights/best.pt and rename appropriately
+
+The Runbook is at: docs/YOLO_Merged_Training_Runbook.md
+It includes the step-by-step Colab commands, the exact CLI invocations,
+and the checklist of all 4 gates to validate after any retrain.
+
+
+=============================================================================
+15. CANONICAL CLASS LIST (sage_classes.py)
+=============================================================================
+
+The 13 classes used in the merged model, in index order:
+  0:  person         ← must stay at index 0
+  1:  chair
+  2:  couch
+  3:  bed
+  4:  dining table
+  5:  tv
+  6:  toilet
+  7:  refrigerator
+  8:  sink
+  9:  bowl
+  10: cup
+  11: bottle
+  12: wine glass
+
+  (Future: 13: pill_bottle, 14: blister_pack, 15: pill_organizer)
+
+CRITICAL: Never reorder or renumber existing indices. The index order is
+part of every trained checkpoint's contract. Changing it silently invalidates
+prior models instead of erroring.
+
+
+=============================================================================
+16. NEXT STEPS (as of August 2026)
+=============================================================================
+
+A. Medicine-container detection — the real remaining work
+   Owner: data collection (team) + a follow-up branch
+   Effort: ~2-4 hrs recording, ~2-5 hrs labeling, 1 Colab run at imgsz=640
+   Full detail: docs/MEDICATION_DETECTION_SCOPE.md
+
+B. Pose-pipeline latency decision
+   Owner: whoever owns MediaPipe / pose pipeline
+   The Jetson target CANNOT be met with current MediaPipe setup regardless of
+   YOLO optimization. pose_landmarker_lite or duty-cycling pose estimation
+   are the levers.
+
+C. Integration into the live pipeline
+   NOT started (deliberately out of scope per the plan). Gated on:
+   - TCN comparison landing (decides the structured event schema)
+   - The latency question being resolved
+
+D. Optional / low value:
+   - A 30-epoch 640px run to resolve whether the recall drop was resolution
+     or under-training (latency disqualifies it either way)
+   - More held-out fall/lying clips in a new room with a new person
+
+=============================================================================
+END OF CONTEXT
+=============================================================================

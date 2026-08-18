@@ -82,6 +82,13 @@ _STATE_TO_LABEL = {
     "sitting": "Sitting",
     "lying": "Lying",
     "fall": "Lying",
+    # The classifier has no "crouching"/"walking" output class -- it only ever
+    # predicts Standing/Sitting/Lying/Unknown. Left unmapped, these states
+    # would score as automatically wrong on every frame regardless of what the
+    # model predicts (Round-4 8-7-26 clips introduced them; the recording
+    # guide's original 6-state vocabulary didn't include "Crouching").
+    "crouching": "Sitting",
+    "walking": "Standing",
 }
 
 
@@ -741,6 +748,24 @@ def discover_clips(batch_dir: str) -> List[Tuple[str, str, str]]:
             continue
 
         pairs.append((str(video_file), str(gt_file), stem))
+
+    if pairs:
+        return pairs
+
+    # Fallback dialect: no "*_gt.csv" files at top level -- some recording
+    # rounds (e.g. Sanawar 8-7-26) nest clips in per-surface subfolders
+    # (Bed/, Floor/, Sofa/, Other/) with the CSV sharing the video's exact
+    # stem instead of a "_gt" suffix (lie.mov + lie.csv side by side). Search
+    # recursively for that pairing; the subfolder name is prefixed onto the
+    # clip name since multiple subfolders reuse the same stem (e.g. both
+    # Bed/lie.csv and Floor/lie.csv exist).
+    for csv_file in sorted(batch.rglob("*.csv")):
+        for ext in video_exts:
+            candidate = csv_file.with_suffix(ext)
+            if candidate.exists():
+                clip_name = f"{csv_file.parent.name}_{csv_file.stem}"
+                pairs.append((str(candidate), str(csv_file), clip_name))
+                break
 
     return pairs
 
