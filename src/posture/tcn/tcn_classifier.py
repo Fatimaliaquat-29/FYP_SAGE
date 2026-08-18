@@ -52,7 +52,7 @@ class TCNPostureClassifier(SequenceWindowClassifier):
 
     fall_confirm_frames (default 1 -- no change from raw behavior)
     ------------------------------------------------------------
-    Phase 2.5's edge-case analysis (see TCN_IMPLEMENTATION_NOTES.md) found
+    Phase 2.5's edge-case analysis (see docs/TCN_IMPLEMENTATION_NOTES.md) found
     that a fast bend-to-pick-up-an-object motion gets classified as
     "Fall" with moderately high confidence (mean 0.77) for brief stretches
     -- confidence thresholding alone doesn't separate these from genuine

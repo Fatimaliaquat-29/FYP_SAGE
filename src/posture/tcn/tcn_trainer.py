@@ -59,7 +59,7 @@ def train(
     training class (9.2% of real windows vs. Standing's 39.8%).
 
     That change was a measured regression, not an improvement: a 4-config
-    ablation (see TCN_IMPLEMENTATION_NOTES.md Phase 2.5 "Regression
+    ablation (see docs/TCN_IMPLEMENTATION_NOTES.md Phase 2.5 "Regression
     analysis") isolated it as the sole cause of a same-footage accuracy drop
     from 76.0% to 47.8% (8-clip Sanawar set) / 69.3% to 67.0% (validation
     split). "Balanced" weighting fixed Unknown-class recall (0%->~68% on

@@ -60,7 +60,7 @@ def build_model(
     to 0.0, which produces no regularizer object at all (not just a
     zero-coefficient one) so existing callers see byte-identical model
     graphs. Motivated by a visible train/val accuracy gap (~90%+ train vs
-    ~65-70% val) suggestive of some overfitting -- see TCN_IMPLEMENTATION_NOTES.md.
+    ~65-70% val) suggestive of some overfitting -- see docs/TCN_IMPLEMENTATION_NOTES.md.
     """
     try:
         import tensorflow as tf
@@ -120,7 +120,7 @@ def train(
     by inverse frequency ("balanced" scheme). Exposed for parity with
     tcn_trainer.train()/rf_trainer.train(), which have the same parameter --
     kept off by default here too, since the TCN ablation (see
-    TCN_IMPLEMENTATION_NOTES.md Phase 2.5) measured "balanced" weighting
+    docs/TCN_IMPLEMENTATION_NOTES.md Phase 2.5) measured "balanced" weighting
     trading a large amount of majority-class (Lying-heavy real footage)
     accuracy for minority-class recall on that architecture; it has not
     been separately validated for the LSTM, so it isn't turned on by

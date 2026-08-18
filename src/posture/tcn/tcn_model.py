@@ -46,7 +46,7 @@ DROPOUT_RATE = 0.2
 # recall simultaneously (0.6926->0.6984 acc, 0.2252->0.2207 gap,
 # 0.780->0.860 recall) -- l2=1e-4 had better raw val_acc but a *larger* gap
 # (more overfitting, not less), and l1=1e-5 was roughly a wash. See
-# TCN_IMPLEMENTATION_NOTES.md for the full sweep results.
+# docs/TCN_IMPLEMENTATION_NOTES.md for the full sweep results.
 L2_REG = 1e-5
 L1_REG = 0.0
 

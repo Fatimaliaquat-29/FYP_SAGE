@@ -1,7 +1,7 @@
 # S.A.G.E. FYP — Full Technical History & Context
-**Branch:** new
-**Phase:** Real-time hybrid detection, data-driven threshold tuning, multi-round validation on unseen footage, and a TCN alternative architecture with a same-data comparison against the LSTM
-**Last Updated:** August 2026 (added Section 13 — TCN implementation, training pipeline, and a reproducibility investigation; see Section 14 for a changelog against the previous version of this file)
+**Branch:** TCN_sanawar
+**Phase:** Real-time hybrid detection (heuristic + LSTM/TCN/RF), a first-pass gait/fall-risk module, and an August 2026 repo-wide cleanup/audit pass
+**Last Updated:** August 2026 (added Section 16 — project cleanup, validation audit, and a documentation gap fix; see Section 16 for a changelog against the previous version of this file)
 
 ---
 
@@ -307,3 +307,480 @@ Summary: `src/posture/tcn/{__init__.py, tcn_model.py, tcn_trainer.py, tcn_classi
 ## 14. Changelog Against the Previous Revision of This File
 
 The previous revision ended at Section 12 (LeFD/LSTM-era changelog) with the heuristic+LSTM hybrid pipeline validated and pending items limited to the camera-axis miss, elderly-fall data gap, and unconfirmed precision on new ADL footage (Section 10). This revision adds Section 13 in full: a second model architecture (TCN) implemented from scratch, a full raw-data-to-trained-model pipeline built for data that arrived in a new location (`data/ADL`/`data/Fall` instead of `datasets/UR_data/`), a same-training-data comparison against a freshly-retrained LSTM, and — the most consequential finding — direct evidence that this project's training pipeline was not reproducible run-to-run, which had been silently confounding any attempt to compare hyperparameters (or, by extension, architectures) with only a single training run each. That reproducibility gap is partially closed (Section 13) but not fully solved, and is now the top methodological item under Section 10's Pending list alongside the pre-existing elderly-fall-data and new-footage-precision gaps.
+
+**Correction to line 215's historical "nothing pushed yet" note**: that work was pushed later the same branch (`TCN_sanawar`, commit `301b72d`) — see Section 15 below. **`INSTRUCTIONS.md`** (referenced throughout Sections 10-11 above) **no longer exists as a standalone file** — its content was merged into `README.md` during the documentation cleanup in Section 15; treat `README.md` as the current "how do I run this" entry point.
+
+---
+
+## 15. Session Handoff — TCN Regression Fix, Random Forest (+ Pruning), Gait Module, Doc Cleanup (August 2026)
+
+This section is a self-contained handoff for a fresh AI session — read this first, then dip into Sections 1-14 above for historical *why*, and `README.md` for practical "how do I run this."
+
+### 15.1 Project (recap)
+
+**Purpose**: detect falls from camera footage (heuristic + LSTM/TCN/Random Forest, OR-gated) and, separately/experimentally, assess longer-term fall *risk* from gait quality (`src/gait/`). Target deployment: Jetson Nano/Orin edge hardware — model size/latency/RAM are tracked alongside accuracy throughout.
+
+**Current objective going into this session**: fix a measured TCN accuracy regression, add Random Forest as a third model, reduce RF overfitting via pruning, and implement `assess_risk(window)` for the gait/fall-risk workstream (`docs/IMPLEMENTATION_PLAN.md` Section 3, "GAIT_hussain" — pulled forward onto this branch by explicit user instruction, not the norm; see 15.7).
+
+### 15.2 Architecture (recap — see README.md Section 17 for the full tree)
+
+Three interchangeable temporal classifiers share one contract
+(`.predict(window) -> {"posture_label", "fall_detected", "confidence", "other_labels"}`,
+`.window_size`, `.raw_history_needed`, `.is_available`):
+`LSTMPostureClassifier`/`TCNPostureClassifier` (`src/posture/sequence_window_classifier.py`
+base class) and `RFPostureClassifier` (`src/posture/rf/`, reimplements the
+same interface since it flattens the window instead of consuming it as a
+sequence). All three train on the identical `data/lstm_dataset.npz`.
+
+`src/gait/` (`gait_features.py` + `gait_risk.py::GaitRiskAssessor`) is a
+**conceptually separate** module — longer windows (>=90 frames), a risk
+SCORE output (not fall/no-fall), no shared code with the classifiers above
+beyond read-only imports from `pipeline_utils.py`/`lstm_features.py`.
+
+**Files nobody should edit without raising it with the team first**
+(`docs/IMPLEMENTATION_PLAN.md` Section 0): `src/posture/pipeline_utils.py`,
+`src/posture/lstm/*`, `hybrid_evaluate.py`, `evaluate_real_footage.py`,
+`realtime_fall_detection.py`. None of this session's work touched them
+(verified via `git status` before finalizing — see 15.8).
+
+### 15.3 The TCN regression: what happened and the fix
+
+Entering this session, working-tree (uncommitted) changes to
+`src/posture/tcn/` had regressed real-footage accuracy from 76.0% to 47.8%
+(`test_footage/Sanawar Testing 7-22-26`, 8 clips) and fall recall from
+87.5% to 75%. A 4-config ablation (baseline / L2-only / class-weights-only
+/ both) isolated **`use_class_weights=True`** (added alongside L2
+regularization in the same prior session, both defaulted on without a
+same-footage before/after check) as the sole cause: "balanced" class
+weighting fixed the `Unknown` class's near-zero recall by making the model
+predict `Unknown` far more liberally overall, which collapsed accuracy on
+real footage (~90% `Lying` frames) since `Unknown` predictions nearly
+tripled at the expense of correct `Lying`/`Standing` calls. L2=1e-5 alone
+was confirmed harmless (even mildly positive: 76.0% -> 76.9%).
+
+**Fix**: `use_class_weights` now defaults to `False` in `tcn_trainer.py`
+(kept as a parameter, not removed, for future work with a proper
+before/after check). The same parameter was added to `lstm_trainer.py`
+(also defaulting `False`) purely for API parity across all three trainers.
+Corrected TCN retrained and promoted to `models/tcn_posture.keras` —
+76.9%/87.5% on the apples-to-apples pre-merge check, matching/exceeding
+the previous best. Full ablation tables: `docs/TCN_IMPLEMENTATION_NOTES.md`
+Section 6.5. Full writeup incl. the 3-way final comparison:
+`docs/TCN_REGRESSION_REPORT.md`.
+
+**Known follow-on wrinkle, not fixed in this session**: merging `origin/main`
+in (see 15.4) changed real-footage keypoint extraction (MediaPipe IMAGE ->
+VIDEO tracking mode), and under that new extraction the corrected TCN's
+fall recall on the Sanawar set reads 75% instead of 87.5% (misses
+`Backward_fall` in addition to `Far_fall`). Confirmed unrelated to the
+class-weighting fix (the pre-merge apples-to-apples check above already
+shows the fix alone preserves 87.5%) — this is an unexplained interaction
+between the TCN specifically and the extraction-pipeline change, flagged
+as follow-up work, not chased further this session.
+
+### 15.4 Branch merge
+
+Per explicit user request, `origin/main` was merged into `TCN_sanawar`
+before finalizing (commit `775c419`). Clean, no conflicts — confirmed via
+diff that main's changes (`b566685`: MediaPipe visibility-masking,
+VIDEO-mode tracking, hybrid pipeline fixes) touch zero files this branch's
+TCN/LSTM/RF/gait work depends on. All 37 pre-existing unit tests passed
+post-merge before any further session work began.
+
+### 15.5 Random Forest + pruning
+
+`src/posture/rf/rf_trainer.py` + `rf_classifier.py`: trains on the exact
+same dataset/split/augmentation as LSTM/TCN, flattening each `(30, 132)`
+window to `3960` features (a tree ensemble has no time axis).
+`RFPostureClassifier` reuses `extract_raw_keypoints`/`run_classifier_cli`
+from `sequence_window_classifier.py` but does not subclass it (joblib
+model, not a Keras one).
+
+**A real inference-time bug was found and fixed**: `RandomForestClassifier`
+was loaded with its training-time `n_jobs=-1` still set, and
+`predict_proba()` re-parallelizes across trees on *every single call* —
+fine at training time (parallelizing over the whole dataset once), but
+catastrophic when called once per video frame (spinning up a joblib worker
+pool per single-row prediction is pure overhead with nothing to
+parallelize). Observed as a real-footage evaluation run ballooning to
+3.75 million lines of repeated warnings before being killed. **Fix**:
+`RFPostureClassifier._load()` now forces `self._model.n_jobs = 1`
+immediately after loading; training scripts are unaffected (they set their
+own `n_jobs` independently). If a future session sees an RF evaluation
+"hang" or produce a runaway log, check this first.
+
+**Pruning, round 1**: a 10-config sweep (`max_depth` in {10,15,20},
+`min_samples_leaf` in {10,20}, `ccp_alpha` in {5e-4,1e-3}, plus a combined
+depth+leaf+fewer-trees config) confirmed on both real-footage sets (not
+just the validation split). `min_samples_leaf=20` won outright: train/val
+gap 0.289 -> 0.250, macro F1 0.550 -> 0.592 (validation) / 0.498 -> 0.511
+(Hussain real footage), model size 27.7MB -> 7.8MB (72% smaller). Set as
+`rf_trainer.py::MIN_SAMPLES_LEAF`.
+
+**Pruning, round 2** (a later sub-session, asked to reduce the gap
+further): an 11-config sweep tried `max_features`, `max_samples`
+(bootstrap subsample fraction), higher `min_samples_leaf`, and
+combinations on top of `min_samples_leaf=20`. `max_features=0.1` (each
+split considers ~396 of the 3960 flattened features, vs.
+`RandomForestClassifier`'s own `sqrt(3960)`~=63 default) won on real
+footage: validation gap 0.250 -> 0.238, and — the more decision-relevant
+number — Hussain real-footage accuracy 60.5% -> 69.2% (macro F1 0.511 ->
+0.565) at a cost of only ~1 point on the easier Sanawar set (56.2% ->
+55.2%), fall recall unchanged (100%/87.5%) on both. A combined
+`max_features=0.1` + `max_samples=0.5` config closed the validation gap
+slightly further (0.218) but did *worse* on real footage than
+`max_features=0.1` alone (more false alarms, lower Hussain accuracy) — not
+used, another instance of validation-split numbers not telling the whole
+story. Set as `rf_trainer.py::MAX_FEATURES`. **Current production
+`models/rf_posture.joblib`**: 92.74% train / 68.92% val accuracy (gap
+23.8%, down from the original unpruned 28.9%).
+
+**Final 3-way real-footage result** (`compare_all_models.py`,
+`results/all_models_{sanawar,hussain}/`, regenerated against the
+round-2-pruned RF checkpoint): TCN best on the easier Lying-dominated
+Sanawar set (79.1% accuracy; RF 55.2% there, down slightly from
+pre-pruning's 57.3%); Random Forest best on the harder Hussain edge-case
+set by an even wider margin post-pruning (69.2% accuracy, up from 60.3%
+pre-pruning; macro F1 0.565; still the only model catching every labelled
+fall, now with one fewer false alarm too — 5 vs. 6). RF's node count and
+model size also dropped sharply from pruning (271,508 -> 69,212 nodes;
+27.7MB -> 7.2MB) and its measured inference latency roughly halved (less
+work per split with `max_features=0.1`). No single winner regardless; see
+`docs/TCN_REGRESSION_REPORT.md` for the full deployment-tradeoff
+discussion.
+
+### 15.6 Gait / fall-risk module (`src/gait/`)
+
+Implements exactly the interface `docs/IMPLEMENTATION_PLAN.md` Section 3
+specifies: `GaitRiskAssessor.assess_risk(window) -> {"risk_score": float |
+None, "signals": [...]}`. **Not a fall/no-fall classifier** — see
+README.md Section 15 for the full contract. Four rule-based signals
+(`gait_features.py`): `compute_walking_speed`, `compute_stride_regularity`,
+`compute_postural_sway`, `compute_sit_to_stand` — literature grounding in
+`docs/GAIT_LITERATURE_REVIEW.md`, honest (there is no real gait dataset
+anywhere in this project) validation writeup in
+`docs/GAIT_DATA_ASSESSMENT.md`.
+
+**Three real implementation bugs were found and fixed via validation, not
+just "the code runs"** — worth knowing about before touching this module
+again:
+1. Position-based signals initially reused `lstm_features.normalize_frame`'s
+   hip-CENTERED coordinates (each frame re-centered on its own hip origin)
+   — correct for posture classification, but makes hip position (0,0) in
+   every frame by construction, silently destroying the translation signal
+   walking-speed/sway need. Fixed with a new `_torso_scaled_hip_track()`
+   (scales by torso length like `normalize_frame` does, but does NOT
+   re-center each frame).
+2. Finite-differencing raw position into velocity amplifies per-frame
+   noise badly at 30fps — added a NaN-aware centered moving-average inside
+   `_torso_scaled_hip_track`. Real production robustness fix (real
+   MediaPipe jitter would cause the same problem), not just a test patch.
+3. Two risk-mapping thresholds (`gait_risk.py::_stride_cv_risk`,
+   `_speed_risk`) originally reused literature-reported absolute numbers
+   (IMU stride-time CV ~5%; an isolated debug measurement for speed) that
+   didn't match this proxy's own actual achievable scale, saturating both
+   sigmoids near a constant value regardless of input and destroying their
+   ability to discriminate anything. Both recentered on this module's own
+   observed synthetic-validation scale instead — explicitly documented as
+   scale-matching choices, not clinical thresholds (see code comments).
+
+`tests/test_gait_risk.py` (18 tests, all passing): output-contract checks,
+input validation (`None`/empty/too-short/wrong-type/missing-keys),
+NaN/Inf/occlusion robustness, an integration smoke test against real
+(unlabeled) `data/processed_keypoints/pose_keypoints.csv` sequences, and
+regression tests for the three bugs above (steady-vs-unsteady walking,
+smooth-vs-shaky sit-to-stand must keep scoring in the correct direction).
+
+**This module is NOT clinically validated** — no dataset with real
+fall-risk outcomes exists anywhere in this project (confirmed in
+`docs/GAIT_DATA_ASSESSMENT.md`); every risk threshold is heuristic and
+marked `"calibrated": False` in its own output. Do not present its output
+as validated without new real data.
+
+### 15.7 A scope note future sessions should know about
+
+`docs/IMPLEMENTATION_PLAN.md` (written to set up three parallel branches —
+`TCN_sanawar`/`YOLO_fatima`/`GAIT_hussain` — so team members' work doesn't
+collide) explicitly scopes gait/fall-risk work to the separate
+`GAIT_hussain` branch, as its own module with its own data-collection
+effort. Mid-session, this was flagged explicitly to the user (a real
+architecture fork, not a small decision), and the user explicitly chose to
+have the gait module built on `TCN_sanawar` anyway. `src/gait/` therefore
+now exists on this branch rather than `GAIT_hussain` — a deliberate,
+user-confirmed deviation from the original plan, not an oversight. Worth
+surfacing to the rest of the team before/when merging, since it may affect
+what's left for whoever works on `GAIT_hussain`.
+
+### 15.8 Documentation cleanup
+
+Per explicit user instruction: consolidated to exactly one root-level
+`README.md` (previously a 2-line stub, now the full practical entry point
+covering architecture/setup/training/evaluation/inference/testing/
+limitations/status/future-work). Removed (content merged into `README.md`
+and/or already superseded by this file or `docs/TCN_REGRESSION_REPORT.md`):
+`INSTRUCTIONS.md`, `task.md` (stale — still described Phase 4/4.5 as
+current, predating even the first LSTM training run), `summary.md`
+(self-described as a redundant recap of this file's Section 13 +
+`docs/TCN_IMPLEMENTATION_NOTES.md`), `Comparison.md` (superseded by
+`docs/TCN_REGRESSION_REPORT.md`'s corrected, complete 3-way numbers),
+`fixes.md` (a pre-implementation fix *proposal* whose adopted ideas are
+already documented, as implemented, in this file's Sections 2/5). Moved
+(not deleted — genuinely load-bearing technical reference, just not a
+*second* root README): `TCN_IMPLEMENTATION_NOTES.md` and
+`TCN_REGRESSION_REPORT.md` -> `docs/`. `docs/` itself was left otherwise
+intact (`IMPLEMENTATION_PLAN.md`, `LSTM_Phase_Summary.md`,
+`mediapipe_pose_reference.md`, `sanity_check_clips.md`, `recording_round2.md`,
+`setup.md` are all still-relevant reference/protocol docs, not stale
+narrative) plus two new files: `GAIT_LITERATURE_REVIEW.md`,
+`GAIT_DATA_ASSESSMENT.md`.
+
+### 15.9 Current state
+
+**Done**: TCN regression fixed and validated; RF implemented, pruned, and
+validated; 3-way real-footage comparison complete; `assess_risk()`
+implemented, unit-tested (18/18 passing), and validated as far as
+synthetic data allows; all 37 pre-existing tests + 18 new gait tests pass;
+documentation consolidated. **Not done / known gaps**: no real gait-risk
+validation data exists anywhere (top priority if `src/gait/` work
+continues); the post-merge TCN fall-recall regression (15.3) is
+unexplained; no YOLO/object-detection layer exists yet
+(`docs/IMPLEMENTATION_PLAN.md` Section 5's integration phase hasn't
+started); RF's train/val gap (92.7%/68.9%) is reduced by two rounds of
+real-footage-confirmed pruning but not eliminated -- a follow-up
+generalization investigation (§15.12) found this is a dimensionality
+(3960 features / 56 independent sequences) issue, not leakage, and that
+two further well-motivated remedies (a summary-statistic feature
+representation, class weighting) both looked better on the validation
+split but were correctly rejected after real-footage confirmation
+contradicted that signal -- see `docs/RF_GENERALIZATION_INVESTIGATION.md`.
+**Git state**: this session's work IS committed and pushed to
+`origin/TCN_sanawar` (see 15.10 for exactly which commit) — a later
+sub-session's RF-pruning-fix + gait-module work was done under an explicit
+"do not commit, do not push" instruction and remains local/uncommitted as
+of this writing; check `git status`/`git log` before assuming either way.
+
+### 15.10a. Sub-session: RF generalization investigation (deeper diagnosis)
+
+A follow-up sub-session was explicitly asked not to stop at "gap
+improved, tests pass" and to genuinely diagnose whether the RF's
+remaining ~24-point train/val gap was leakage or fixable. Full writeup:
+`docs/RF_GENERALIZATION_INVESTIGATION.md`. Summary:
+
+- **Leakage audit: clean.** Group split has zero sequence overlap.
+  One real (but minor, not fixed) preprocessing-leakage source found:
+  `col_medians` are computed over the full real dataset (train+val
+  combined) in `lstm_dataset.py::build_dataset()`, before any trainer's
+  split -- not fixed because `lstm_dataset.py` is shared, protected
+  infrastructure (`docs/IMPLEMENTATION_PLAN.md` Section 0) and fixing it
+  would require rebuilding the dataset and retraining all three models.
+- **OOB score is untrustworthy for this data**: 0.889 vs. actual
+  validation accuracy 0.689 -- RF's bootstrap resampling doesn't respect
+  the sequence-group structure, so OOB silently overstates generalization
+  on grouped/correlated data like this. Don't use it as a stopping
+  criterion here.
+- **Root cause: dimensionality, not leakage.** 3,960 flattened features
+  from only 56 independent real training sequences; feature importance is
+  diffuse (no single leaky feature to blame).
+- **Two remedies tried, both correctly rejected after real-footage
+  confirmation**: a summary-statistic feature representation (660 dims
+  instead of 3960) won on every metric in a 5-fold group-aware CV, but
+  lost clearly on the harder Hussain set (57.1% vs. 69.2% accuracy) when
+  actually checked against real footage -- the third time in this
+  project's history that a validation-split conclusion didn't survive
+  real-footage contact. Class weighting (`use_class_weights=True`)
+  reproduced the exact same failure signature already found and reverted
+  for the TCN: it dropped fall-detection recall on BOTH real test sets
+  (87.5%->75% Sanawar, 100%->75% Hussain) for marginal accuracy/F1 gains
+  elsewhere -- disqualifying given this project's "a missed fall is worse
+  than a false alarm" priority. Both are kept in the code as documented,
+  available-but-not-default options (`rf_trainer.py`'s
+  `feature_representation`/`use_class_weights` params), not deleted.
+- **Conclusion**: the existing two-round-pruned config
+  (`min_samples_leaf=20`, `max_features=0.1`, flatten representation,
+  no class weights) remains the best real-footage-validated
+  configuration. `models/rf_posture.joblib` was retrained (byte-identical
+  92.74%/68.92% numbers, confirming determinism) only to pick up new
+  encoder metadata (`feature_representation`, `n_features_out`) added so
+  future checkpoints self-describe which window->vector transform they
+  need at inference time. `tests/test_rf_classifier.py` (7 new tests)
+  covers this switch plus the n_jobs=1 inference fix and prediction
+  determinism -- full suite is now 62 tests (55 + 7), all passing.
+
+### 15.10 Dependencies
+
+`requirements.txt` updated: added `joblib` (RF serialization, was already
+a transitive scikit-learn dependency but is now imported directly) and
+`scipy` (`gait_features.compute_stride_regularity`'s peak detection). No
+packages removed — the existing flat pip-freeze-style list mixes direct
+dependencies with mediapipe/matplotlib's transitive sub-dependencies, and
+a deeper prune wasn't attempted (risk of breaking a transitive need
+outweighs the benefit of a marginally shorter file).
+
+### 15.11 Important instructions for future AI sessions
+
+- Read this file (Section 15 first, then whichever earlier section is
+  relevant), then `README.md`, before touching anything.
+- Run `git status` and `git log --oneline -10` before modifying anything —
+  do not assume the state described here is still current; this document
+  decays the moment new work lands.
+- Do not commit or push unless explicitly instructed — multiple sessions
+  in this project's history have been asked to keep work local-only.
+- Do not edit `pipeline_utils.py`, `src/posture/lstm/*`, `hybrid_evaluate.py`,
+  `evaluate_real_footage.py`, or `realtime_fall_detection.py` without
+  raising it with the user first — see 15.2 and
+  `docs/IMPLEMENTATION_PLAN.md` Section 0.
+- Do not assume a feature is implemented without reading the actual code —
+  this file, like any snapshot, can drift from reality.
+- Do not introduce an external API (REST/Flask/FastAPI/cloud) for
+  `assess_risk()` or any model inference path — everything in this project
+  is a local, directly-callable Python interface by design.
+- Preserve the `assess_risk(window) -> {"risk_score", "signals"}` contract
+  exactly — it is deliberately NOT a fall/no-fall flag; see README.md
+  Section 15 and `docs/IMPLEMENTATION_PLAN.md` Section 3 for why that
+  distinction is load-bearing, not stylistic.
+- Run the test suite after any change:
+  `python -m unittest tests.test_lstm_pipeline tests.test_posture_pipeline tests.test_gait_risk tests.test_rf_classifier -v`
+  (66 tests as of Section 16 — the 3-module command in earlier revisions of
+  this file predates `tests.test_rf_classifier` and silently skipped it).
+- Before trusting any tuning decision (hyperparameter, threshold, pruning
+  config), check it against real footage
+  (`test_footage/Sanawar Testing 7-22-26`, `test_footage/Hussain Testing 7-30-26`),
+  not just the validation split — this project has been burned by
+  validation-split-only conclusions twice now (Section 13's hyperparameter
+  sweep, and 15.3's class-weighting regression). Both are cautionary
+  tales, not one-off incidents.
+
+---
+
+## 16. Project Cleanup & Validation Audit (August 2026)
+
+A full repo audit: dead-file cleanup, `context.txt`/`README.md` accuracy
+pass, actual execution (not just code inspection) of the gait/fall-risk
+module and the model-comparison pipeline, a `models/` review, a light
+code-quality pass, and a full test-suite run. Read this section first if
+you're picking the project up after this session; Sections 1-15 above are
+still the accurate history of *why* the system looks the way it does.
+
+### 16.1 Files removed, and why
+
+**`results/`** — 17 subdirectories and ~19 loose files were deleted. All of
+it was superseded parameter-sweep/testing-round output (`heuristic_retuned4`,
+`hybrid_after_features`, `hybrid_after_gate`, `hybrid_after_lefd`,
+`hybrid_consec6`, `hybrid_extended_window`, `hybrid_final`,
+`hybrid_warmup45`, `new_test_heuristic_extended`, `new_test_hybrid_extended`,
+`hussain_testing_heuristic`, `hussain_testing_hybrid`, `hybrid`, `testVideo`,
+`test_footage_extended_window`, `Hussain_Testing_7-30-26`,
+`Sanawar_Testing_7-22-26`, `Testing_Sanawar_7-22-26`, `forward_fall_single`),
+plus loose stale prediction CSVs, a stray diagnostic log from an unrelated
+branch (`pipeline_fixes_log.md`, dated 16 Jul 2026, branch `fatima`), an
+outdated `real_footage_results.md`, and a scratch file (`temp_md.md`, which
+had the same section triplicated). Verified via `git log` per-path and a
+repo-wide grep that none of these were referenced by any script, test, or
+doc — every number/finding they contained is already captured narratively
+in Sections 2-15 above. **Kept**: `results/all_models_sanawar/`,
+`results/all_models_hussain/` (current 3-way comparison, cited by
+README.md/context.txt), `results/tcn_vs_lstm/`, `results/tcn_vs_lstm_fair/`
+(Section 13's same-data comparison, cited by `docs/TCN_IMPLEMENTATION_NOTES.md`).
+
+**`models/experiments/`** and **`models/lstm_checkpoint/`** — removed.
+`models/experiments/lstm_v4_round2_gt.keras` was confirmed **byte-identical**
+(MD5) to the current production `models/lstm_posture.keras` — a pure
+duplicate. `models/experiments/lstm_v3_vetoes_on.keras` and
+`models/lstm_checkpoint/lstm_posture.keras` were both earlier rollback
+candidates from a model-selection decision that `models/lstm_checkpoint/README.md`
+itself documented as "SUPERSEDED 2 Aug 2026" (see 16.2 below for what that
+README revealed — a decision-history gap in this file, now closed). Neither
+directory was referenced anywhere outside its own now-deleted README.
+
+Nothing under `data/`, `datasets/`, `Testing/`, or `test_footage/` was
+touched — all still gitignored/untracked exactly as before.
+
+### 16.2 A documentation gap this audit found and closed (not a code change)
+
+`models/lstm_checkpoint/README.md` (now deleted, its history preserved
+here) revealed that `src/posture/pipeline_utils.py` has an
+`ENABLE_UPRIGHT_VETOES = True` feature — two "positive evidence" vetoes
+(`legs_say_upright`, a leg-angle + body-extent check; `hips_still_high`, a
+hip-height-vs-standing-baseline check) that suppress a false "Lying"
+classification while someone is bending/squatting rather than actually
+lying down. This was merged in from `main` (commit `b566685`, "Fix live
+false alarms...") and is genuinely active in the current pipeline, but
+**Sections 1-15 of this file never mention it** — a real gap, since it's
+exactly the kind of load-bearing threshold decision this file exists to
+record. Per `docs/IMPLEMENTATION_PLAN.md` Section 0, `pipeline_utils.py`
+itself was not touched by this audit (raise changes there with the team
+first) — this is a documentation-only fix. Measured effect (from the now-
+deleted README): with the current model, the vetoes took the Round-2
+held-out negative-clip score from 10/18 to 17/18 clean with zero cost to
+Round-3 fall recall (still 6/6) — they only matter with the current model
+checkpoint, and did nothing on the prior one, which is why they'd sat
+disabled for a while before being turned on.
+
+### 16.3 Gait/fall-risk module — actually executed, not just read
+
+`GaitRiskAssessor.assess_risk()` was run against all 70 real sequences in
+`data/processed_keypoints/pose_keypoints.csv` (not just the unit tests,
+though those were also re-run and still pass — 19/19). Of 70 sequences, 55
+met the `MIN_WINDOW_FRAMES=90` floor; all 55 were scored with **zero
+crashes and zero unhandled exceptions**:
+- `risk_score` was never `None` for any of the 55 (mean 0.371, std 0.116,
+  range 0.088-0.597) — every sequence had at least one usable signal.
+- Signal availability: `walking_speed` 100% (55/55), `stride_regularity`
+  89.1% (49/55), `postural_sway` 74.5% (41/55), `sit_to_stand` 60.0%
+  (33/55) — consistent with `sit_to_stand`'s own docstring describing
+  "no transition in this window" as the expected common case.
+- Latency: median 28ms/window, mean 54ms (one outlier sequence at
+  ~1.25s — the longest sequence in the set, 400 frames, still well within
+  interactive/offline-analysis budgets; nowhere close to the file's own
+  frame-rate budget since gait assessment is a periodic longer-window
+  operation, not a per-frame one like the fall classifiers).
+- No sequence produced a non-finite (`NaN`/`Inf`) `risk_score`, and no
+  sequence had all four signals simultaneously unavailable.
+
+This is real UR Fall Dataset ADL/Fall footage, not synthetic data, so it's
+a genuine (if unlabeled — no ground-truth fall-risk outcome exists for
+this data, see `docs/GAIT_DATA_ASSESSMENT.md`) smoke/plausibility result:
+the module runs cleanly end-to-end on the full real corpus, not just the
+synthetic scenarios in `tests/test_gait_risk.py`. It does **not** newly
+validate the risk scores themselves against any ground truth — that gap
+(Section 15.6, `docs/GAIT_DATA_ASSESSMENT.md`) is unchanged.
+
+### 16.4 Code-quality fix applied
+
+`src/posture/rf/rf_trainer.py` had two stale comments left over from when
+`feature_representation="summary"` was briefly the intended default (before
+`docs/RF_GENERALIZATION_INVESTIGATION.md`'s real-footage check rejected it
+— see Section 15.10a/15.9): the `--feature-representation` CLI help text
+literally said `"(default: summary)"`, and a `NOTE` comment above
+`MAX_FEATURES` asserted `FEATURE_REPRESENTATION` "defaults to summary."
+Both were wrong — `FEATURE_REPRESENTATION = "flatten"` is the actual
+in-code default and matches the production checkpoint
+(`models/rf_label_encoder.json`'s `"feature_representation": "flatten"`,
+confirmed by reading it directly). Fixed both comments to describe the
+code as it actually behaves; no behavior change.
+
+### 16.5 Test suite — full run
+
+`python -m unittest tests.test_lstm_pipeline tests.test_posture_pipeline
+tests.test_gait_risk tests.test_rf_classifier` (the full suite, all four
+modules, 21+16+19+10 = **66 tests**): **66/66 passed**, both before and
+after the cleanup in 16.1 (run twice to confirm the deletions caused zero
+regressions). No skips observed in this environment (all three model
+checkpoints and `data/processed_keypoints/` were present). One pre-existing
+`DeprecationWarning` (`datetime.datetime.utcnow()` in `pipeline_utils.py`)
+— cosmetic, not a failure, not fixed here since it's inside the
+do-not-edit-lightly file.
+
+### 16.6 What this audit did NOT change
+
+No training data, no model checkpoints (beyond deleting the two duplicate/
+superseded ones in 16.1), no `pipeline_utils.py`, no `lstm_features.py`, no
+`hybrid_evaluate.py`, no `evaluate_real_footage.py`, no
+`realtime_fall_detection.py`, no `src/gait/` logic — all per the same
+do-not-edit-without-raising-it-first list Section 15.2 already established.
+The `models/` directory's internal layout (flat, one file per checkpoint)
+was reviewed and deliberately left as-is — see README.md's Project
+Structure section for the reasoning (splitting into per-architecture
+subfolders would require updating every trainer's and classifier's default
+path constants for no real discoverability gain at this project's current
+size — 11 files, already namespaced by filename prefix).

@@ -75,3 +75,10 @@ scikit-learn
 
 # TCN pipeline + compare_tcn_lstm.py (peak-RAM measurement)
 psutil
+
+# Random Forest pipeline (src/posture/rf/) -- model serialization
+joblib
+
+# Gait/fall-risk pipeline (src/gait/) -- stride-peak detection in
+# gait_features.compute_stride_regularity()
+scipy

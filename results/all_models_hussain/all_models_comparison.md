@@ -9,17 +9,17 @@ Test clips: 17 — Bend_pickup_lowLight, Bend_pickup_normalLight_back, Bend_pick
 
 | Metric | LSTM | TCN | RF |
 |---|---|---|---|
-| Accuracy | 46.0% | 49.7% | 60.3% |
-| Macro Precision | 0.456 | 0.479 | 0.511 |
-| Macro Recall | 0.488 | 0.530 | 0.589 |
-| Macro F1 | 0.372 | 0.402 | 0.498 |
+| Accuracy | 46.0% | 49.7% | 69.2% |
+| Macro Precision | 0.456 | 0.479 | 0.549 |
+| Macro Recall | 0.488 | 0.530 | 0.651 |
+| Macro F1 | 0.372 | 0.402 | 0.565 |
 | Fall-detection recall | 75.0% (3/4) | 75.0% (3/4) | 100.0% (4/4) |
-| Fall false positives (clips) | 11 | 7 | 6 |
-| Latency mean (ms/window) | 88.990 | 90.023 | 81.198 |
-| Latency p95 (ms/window) | 122.979 | 128.700 | 119.988 |
-| Parameter/node count | 63,013 | 39,365 | 271,508 |
-| Model file size (KB) | 774.4 | 628.5 | 27700.7 |
-| Peak RAM (MB) | 554.8 | 572.8 | 571.5 |
+| Fall false positives (clips) | 11 | 7 | 5 |
+| Latency mean (ms/window) | 125.823 | 139.193 | 55.983 |
+| Latency p95 (ms/window) | 173.538 | 194.121 | 82.317 |
+| Parameter/node count | 63,013 | 39,365 | 69,212 |
+| Model file size (KB) | 774.4 | 628.5 | 7155.0 |
+| Peak RAM (MB) | 554.1 | 579.7 | 556.3 |
 
 
 ### Per-class metrics — LSTM
@@ -72,21 +72,21 @@ Test clips: 17 — Bend_pickup_lowLight, Bend_pickup_normalLight_back, Bend_pick
 
 | Class | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| Standing | 0.419 | 0.907 | 0.573 | 387 |
-| Sitting | 0.976 | 0.476 | 0.640 | 775 |
-| Lying | 0.650 | 0.975 | 0.780 | 355 |
+| Standing | 0.511 | 0.982 | 0.673 | 387 |
+| Sitting | 0.994 | 0.640 | 0.779 | 775 |
+| Lying | 0.690 | 0.980 | 0.810 | 355 |
 | Unknown | 0.000 | 0.000 | 0.000 | 0 |
-| *Macro avg* | 0.511 | 0.589 | 0.498 | 1517 |
-| *Weighted avg* | 0.758 | 0.703 | 0.656 | 1517 |
+| *Macro avg* | 0.549 | 0.651 | 0.565 | 1517 |
+| *Weighted avg* | 0.800 | 0.807 | 0.759 | 1517 |
 
 
 ### Confusion matrix — RF
 
 | GT \ Pred | Standing | Sitting | Lying | Unknown |
 |---|---|---|---|---|
-| **Standing** | 351 | 0 | 36 | 0 |
-| **Sitting** | 404 | 369 | 0 | 2 |
-| **Lying** | 0 | 9 | 346 | 0 |
+| **Standing** | 380 | 0 | 7 | 0 |
+| **Sitting** | 279 | 496 | 0 | 0 |
+| **Lying** | 3 | 3 | 348 | 1 |
 | **Unknown** | 0 | 0 | 0 | 0 |
 
 
@@ -97,18 +97,18 @@ Test clips: 17 — Bend_pickup_lowLight, Bend_pickup_normalLight_back, Bend_pick
 |---|---|---|---|---|---|---|
 | Bend_pickup_lowLight | 43.5 (10/23) | 69.6 (16/23) | 100.0 (23/23) | false_positive | false_positive | false_positive |
 | Bend_pickup_normalLight_back | 100.0 (86/86) | 100.0 (86/86) | 100.0 (86/86) | false_positive | no_fall | false_positive |
-| Bend_pickup_normalLight | 57.1 (16/28) | 60.7 (17/28) | 96.4 (27/28) | false_positive | false_positive | false_positive |
-| Bend_pickup_normalLight_leftRight | 71.4 (105/147) | 84.4 (124/147) | 76.2 (112/147) | false_positive | false_positive | false_positive |
+| Bend_pickup_normalLight | 57.1 (16/28) | 60.7 (17/28) | 100.0 (28/28) | false_positive | false_positive | no_fall |
+| Bend_pickup_normalLight_leftRight | 71.4 (105/147) | 84.4 (124/147) | 95.2 (140/147) | false_positive | false_positive | false_positive |
 | Bend_pickup_squat_lowLight | 71.0 (22/31) | 100.0 (31/31) | 100.0 (31/31) | false_positive | no_fall | no_fall |
 | Bend_pickup_squat_normalLight | 100.0 (12/12) | 100.0 (12/12) | 100.0 (12/12) | false_positive | no_fall | no_fall |
-| Kneeling | 17.4 (15/86) | 16.3 (14/86) | 17.4 (15/86) | no_fall | no_fall | no_fall |
+| Kneeling | 17.4 (15/86) | 16.3 (14/86) | 98.8 (85/86) | no_fall | no_fall | no_fall |
 | LyingdownSlowly | 100.0 (118/118) | 100.0 (118/118) | 100.0 (118/118) | true_positive | true_positive | true_positive |
 | Moving_in_out_frame | 0.0 (0/175) | 0.0 (0/175) | 0.0 (0/175) | false_positive | false_positive | false_positive |
-| Moving_in_out_frame_withFall | 40.7 (55/135) | 43.7 (59/135) | 40.7 (55/135) | true_positive | true_positive | true_positive |
+| Moving_in_out_frame_withFall | 40.7 (55/135) | 43.7 (59/135) | 38.5 (52/135) | true_positive | true_positive | true_positive |
 | Sit_Stand_AnklesInvisible | 11.2 (14/125) | 14.4 (18/125) | 14.4 (18/125) | false_positive | no_fall | no_fall |
 | SitFast_GetupFast | 0.0 (0/80) | 0.0 (0/80) | 0.0 (0/80) | no_fall | no_fall | no_fall |
-| SitFloor_lowKeypoints_crossedLegs | 51.3 (59/115) | 0.0 (0/115) | 98.3 (113/115) | false_positive | false_positive | false_positive |
-| SitFloor_lowKeypoints | 18.4 (21/114) | 38.6 (44/114) | 100.0 (114/114) | false_positive | false_positive | no_fall |
-| Sitting_HalfLandmarks | 15.9 (14/88) | 36.4 (32/88) | 27.3 (24/88) | false_positive | false_positive | no_fall |
-| Sitting_Lying_FewLandmarks_back | 84.5 (223/264) | 93.9 (248/264) | 98.1 (259/264) | false_negative | false_negative | true_positive |
-| Sitting_Lying_FewLandmarks | 31.2 (44/141) | 41.8 (59/141) | 41.8 (59/141) | true_positive | true_positive | true_positive |
+| SitFloor_lowKeypoints_crossedLegs | 51.3 (59/115) | 0.0 (0/115) | 91.3 (105/115) | false_positive | false_positive | false_positive |
+| SitFloor_lowKeypoints | 18.4 (21/114) | 38.6 (44/114) | 38.6 (44/114) | false_positive | false_positive | no_fall |
+| Sitting_HalfLandmarks | 15.9 (14/88) | 36.4 (32/88) | 100.0 (88/88) | false_positive | false_positive | no_fall |
+| Sitting_Lying_FewLandmarks_back | 84.5 (223/264) | 93.9 (248/264) | 100.0 (264/264) | false_negative | false_negative | true_positive |
+| Sitting_Lying_FewLandmarks | 31.2 (44/141) | 41.8 (59/141) | 92.2 (130/141) | true_positive | true_positive | true_positive |

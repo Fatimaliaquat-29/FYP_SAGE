@@ -332,6 +332,23 @@ def evaluate_model(
         kp_rows, fps, total_frames = cached_keypoints[clip_name]
         frame_gt, fall_window = cached_gt[clip_name]
 
+        # One classifier instance is reused across every clip in this batch
+        # (loaded once in main(), not per clip) -- for a stateful classifier
+        # (fall_confirm_frames > 1 on TCNPostureClassifier/RFPostureClassifier,
+        # which tracks a running _consecutive_fall_count), that means a
+        # streak from the END of one clip could silently bleed into the
+        # START of the next one, corrupting whichever clip happens to run
+        # right after a clip that ended mid-fall. Both classes document
+        # exactly this risk in their own reset_state() docstrings; this was
+        # never actually called anywhere in this evaluation harness, so it
+        # only mattered once fall_confirm_frames was actually exercised at
+        # a non-default value (caught via a non-monotonic false-positive
+        # count while sweeping RF's own fall_confirm_frames -- see
+        # docs/RF_GENERALIZATION_INVESTIGATION.md). hasattr-guarded since
+        # LSTMPostureClassifier has no such state to reset.
+        if hasattr(classifier, "reset_state"):
+            classifier.reset_state()
+
         print(f"  [{model_label}] {clip_name}: classifying {len(kp_rows)} frames...")
         clip_result = run_model_over_clip(classifier, clip_name, kp_rows, frame_gt, fall_window)
         all_records.extend(clip_result["records"])
