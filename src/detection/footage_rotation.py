@@ -95,6 +95,25 @@ VERIFIED_ROTATIONS = {
     "IMG_9439.MOV": None,
     "laying_dim.MOV": None,
     "sitting_dim.MOV": None,
+    # --- Hammad clips (Aug 2026) ---
+    # yolo_testing/held_out/Hammad Clips/. All ten report meta=0 and are stored
+    # landscape 1920x1080 -- but so did clips elsewhere in this table that
+    # turned out to need a correction, so metadata was not trusted here either.
+    # Checked by eye on a frame ~30% into each clip: same fixed camera/room,
+    # walls/AC unit/door frame level in all ten. Confirmed upright.
+    # Behind_Furniture_HM.mp4 / BehindFurniture_HM.mp4 were the on-disk names at
+    # first check; both were since renamed to name the specific furniture
+    # (matched by identical file size/mtime, not re-verified as new clips).
+    "Behind_Chair_HM.mp4": None,   # was Behind_Furniture_HM.mp4, 71294272 bytes
+    "Behind_Bed_HM.mp4": None,     # was BehindFurniture_HM.mp4, 61216037 bytes
+    "Blanket_Cover_HM.mp4": None,
+    "Laying_Dim_HM.mp4": None,
+    "LyingDown_HM.mp4": None,
+    "PartiallyCovered_HM.mp4": None,
+    "Sitting_Chair_HM.mp4": None,
+    "Sitting_Dim_HM.mp4": None,
+    "Standing_Walking_Dim_HM.mp4": None,
+    "Standing_Walking_HM.mp4": None,
 }
 
 
