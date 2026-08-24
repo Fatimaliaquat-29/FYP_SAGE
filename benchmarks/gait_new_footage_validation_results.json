@@ -1,0 +1,5488 @@
+[
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Deep_Bend.mov",
+    "name": "Deep_Bend",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 5.5,
+        "state": "Standing",
+        "label": "Standing"
+      },
+      {
+        "start": 5.5,
+        "end": 15.5,
+        "state": "Transition State",
+        "label": "Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+      },
+      {
+        "start": 15.5,
+        "end": 16.8,
+        "state": "Transition State",
+        "label": "Getting up"
+      },
+      {
+        "start": 16.8,
+        "end": 18.1,
+        "state": "Standing",
+        "label": "Standing"
+      }
+    ],
+    "extract_sec": 27.332086499998695,
+    "fps": 29.516351911561493,
+    "n_frames": 525,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.5352380952380953,
+      "hip_valid_ratio": 0.8571428571428571
+    },
+    "n_assessments": 30,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.0491573033707864,
+        "risk_score": 0.08210473842392435,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.8046958533004984,
+            "risk_contribution": 0.08210473842392435,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5081928838951311,
+        "window_end_sec": 3.5573501872659175,
+        "risk_score": 0.06355941428162895,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.8967036501811356,
+            "risk_contribution": 0.06355941428162895,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0163857677902621,
+        "window_end_sec": 4.0655430711610485,
+        "risk_score": 0.10762387893246828,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.7050817192750916,
+            "risk_contribution": 0.10762387893246828,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.5245786516853936,
+        "window_end_sec": 4.57373595505618,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.0327715355805243,
+        "window_end_sec": 5.081928838951311,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.5409644194756558,
+        "window_end_sec": 5.590121722846442,
+        "risk_score": 0.6548873165879411,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.09270614685353368,
+            "risk_contribution": 0.6548873165879411,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.0491573033707864,
+        "window_end_sec": 6.098314606741573,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 194,
+        "window_start_sec": 3.557350187265918,
+        "window_end_sec": 6.606507490636704,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 209,
+        "window_start_sec": 4.0655430711610485,
+        "window_end_sec": 7.114700374531835,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 224,
+        "window_start_sec": 4.57373595505618,
+        "window_end_sec": 7.622893258426966,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 239,
+        "window_start_sec": 5.081928838951311,
+        "window_end_sec": 8.131086142322097,
+        "risk_score": 0.6188676987087514,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.08231633023965737,
+            "risk_contribution": 0.6188676987087514,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 254,
+        "window_start_sec": 5.590121722846441,
+        "window_end_sec": 8.639279026217228,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 269,
+        "window_start_sec": 6.098314606741574,
+        "window_end_sec": 9.14747191011236,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 284,
+        "window_start_sec": 6.606507490636704,
+        "window_end_sec": 9.65566479400749,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 299,
+        "window_start_sec": 7.114700374531835,
+        "window_end_sec": 10.163857677902621,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 314,
+        "window_start_sec": 7.6228932584269655,
+        "window_end_sec": 10.672050561797752,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 329,
+        "window_start_sec": 8.131086142322097,
+        "window_end_sec": 11.180243445692884,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 344,
+        "window_start_sec": 8.639279026217228,
+        "window_end_sec": 11.688436329588015,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 359,
+        "window_start_sec": 9.147471910112358,
+        "window_end_sec": 12.196629213483146,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 374,
+        "window_start_sec": 9.655664794007489,
+        "window_end_sec": 12.704822097378276,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 389,
+        "window_start_sec": 10.163857677902623,
+        "window_end_sec": 13.213014981273409,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 404,
+        "window_start_sec": 10.672050561797754,
+        "window_end_sec": 13.72120786516854,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 419,
+        "window_start_sec": 11.180243445692884,
+        "window_end_sec": 14.22940074906367,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 434,
+        "window_start_sec": 11.688436329588015,
+        "window_end_sec": 14.7375936329588,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 449,
+        "window_start_sec": 12.196629213483146,
+        "window_end_sec": 15.245786516853933,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat"
+        ]
+      },
+      {
+        "frame_idx": 464,
+        "window_start_sec": 12.704822097378276,
+        "window_end_sec": 15.753979400749063,
+        "risk_score": 0.23450091453341385,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.13551810237203554,
+              "reversal_count": 2.0
+            },
+            "risk_contribution": 0.23450091453341385,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat",
+          "Transition State: Getting up"
+        ]
+      },
+      {
+        "frame_idx": 479,
+        "window_start_sec": 13.213014981273407,
+        "window_end_sec": 16.262172284644194,
+        "risk_score": 0.23450091453341385,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.13551810237203554,
+              "reversal_count": 2.0
+            },
+            "risk_contribution": 0.23450091453341385,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat",
+          "Transition State: Getting up"
+        ]
+      },
+      {
+        "frame_idx": 494,
+        "window_start_sec": 13.721207865168537,
+        "window_end_sec": 16.770365168539325,
+        "risk_score": 0.32588104894335124,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.019281427788319327,
+            "risk_contribution": 0.3868011385499762,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.13551810237203554,
+              "reversal_count": 2.0
+            },
+            "risk_contribution": 0.23450091453341385,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat",
+          "Transition State: Getting up"
+        ]
+      },
+      {
+        "frame_idx": 509,
+        "window_start_sec": 14.229400749063668,
+        "window_end_sec": 17.278558052434455,
+        "risk_score": 0.23450091453341385,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.13551810237203554,
+              "reversal_count": 2.0
+            },
+            "risk_contribution": 0.23450091453341385,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat",
+          "Transition State: Getting up",
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 524,
+        "window_start_sec": 14.737593632958799,
+        "window_end_sec": 17.786750936329586,
+        "risk_score": 0.23450091453341385,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.13551810237203554,
+              "reversal_count": 2.0
+            },
+            "risk_contribution": 0.23450091453341385,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Deep bend/kneel sustained (NOT sitting -- no chair/seat",
+          "Transition State: Getting up",
+          "Standing: Standing"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Diagonal_Walk_1.mov",
+    "name": "Diagonal_Walk_1",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 8.0,
+        "state": "Walking",
+        "label": "Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+      }
+    ],
+    "extract_sec": 10.98855480000202,
+    "fps": 28.369089772963967,
+    "n_frames": 216,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.9120370370370371,
+      "hip_valid_ratio": 0.9814814814814815
+    },
+    "n_assessments": 9,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.172466960352423,
+        "risk_score": 0.021001592562027986,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.913771246100066,
+            "risk_contribution": 0.0032002730548359093,
+            "reliability": 0.9662921348314607
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.025641025641025883,
+            "risk_contribution": 0.035836025484688054,
+            "reliability": 0.7888888888888889,
+            "cadence_steps_per_min": 87.28950699373529,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5287444933920704,
+        "window_end_sec": 3.7012114537444933,
+        "risk_score": 0.08859977059246606,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.935636125558636,
+            "risk_contribution": 0.0029976981238109147,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.1617739129095656,
+            "risk_contribution": 0.159934830983012,
+            "reliability": 0.9555555555555556,
+            "cadence_steps_per_min": 77.37024483535627,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0574889867841404,
+        "window_end_sec": 4.229955947136563,
+        "risk_score": 0.10233498699931755,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.5843673470777944,
+            "risk_contribution": 0.008551146100663622,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.17391304347826125,
+            "risk_contribution": 0.18048818774819583,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 74.00632114686252,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.5862334801762112,
+        "window_end_sec": 4.758700440528634,
+        "risk_score": 0.032241443942476584,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.255272353337553,
+            "risk_contribution": 0.022624952608250315,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.03571428571428526,
+            "risk_contribution": 0.04025518672099848,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 60.79090665635136,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.114977973568281,
+        "window_end_sec": 5.287444933920704,
+        "risk_score": 0.052406999949532254,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.8779619169281978,
+            "risk_contribution": 0.0669891758237728,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.03571428571428526,
+            "risk_contribution": 0.04025518672099848,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 60.79090665635136,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.643722466960352,
+        "window_end_sec": 5.816189427312775,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.172466960352423,
+        "window_end_sec": 6.344933920704846,
+        "risk_score": 0.16756026237913696,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.9041269968694328,
+            "risk_contribution": 0.06224672308717965,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.21079759925486952,
+            "risk_contribution": 0.2553215451224347,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 71.92163604413399,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 194,
+        "window_start_sec": 3.701211453744493,
+        "window_end_sec": 6.873678414096916,
+        "risk_score": 0.13726756394127174,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.9967817494178393,
+            "risk_contribution": 0.04786395339657147,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.19047619047619035,
+            "risk_contribution": 0.211770572728522,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 81.05454220846843,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      },
+      {
+        "frame_idx": 209,
+        "window_start_sec": 4.229955947136563,
+        "window_end_sec": 7.402422907488987,
+        "risk_score": 0.1880815628122641,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.2227116941477076,
+            "risk_contribution": 0.02488876433014033,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.26086956521739074,
+            "risk_contribution": 0.38471915598248957,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 74.00632114686253,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.03524963289280514,
+              "reversal_count": 0.0
+            },
+            "risk_contribution": 0.09711617115958071,
+            "reliability": 0.5
+          }
+        },
+        "gt_overlap": [
+          "Walking: Diagonal walking (oblique camera angle -- combined lateral and depth motion)"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Lateral_Walk.mov",
+    "name": "Lateral_Walk",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 9.2,
+        "state": "Walking",
+        "label": "Lateral walking (side-on camera view"
+      }
+    ],
+    "extract_sec": 14.229184499999974,
+    "fps": 29.38508978777435,
+    "n_frames": 264,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.8901515151515151,
+      "hip_valid_ratio": 0.946969696969697
+    },
+    "n_assessments": 12,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.062777777777778,
+        "risk_score": 0.18749116403789495,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6835161607940212,
+            "risk_contribution": 0.11399697191780225,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.20788639219677812,
+            "risk_contribution": 0.24873632413797225,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 78.94501734028931,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5104629629629631,
+        "window_end_sec": 3.573240740740741,
+        "risk_score": 0.26845017072894706,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6212976077079007,
+            "risk_contribution": 0.1342499566206092,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.2000000000000004,
+            "risk_contribution": 0.23147521650098324,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 88.15526936332306,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02773085361813045,
+            "risk_contribution": 0.4172586367138591,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0209259259259262,
+        "window_end_sec": 4.083703703703704,
+        "risk_score": 0.4180326504933585,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.64696578903707,
+            "risk_contribution": 0.12554930445368678,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.3559322033898304,
+            "risk_contribution": 0.6617687721930852,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 59.76628431411732,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.5313888888888885,
+        "window_end_sec": 4.594166666666666,
+        "risk_score": 0.16276476397907627,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6009714985592998,
+            "risk_contribution": 0.14149665545613366,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.17391304347826086,
+            "risk_contribution": 0.18048818774819514,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 76.65675596810698,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.0418518518518516,
+        "window_end_sec": 5.104629629629629,
+        "risk_score": 0.15565273959395554,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.5636454527440538,
+            "risk_contribution": 0.15565273959395554,
+            "reliability": 0.9438202247191011
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.5523148148148147,
+        "window_end_sec": 5.6150925925925925,
+        "risk_score": 0.14132695065189224,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6014374089044465,
+            "risk_contribution": 0.14132695065189224,
+            "reliability": 0.9213483146067416
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.062777777777778,
+        "window_end_sec": 6.125555555555556,
+        "risk_score": 0.2617515911272919,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.3456281456050951,
+            "risk_contribution": 0.2617515911272919,
+            "reliability": 0.9213483146067416
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 194,
+        "window_start_sec": 3.573240740740741,
+        "window_end_sec": 6.636018518518519,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 209,
+        "window_start_sec": 4.083703703703704,
+        "window_end_sec": 7.146481481481482,
+        "risk_score": 0.07078531178978305,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.8582294298543407,
+            "risk_contribution": 0.07078531178978305,
+            "reliability": 0.9213483146067416
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 224,
+        "window_start_sec": 4.594166666666666,
+        "window_end_sec": 7.656944444444444,
+        "risk_score": 0.1186493595148359,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6684276549375856,
+            "risk_contribution": 0.1186493595148359,
+            "reliability": 0.9213483146067416
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 239,
+        "window_start_sec": 5.10462962962963,
+        "window_end_sec": 8.167407407407408,
+        "risk_score": 0.11083230633328237,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6940891814340842,
+            "risk_contribution": 0.11083230633328237,
+            "reliability": 0.9775280898876404
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      },
+      {
+        "frame_idx": 254,
+        "window_start_sec": 5.615092592592593,
+        "window_end_sec": 8.677870370370371,
+        "risk_score": 0.0893188842931647,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.0733253567718832,
+            "risk_contribution": 0.038420869566961786,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.14285714285714285,
+            "risk_contribution": 0.1317338965650005,
+            "reliability": 0.9222222222222223,
+            "cadence_steps_per_min": 55.97159959576065,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Lateral walking (side-on camera view"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Shallow_Bending.mov",
+    "name": "Shallow_Bending",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 1.5,
+        "state": "Standing",
+        "label": "Standing"
+      },
+      {
+        "start": 1.5,
+        "end": 12.5,
+        "state": "Transition State",
+        "label": "Shallow bend at waist sustained (legs relatively straight"
+      },
+      {
+        "start": 12.5,
+        "end": 13.5,
+        "state": "Transition State",
+        "label": "Getting up"
+      },
+      {
+        "start": 13.5,
+        "end": 15.4,
+        "state": "Standing",
+        "label": "Standing"
+      }
+    ],
+    "extract_sec": 21.691449600009946,
+    "fps": 29.00928124325491,
+    "n_frames": 432,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.36342592592592593,
+      "hip_valid_ratio": 1.0
+    },
+    "n_assessments": 23,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.102455357142857,
+        "risk_score": 0.28944004654236943,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.9307477531732045,
+            "risk_contribution": 0.05774477765149696,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.2941707700026728,
+            "risk_contribution": 0.48251943728476315,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 176.57823365459512,
+            "n_events": 8
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5170758928571431,
+        "window_end_sec": 3.61953125,
+        "risk_score": 0.3545988398722088,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.8413336757019283,
+            "risk_contribution": 0.07419265356329517,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.2991758226185832,
+            "risk_contribution": 0.49752748800970675,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 193.39520828836606,
+            "n_events": 9
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.035366058268133244,
+            "risk_contribution": 0.4453420136588058,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0341517857142857,
+        "window_end_sec": 4.136607142857143,
+        "risk_score": 0.4713389788423515,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.04234867338383673,
+            "risk_contribution": 0.4713389788423515,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.5512276785714287,
+        "window_end_sec": 4.653683035714286,
+        "risk_score": 0.43866917224466057,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.03356233949995543,
+            "risk_contribution": 0.4386691722446605,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.068303571428572,
+        "window_end_sec": 5.170758928571429,
+        "risk_score": 0.41113786916546563,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.026049101558074685,
+            "risk_contribution": 0.41113786916546563,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.585379464285714,
+        "window_end_sec": 5.687834821428571,
+        "risk_score": 0.41812387498891956,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.027968010587731136,
+            "risk_contribution": 0.4181238749889195,
+            "reliability": 0.6666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.102455357142857,
+        "window_end_sec": 6.204910714285714,
+        "risk_score": 0.4014197997625812,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02336314958802734,
+            "risk_contribution": 0.4014197997625812,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 194,
+        "window_start_sec": 3.61953125,
+        "window_end_sec": 6.721986607142857,
+        "risk_score": 0.4014197997625812,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02336314958802734,
+            "risk_contribution": 0.4014197997625812,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 209,
+        "window_start_sec": 4.136607142857143,
+        "window_end_sec": 7.2390625,
+        "risk_score": 0.41441945128965857,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.026951658812577117,
+            "risk_contribution": 0.41441945128965857,
+            "reliability": 0.6666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 224,
+        "window_start_sec": 4.653683035714286,
+        "window_end_sec": 7.756138392857142,
+        "risk_score": 0.4135205889489607,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.0267046494943369,
+            "risk_contribution": 0.4135205889489607,
+            "reliability": 0.6666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 239,
+        "window_start_sec": 5.170758928571429,
+        "window_end_sec": 8.273214285714285,
+        "risk_score": 0.40379487665000596,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02402148289396976,
+            "risk_contribution": 0.40379487665000596,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 254,
+        "window_start_sec": 5.687834821428572,
+        "window_end_sec": 8.790290178571428,
+        "risk_score": 0.4118360492997562,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02624130632021489,
+            "risk_contribution": 0.4118360492997562,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 269,
+        "window_start_sec": 6.204910714285715,
+        "window_end_sec": 9.307366071428572,
+        "risk_score": 0.4118360492997562,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02624130632021489,
+            "risk_contribution": 0.4118360492997562,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 284,
+        "window_start_sec": 6.721986607142858,
+        "window_end_sec": 9.824441964285715,
+        "risk_score": 0.42171884139003524,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02895191035851201,
+            "risk_contribution": 0.42171884139003524,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 299,
+        "window_start_sec": 7.239062500000001,
+        "window_end_sec": 10.341517857142858,
+        "risk_score": 0.4095216322858948,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.025603781791479346,
+            "risk_contribution": 0.4095216322858948,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 314,
+        "window_start_sec": 7.756138392857142,
+        "window_end_sec": 10.858593749999999,
+        "risk_score": 0.43889063656036437,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.033622295488066195,
+            "risk_contribution": 0.43889063656036437,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 329,
+        "window_start_sec": 8.273214285714285,
+        "window_end_sec": 11.375669642857142,
+        "risk_score": 0.4291437434772675,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.03097696607415473,
+            "risk_contribution": 0.4291437434772675,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 344,
+        "window_start_sec": 8.790290178571428,
+        "window_end_sec": 11.892745535714285,
+        "risk_score": 0.42705361927037133,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.030407829430583923,
+            "risk_contribution": 0.4270536192703713,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 359,
+        "window_start_sec": 9.307366071428572,
+        "window_end_sec": 12.409821428571428,
+        "risk_score": 0.4275132058058942,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.030533034028082384,
+            "risk_contribution": 0.4275132058058942,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight"
+        ]
+      },
+      {
+        "frame_idx": 374,
+        "window_start_sec": 9.824441964285715,
+        "window_end_sec": 12.926897321428571,
+        "risk_score": 0.4728457780837977,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.04275174252170696,
+            "risk_contribution": 0.47284577808379763,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight",
+          "Transition State: Getting up"
+        ]
+      },
+      {
+        "frame_idx": 389,
+        "window_start_sec": 10.341517857142858,
+        "window_end_sec": 13.443973214285714,
+        "risk_score": 0.3511248784705545,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.4516550847725316,
+            "risk_contribution": 0.20505979893466283,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.04275174252170696,
+            "risk_contribution": 0.47284577808379763,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight",
+          "Transition State: Getting up"
+        ]
+      },
+      {
+        "frame_idx": 404,
+        "window_start_sec": 10.85859375,
+        "window_end_sec": 13.961049107142857,
+        "risk_score": 0.3027952240014866,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.7409680607478688,
+            "risk_contribution": 0.09771245852984944,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.04297952695898189,
+            "risk_contribution": 0.47369752856118436,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight",
+          "Transition State: Getting up",
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 419,
+        "window_start_sec": 11.375669642857144,
+        "window_end_sec": 14.478125,
+        "risk_score": 0.3065116835523317,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.7553612170780557,
+            "risk_contribution": 0.09397112252518859,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.04563279031086968,
+            "risk_contribution": 0.4836288177416177,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Shallow bend at waist sustained (legs relatively straight",
+          "Transition State: Getting up",
+          "Standing: Standing"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Sit_Stand_1.mov",
+    "name": "Sit_Stand_1",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 0.7,
+        "state": "Standing",
+        "label": "Standing"
+      },
+      {
+        "start": 0.7,
+        "end": 2.6,
+        "state": "Transition State",
+        "label": "Sitting down"
+      },
+      {
+        "start": 2.6,
+        "end": 5.0,
+        "state": "Sitting",
+        "label": "Sitting"
+      },
+      {
+        "start": 5.0,
+        "end": 6.5,
+        "state": "Transition State",
+        "label": "Standing up"
+      },
+      {
+        "start": 6.5,
+        "end": 7.8,
+        "state": "Standing",
+        "label": "Standing"
+      }
+    ],
+    "extract_sec": 11.470700300007593,
+    "fps": 29.476818375159507,
+    "n_frames": 228,
+    "raw_visibility": {
+      "ankle_valid_ratio": 1.0,
+      "hip_valid_ratio": 1.0
+    },
+    "n_assessments": 10,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.053246753246753,
+        "risk_score": 0.37894378293176284,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.017064417304598588,
+            "risk_contribution": 0.37894378293176284,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5088744588744589,
+        "window_end_sec": 3.562121212121212,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0177489177489183,
+        "window_end_sec": 4.070995670995671,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.5266233766233763,
+        "window_end_sec": 4.579870129870129,
+        "risk_score": 0.3739903868482468,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.0156576244010158,
+            "risk_contribution": 0.3739903868482468,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.0354978354978353,
+        "window_end_sec": 5.088744588744588,
+        "risk_score": 0.3521257535815979,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.009352783529388446,
+            "risk_contribution": 0.3521257535815979,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting",
+          "Transition State: Standing up"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.544372294372294,
+        "window_end_sec": 5.597619047619047,
+        "risk_score": 0.3521257535815979,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.009352783529388446,
+            "risk_contribution": 0.3521257535815979,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting",
+          "Transition State: Standing up"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.053246753246753,
+        "window_end_sec": 6.106493506493506,
+        "risk_score": 0.3521257535815979,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.009352783529388446,
+            "risk_contribution": 0.3521257535815979,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up"
+        ]
+      },
+      {
+        "frame_idx": 194,
+        "window_start_sec": 3.562121212121212,
+        "window_end_sec": 6.615367965367965,
+        "risk_score": 0.3851661466839399,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.009352783529388446,
+            "risk_contribution": 0.3521257535815979,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.40709956709956696,
+              "reversal_count": 6.0
+            },
+            "risk_contribution": 0.43472673633745285,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up",
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 209,
+        "window_start_sec": 4.070995670995671,
+        "window_end_sec": 7.124242424242424,
+        "risk_score": 0.38722513299537314,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.010353395374285488,
+            "risk_contribution": 0.3555573974339867,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.40709956709956696,
+              "reversal_count": 6.0
+            },
+            "risk_contribution": 0.43472673633745285,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up",
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 224,
+        "window_start_sec": 4.57987012987013,
+        "window_end_sec": 7.633116883116883,
+        "risk_score": 0.39493183722852265,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.014061413796997334,
+            "risk_contribution": 0.3684019044892358,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.40709956709956696,
+              "reversal_count": 6.0
+            },
+            "risk_contribution": 0.43472673633745285,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up",
+          "Standing: Standing"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Sit_Stand_2.mov",
+    "name": "Sit_Stand_2",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 1.0,
+        "state": "Standing",
+        "label": "Standing"
+      },
+      {
+        "start": 1.0,
+        "end": 3.0,
+        "state": "Transition State",
+        "label": "Sitting down"
+      },
+      {
+        "start": 3.0,
+        "end": 11.5,
+        "state": "Sitting",
+        "label": "Sitting"
+      },
+      {
+        "start": 11.5,
+        "end": 13.0,
+        "state": "Transition State",
+        "label": "Standing up"
+      },
+      {
+        "start": 13.0,
+        "end": 14.9,
+        "state": "Standing",
+        "label": "Standing"
+      }
+    ],
+    "extract_sec": 21.942302099996596,
+    "fps": 29.049531459170012,
+    "n_frames": 423,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.9905437352245863,
+      "hip_valid_ratio": 1.0
+    },
+    "n_assessments": 23,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.09815668202765,
+        "risk_score": 0.48056100299179516,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.044813653358828726,
+            "risk_contribution": 0.48056100299179516,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5163594470046085,
+        "window_end_sec": 3.6145161290322583,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Standing: Standing",
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.032718894009217,
+        "window_end_sec": 4.130875576036867,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.549078341013825,
+        "window_end_sec": 4.647235023041475,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.065437788018433,
+        "window_end_sec": 5.163594470046083,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.581797235023042,
+        "window_end_sec": 5.679953917050692,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Transition State: Sitting down",
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.09815668202765,
+        "window_end_sec": 6.1963133640553,
+        "risk_score": 0.3388377744164787,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.005434814471678523,
+            "risk_contribution": 0.3388377744164787,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 194,
+        "window_start_sec": 3.6145161290322587,
+        "window_end_sec": 6.7126728110599085,
+        "risk_score": 0.33842593137730376,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.005312220411197383,
+            "risk_contribution": 0.33842593137730376,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 209,
+        "window_start_sec": 4.130875576036867,
+        "window_end_sec": 7.2290322580645165,
+        "risk_score": 0.38090700658797355,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.017619985003582975,
+            "risk_contribution": 0.38090700658797355,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 224,
+        "window_start_sec": 4.647235023041475,
+        "window_end_sec": 7.7453917050691246,
+        "risk_score": 0.37298377069481875,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.015370832275895089,
+            "risk_contribution": 0.37298377069481875,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 239,
+        "window_start_sec": 5.163594470046084,
+        "window_end_sec": 8.261751152073733,
+        "risk_score": 0.386718056740601,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.019258074780287633,
+            "risk_contribution": 0.386718056740601,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 254,
+        "window_start_sec": 5.679953917050691,
+        "window_end_sec": 8.77811059907834,
+        "risk_score": 0.3929710550178093,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02101063217144772,
+            "risk_contribution": 0.3929710550178093,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 269,
+        "window_start_sec": 6.1963133640553,
+        "window_end_sec": 9.29447004608295,
+        "risk_score": 0.4073732855758703,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.025011014302102768,
+            "risk_contribution": 0.4073732855758703,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 284,
+        "window_start_sec": 6.7126728110599085,
+        "window_end_sec": 9.810829493087558,
+        "risk_score": 0.3947181905853759,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.021498527897324336,
+            "risk_contribution": 0.3947181905853759,
+            "reliability": 0.6666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 299,
+        "window_start_sec": 7.229032258064516,
+        "window_end_sec": 10.327188940092165,
+        "risk_score": 0.3943858457232818,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.021405777319284964,
+            "risk_contribution": 0.3943858457232818,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 314,
+        "window_start_sec": 7.7453917050691246,
+        "window_end_sec": 10.843548387096774,
+        "risk_score": 0.39072821946841957,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02038318572091372,
+            "risk_contribution": 0.39072821946841957,
+            "reliability": 0.6666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 329,
+        "window_start_sec": 8.261751152073733,
+        "window_end_sec": 11.359907834101383,
+        "risk_score": 0.3763763966730149,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.01633618073834513,
+            "risk_contribution": 0.3763763966730149,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting"
+        ]
+      },
+      {
+        "frame_idx": 344,
+        "window_start_sec": 8.77811059907834,
+        "window_end_sec": 11.87626728110599,
+        "risk_score": 0.3764372198631479,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.01635345577992497,
+            "risk_contribution": 0.3764372198631479,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up"
+        ]
+      },
+      {
+        "frame_idx": 359,
+        "window_start_sec": 9.29447004608295,
+        "window_end_sec": 12.3926267281106,
+        "risk_score": 0.3783651874568949,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.016900468760297837,
+            "risk_contribution": 0.3783651874568949,
+            "reliability": 0.3333333333333333
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up"
+        ]
+      },
+      {
+        "frame_idx": 374,
+        "window_start_sec": 9.810829493087558,
+        "window_end_sec": 12.908986175115208,
+        "risk_score": 0.2692885653449556,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.0169662112183574,
+            "risk_contribution": 0.37859715955829776,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.20654377880184427,
+              "reversal_count": 0.0
+            },
+            "risk_contribution": 0.10532567402494239,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up"
+        ]
+      },
+      {
+        "frame_idx": 389,
+        "window_start_sec": 10.327188940092167,
+        "window_end_sec": 13.425345622119817,
+        "risk_score": 0.27157113572736047,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.018042152980091687,
+            "risk_contribution": 0.38240144352897254,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.20654377880184427,
+              "reversal_count": 0.0
+            },
+            "risk_contribution": 0.10532567402494239,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up",
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 404,
+        "window_start_sec": 10.843548387096774,
+        "window_end_sec": 13.941705069124424,
+        "risk_score": 0.10532567402494239,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.20654377880184427,
+              "reversal_count": 0.0
+            },
+            "risk_contribution": 0.10532567402494239,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up",
+          "Standing: Standing"
+        ]
+      },
+      {
+        "frame_idx": 419,
+        "window_start_sec": 11.359907834101383,
+        "window_end_sec": 14.458064516129033,
+        "risk_score": 0.10532567402494239,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": true,
+            "value": {
+              "duration_sec": 0.20654377880184427,
+              "reversal_count": 0.0
+            },
+            "risk_contribution": 0.10532567402494239,
+            "reliability": 1.0
+          }
+        },
+        "gt_overlap": [
+          "Sitting: Sitting",
+          "Transition State: Standing up",
+          "Standing: Standing"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Stride.mov",
+    "name": "Stride",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 8.0,
+        "state": "Walking",
+        "label": "Walking toward camera (approximate split -- see report for precision caveat)"
+      },
+      {
+        "start": 8.0,
+        "end": 14.4,
+        "state": "Walking",
+        "label": "Turns and walks away from camera"
+      }
+    ],
+    "extract_sec": 21.041443099995377,
+    "fps": 29.151205936920224,
+    "n_frames": 408,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.8553921568627451,
+      "hip_valid_ratio": 0.9705882352941176
+    },
+    "n_assessments": 22,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.0873508353221957,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5145584725536994,
+        "window_end_sec": 3.601909307875895,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0291169451073983,
+        "window_end_sec": 4.116467780429594,
+        "risk_score": 0.0742159827697669,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.658059049132233,
+            "risk_contribution": 0.12194092729403379,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.02222222222222221,
+            "risk_contribution": 0.03444519566621117,
+            "reliability": 0.9333333333333333,
+            "cadence_steps_per_min": 77.7365491651206,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.5436754176610976,
+        "window_end_sec": 4.631026252983293,
+        "risk_score": 0.08071515026614681,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6156281999534157,
+            "risk_contribution": 0.1362390957860696,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.02222222222222221,
+            "risk_contribution": 0.03444519566621117,
+            "reliability": 0.7666666666666667,
+            "cadence_steps_per_min": 77.7365491651206,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.058233890214797,
+        "window_end_sec": 5.145584725536993,
+        "risk_score": 0.18479477401677138,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.4947313376288194,
+            "risk_contribution": 0.18479477401677138,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.5727923627684963,
+        "window_end_sec": 5.660143198090692,
+        "risk_score": 0.31554831163608976,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.2581020884370622,
+            "risk_contribution": 0.31554831163608976,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.0873508353221957,
+        "window_end_sec": 6.174701670644391,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 194,
+        "window_start_sec": 3.601909307875895,
+        "window_end_sec": 6.689260143198091,
+        "risk_score": 0.4081223700262298,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.123910950473965,
+            "risk_contribution": 0.4081223700262298,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 209,
+        "window_start_sec": 4.116467780429595,
+        "window_end_sec": 7.20381861575179,
+        "risk_score": 0.37841989780730445,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.1654201226863288,
+            "risk_contribution": 0.37841989780730445,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 224,
+        "window_start_sec": 4.631026252983293,
+        "window_end_sec": 7.7183770883054885,
+        "risk_score": 0.41902136443129395,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.0532006241988132,
+            "risk_contribution": 0.460184014569858,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.26086956521739113,
+            "risk_contribution": 0.3847191559824907,
+            "reliability": 0.6777777777777778,
+            "cadence_steps_per_min": 76.04662418327015,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)"
+        ]
+      },
+      {
+        "frame_idx": 239,
+        "window_start_sec": 5.145584725536992,
+        "window_end_sec": 8.232935560859188,
+        "risk_score": 0.35372826308678657,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.2565740842836304,
+            "risk_contribution": 0.3165391916119417,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.26086956521739113,
+            "risk_contribution": 0.3847191559824907,
+            "reliability": 0.8444444444444444,
+            "cadence_steps_per_min": 76.04662418327015,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)",
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 254,
+        "window_start_sec": 5.660143198090692,
+        "window_end_sec": 8.747494033412888,
+        "risk_score": 0.3607966442927133,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.232916361444034,
+            "risk_contribution": 0.33208963026498056,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.26086956521739113,
+            "risk_contribution": 0.3847191559824907,
+            "reliability": 0.9333333333333333,
+            "cadence_steps_per_min": 76.04662418327015,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)",
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 269,
+        "window_start_sec": 6.1747016706443905,
+        "window_end_sec": 9.262052505966587,
+        "risk_score": 0.21753866408955908,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.4266893031857393,
+            "risk_contribution": 0.21753866408955908,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)",
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 284,
+        "window_start_sec": 6.689260143198089,
+        "window_end_sec": 9.776610978520285,
+        "risk_score": 0.16294276209166084,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.5454978221409508,
+            "risk_contribution": 0.16294276209166084,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)",
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 299,
+        "window_start_sec": 7.203818615751789,
+        "window_end_sec": 10.291169451073985,
+        "risk_score": 0.1541095468428917,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.5675753901877627,
+            "risk_contribution": 0.1541095468428917,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)",
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 314,
+        "window_start_sec": 7.718377088305488,
+        "window_end_sec": 10.805727923627684,
+        "risk_score": 0.17331433415718492,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.5207725422777119,
+            "risk_contribution": 0.17331433415718492,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera (approximate split -- see report for precision caveat)",
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 329,
+        "window_start_sec": 8.232935560859188,
+        "window_end_sec": 11.320286396181384,
+        "risk_score": 0.4491558086497963,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.5987693455646463,
+            "risk_contribution": 0.14230107968921646,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.3725490196078416,
+            "risk_contribution": 0.7048680827836129,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 68.59107279275347,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 344,
+        "window_start_sec": 8.747494033412886,
+        "window_end_sec": 11.834844868735082,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 359,
+        "window_start_sec": 9.262052505966587,
+        "window_end_sec": 12.349403341288783,
+        "risk_score": 0.13287021789200218,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6445164718227174,
+            "risk_contribution": 0.12635823372966576,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.1475409836065567,
+            "risk_contribution": 0.13829687136061586,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 57.346634630007024,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 374,
+        "window_start_sec": 9.776610978520285,
+        "window_end_sec": 12.863961813842481,
+        "risk_score": 0.28857794507658074,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.5441191747742302,
+            "risk_contribution": 0.16350765992707972,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.26370464121518483,
+            "risk_contribution": 0.39280318270116493,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 66.42046922336255,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 389,
+        "window_start_sec": 10.291169451073985,
+        "window_end_sec": 13.378520286396181,
+        "risk_score": 0.5191348531337059,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.738023287901993,
+            "risk_contribution": 0.09849410671780298,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.45816946845286033,
+            "risk_contribution": 0.8696688084802918,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 102.8866091891302,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Turns and walks away from camera"
+        ]
+      },
+      {
+        "frame_idx": 404,
+        "window_start_sec": 10.805727923627684,
+        "window_end_sec": 13.89307875894988,
+        "risk_score": 0.4383194264347031,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.8447492031966537,
+            "risk_contribution": 0.07349189881607701,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.38818157028232253,
+            "risk_contribution": 0.7423423661168916,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 95.83958116247743,
+            "n_events": 5
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Turns and walks away from camera"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Stride_Big_Starting_Leap.mov",
+    "name": "Stride_Big_Starting_Leap",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 5.3,
+        "state": "Walking",
+        "label": "Walking toward camera with an exaggerated first stride/leap"
+      }
+    ],
+    "extract_sec": 7.331544799992116,
+    "fps": 28.724409448818896,
+    "n_frames": 145,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.6620689655172414,
+      "hip_valid_ratio": 0.6620689655172414
+    },
+    "n_assessments": 4,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.1332236842105265,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with an exaggerated first stride/leap"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5222039473684208,
+        "window_end_sec": 3.6554276315789473,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with an exaggerated first stride/leap"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0444078947368425,
+        "window_end_sec": 4.177631578947369,
+        "risk_score": 0.15313902561902756,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.196349337726359,
+            "risk_contribution": 0.02688201094544039,
+            "reliability": 0.7752808988764045
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.21212121212121154,
+            "risk_contribution": 0.25835320451368354,
+            "reliability": 0.7555555555555555,
+            "cadence_steps_per_min": 104.45239799570506,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with an exaggerated first stride/leap"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.5666118421052628,
+        "window_end_sec": 4.699835526315789,
+        "risk_score": 0.11930286073844068,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 2.0930500883852896,
+            "risk_contribution": 0.03629342517321818,
+            "reliability": 0.9438202247191011
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.1783388172210708,
+            "risk_contribution": 0.18847739037612612,
+            "reliability": 0.9222222222222223,
+            "cadence_steps_per_min": 99.43064809206538,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with an exaggerated first stride/leap"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Stride_Inconsistent_Pace.mov",
+    "name": "Stride_Inconsistent_Pace",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 7.1,
+        "state": "Walking",
+        "label": "Walking toward camera with irregular/inconsistent pace"
+      }
+    ],
+    "extract_sec": 9.33789299998898,
+    "fps": 27.742392073602264,
+    "n_frames": 181,
+    "raw_visibility": {
+      "ankle_valid_ratio": 1.0,
+      "hip_valid_ratio": 1.0
+    },
+    "n_assessments": 7,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.2441326530612247,
+        "risk_score": 0.3957774553584298,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.6624595333674146,
+            "risk_contribution": 0.12053447004971624,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.34262093398111476,
+            "risk_contribution": 0.6251466097823579,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 108.08724184520362,
+            "n_events": 6
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with irregular/inconsistent pace"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.5406887755102039,
+        "window_end_sec": 3.7848214285714286,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with irregular/inconsistent pace"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0813775510204082,
+        "window_end_sec": 4.325510204081633,
+        "risk_score": null,
+        "signals": {
+          "walking_speed": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "stride_regularity": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "postural_sway": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with irregular/inconsistent pace"
+        ]
+      },
+      {
+        "frame_idx": 134,
+        "window_start_sec": 1.6220663265306121,
+        "window_end_sec": 4.866198979591837,
+        "risk_score": 0.250751977708115,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.4930092690689698,
+            "risk_contribution": 0.1855743081808992,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.16168700776608738,
+            "risk_contribution": 0.15979476627176117,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 86.4697934761629,
+            "n_events": 5
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.021862666189405324,
+            "risk_contribution": 0.39602391375048207,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with irregular/inconsistent pace"
+        ]
+      },
+      {
+        "frame_idx": 149,
+        "window_start_sec": 2.162755102040816,
+        "window_end_sec": 5.406887755102041,
+        "risk_score": 0.23111560669367348,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.3445798220126468,
+            "risk_contribution": 0.26235977323326204,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.03888078956798696,
+            "risk_contribution": 0.04174914897190556,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 79.26397735314933,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02142236032504899,
+            "risk_contribution": 0.3944452589657844,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with irregular/inconsistent pace"
+        ]
+      },
+      {
+        "frame_idx": 164,
+        "window_start_sec": 2.70344387755102,
+        "window_end_sec": 5.947576530612245,
+        "risk_score": 0.25508781144513315,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.2814339244475574,
+            "risk_contribution": 0.3006295550487614,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.09392377823779494,
+            "risk_contribution": 0.0777789109214585,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 72.37145758331027,
+            "n_events": 4
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02142236032504899,
+            "risk_contribution": 0.3944452589657844,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with irregular/inconsistent pace"
+        ]
+      },
+      {
+        "frame_idx": 179,
+        "window_start_sec": 3.2441326530612247,
+        "window_end_sec": 6.488265306122449,
+        "risk_score": 0.27128451577786467,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.2181471967141086,
+            "risk_contribution": 0.3419893343007078,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.10638297872340417,
+            "risk_contribution": 0.08920309048757567,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 70.83163933685687,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02142236032504899,
+            "risk_contribution": 0.3944452589657844,
+            "reliability": 0.16666666666666666
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with irregular/inconsistent pace"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\Users\\ORACLE\\Repositories\\FYP_SAGE\\test_footage\\GAIT_Analysis_Test_Footages\\Stride_Pause.mov",
+    "name": "Stride_Pause",
+    "gt": [
+      {
+        "start": 0.0,
+        "end": 5.1,
+        "state": "Walking",
+        "label": "Walking toward camera with a brief pause mid-stride"
+      }
+    ],
+    "extract_sec": 6.962123700010125,
+    "fps": 28.026315789473685,
+    "n_frames": 132,
+    "raw_visibility": {
+      "ankle_valid_ratio": 0.946969696969697,
+      "hip_valid_ratio": 0.9772727272727273
+    },
+    "n_assessments": 3,
+    "assessments": [
+      {
+        "frame_idx": 89,
+        "window_start_sec": 0.0,
+        "window_end_sec": 3.2112676056338025,
+        "risk_score": 0.616316589024003,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.1034429179768717,
+            "risk_contribution": 0.4230344957916445,
+            "reliability": 0.9887640449438202
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.6953285253141022,
+            "risk_contribution": 0.991370846818488,
+            "reliability": 0.9666666666666667,
+            "cadence_steps_per_min": 114.00535236396077,
+            "n_events": 5
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02361579813568877,
+            "risk_contribution": 0.4023307422564838,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with a brief pause mid-stride"
+        ]
+      },
+      {
+        "frame_idx": 104,
+        "window_start_sec": 0.535211267605634,
+        "window_end_sec": 3.7464788732394365,
+        "risk_score": 0.6281886295682891,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 1.0525670138037886,
+            "risk_contribution": 0.4606562445521316,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.721167874002354,
+            "risk_contribution": 0.993656837726893,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 110.63019390581718,
+            "n_events": 6
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.02361579813568877,
+            "risk_contribution": 0.4023307422564838,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with a brief pause mid-stride"
+        ]
+      },
+      {
+        "frame_idx": 119,
+        "window_start_sec": 1.0704225352112675,
+        "window_end_sec": 4.28169014084507,
+        "risk_score": 0.3052426785065911,
+        "signals": {
+          "walking_speed": {
+            "available": true,
+            "value": 0.9821192035511637,
+            "risk_contribution": 0.5134073825055748,
+            "reliability": 1.0
+          },
+          "stride_regularity": {
+            "available": true,
+            "value": 0.03125000000000022,
+            "risk_contribution": 0.03823569176595826,
+            "reliability": 1.0,
+            "cadence_steps_per_min": 52.54934210526316,
+            "n_events": 3
+          },
+          "postural_sway": {
+            "available": true,
+            "value": 0.022629674605121414,
+            "risk_contribution": 0.3987790785814042,
+            "reliability": 0.5
+          },
+          "sit_to_stand": {
+            "available": false,
+            "value": null,
+            "risk_contribution": null,
+            "reliability": null
+          }
+        },
+        "gt_overlap": [
+          "Walking: Walking toward camera with a brief pause mid-stride"
+        ]
+      }
+    ]
+  }
+]

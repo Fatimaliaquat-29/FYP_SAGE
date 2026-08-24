@@ -1,0 +1,49 @@
+{
+  "status": "interrupted_not_resumable",
+  "note": "First round-2 attempt, deliberately killed after 4/120 candidate-fold fits so the sweep script could be made incremental/resumable (see benchmarks/rf_alternatives_full_sweep.py's module docstring, 'ROUND 2b'). This file is a HISTORICAL RECORD reconstructed from benchmarks/results/full_sweep_run.log's stdout, NOT a resumable state file -- it is missing balanced_acc, gap, and predict_latency_ms_mean for every entry (those were never printed to the log, only val_acc/macro_f1/fit_time/predict_latency_p95/model_size were). The rewritten script's real run starts fresh and recomputes these same 4 candidates with the full metric set so they can be safely averaged into the final summary.",
+  "n_folds_target": 5,
+  "fold_observed": 0,
+  "baseline_name": "rf_baseline (production: leaf=20, max_features=0.1)",
+  "results": [
+    {
+      "name": "rf_baseline (production: leaf=20, max_features=0.1)",
+      "fold": 0,
+      "val_acc": 0.8125,
+      "macro_f1": 0.7208,
+      "fit_time_s": 206.0,
+      "predict_latency_ms_p95": 43.76,
+      "model_size_kb": 6375.0,
+      "missing_metrics": ["balanced_acc", "gap", "predict_latency_ms_mean"]
+    },
+    {
+      "name": "ccp_alpha=0.0001",
+      "fold": 0,
+      "val_acc": 0.8116,
+      "macro_f1": 0.7187,
+      "fit_time_s": 196.0,
+      "predict_latency_ms_p95": 63.19,
+      "model_size_kb": 5352.1,
+      "missing_metrics": ["balanced_acc", "gap", "predict_latency_ms_mean"]
+    },
+    {
+      "name": "ccp_alpha=0.0005",
+      "fold": 0,
+      "val_acc": 0.8097,
+      "macro_f1": 0.7176,
+      "fit_time_s": 216.5,
+      "predict_latency_ms_p95": 50.98,
+      "model_size_kb": 4198.1,
+      "missing_metrics": ["balanced_acc", "gap", "predict_latency_ms_mean"]
+    },
+    {
+      "name": "ccp_alpha=0.001",
+      "fold": 0,
+      "val_acc": 0.8078,
+      "macro_f1": 0.7132,
+      "fit_time_s": 254.3,
+      "predict_latency_ms_p95": 64.04,
+      "model_size_kb": 3228.4,
+      "missing_metrics": ["balanced_acc", "gap", "predict_latency_ms_mean"]
+    }
+  ]
+}

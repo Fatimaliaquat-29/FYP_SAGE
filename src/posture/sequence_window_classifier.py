@@ -266,6 +266,13 @@ def run_classifier_cli(classifier_cls: type, description: str) -> None:
     args = parser.parse_args()
 
     if args.demo:
-        run_classifier_demo(classifier_cls)
+        # Bug fixed (this audit session, same class of bug as rf_classifier.py's
+        # own --model fix): run_classifier_demo(classifier_cls) always calls
+        # `classifier_cls()` with no arguments, so a caller passing --model
+        # expecting it to load a specific checkpoint got no error and silently
+        # got the default model instead. A zero-arg lambda satisfies the same
+        # `classifier_cls()` call while closing over the requested path.
+        cls = (lambda: classifier_cls(model_path=args.model)) if args.model else classifier_cls
+        run_classifier_demo(cls)
     else:
         parser.print_help()

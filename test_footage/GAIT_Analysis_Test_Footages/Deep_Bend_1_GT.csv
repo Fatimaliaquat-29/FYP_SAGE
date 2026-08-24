@@ -1,0 +1,6 @@
+start_time,end_time,state,label
+0,0.6,Standing,Standing
+0.6,1.1,Transition State,Bending down
+1.1,7.0,Transition State,Deep bend sustained (NOT sitting -- standing bend, no chair/seat/kneel)
+7.0,7.5,Transition State,Getting up
+7.5,8.59,Standing,Standing

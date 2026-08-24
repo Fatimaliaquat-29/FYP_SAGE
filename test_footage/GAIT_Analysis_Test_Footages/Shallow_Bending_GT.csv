@@ -1,0 +1,5 @@
+start_time,end_time,state,label
+0,1.5,Standing,Standing
+1.5,12.5,Transition State,Shallow bend at waist sustained (legs relatively straight, NOT sitting)
+12.5,13.5,Transition State,Getting up
+13.5,15.4,Standing,Standing

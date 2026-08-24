@@ -185,6 +185,10 @@ def train(
 
     print(f"  Dataset shape : X={X.shape}, y={y.shape}, groups={groups.shape}")
     print(f"  Classes       : {list(classes)}")
+    # `col_medians` loaded above is a whole-REAL-dataset DIAGNOSTIC value only
+    # (see lstm_dataset.py's build_dataset() "LEAKAGE FIX" comment) -- it must
+    # NOT be used to impute this trainer's train/val folds, since it was
+    # computed over validation-fold windows too. Deliberately not reused below.
 
     window_size = X.shape[1]
     n_features = X.shape[2]
@@ -197,6 +201,18 @@ def train(
 
     X_val, y_val = X[val_idx], y[val_idx]
     X_train, y_train = X[train_idx], y[train_idx]
+
+    # ── LEAKAGE FIX (this audit session, mirrors lstm_trainer.py exactly): impute
+    # real train/val NaNs using medians computed from the TRAINING FOLD ONLY,
+    # after the split above, BEFORE flattening/summarizing -- a RandomForest
+    # cannot accept NaN input at all (sklearn raises), so without this fix
+    # training would hard-fail (not just leak) the moment the npz was rebuilt
+    # with lstm_dataset.py's raw-X leakage fix. See lstm_trainer.py's identical
+    # comment for the full trace.
+    from src.posture.lstm import lstm_features as lf
+    train_col_medians = lf.compute_col_medians(X_train)
+    X_train = lf.impute_nan(X_train, train_col_medians)
+    X_val = lf.impute_nan(X_val, train_col_medians)
 
     # ── Post-split synthetic injection (train fold only, same as TCN/LSTM) ─────
     from src.posture.lstm.lstm_dataset import generate_synthetic_windows, impute_nan
@@ -268,12 +284,14 @@ def train(
     # ── Save label encoder (same shape as tcn/lstm's, so the same
     # SequenceWindowClassifier-style feature-building code can be reused
     # unmodified at inference time) ────────────────────────────────────────────
+    # LEAKAGE FIX: train_col_medians (training fold only), not the
+    # whole-dataset diagnostic `col_medians` loaded from the npz.
     encoder = {
         "classes": list(classes),
         "class_to_idx": {c: int(i) for i, c in enumerate(classes)},
         "window_size": int(window_size),
         "n_features": int(n_features),
-        "col_medians": col_medians.tolist() if col_medians is not None else None,
+        "col_medians": train_col_medians.tolist(),
         # RF-specific: which window->vector reduction this checkpoint expects
         # at inference time (rf_classifier.py reads this, not a hardcoded
         # assumption, so old "flatten" checkpoints stay loadable too).

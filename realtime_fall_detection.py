@@ -35,6 +35,7 @@ Press 'q' to quit.
 """
 
 import argparse
+import inspect
 import sys
 import time
 from collections import deque
@@ -57,6 +58,7 @@ from src.posture.pipeline_utils import (
     reset_session_state,
 )
 from src.detection.yolo_objects import YOLOObjectDetector
+from src.gait.gait_stream import StreamingGaitRiskAssessor, TorsoBaselineCalibrator
 
 POSE_MODEL_PATH = str(REPO_ROOT / "models" / "pose_landmarker_full.task")
 DEFAULT_OBJECT_MODEL_PATH = REPO_ROOT / "models" / "yolov8n_sage_merged_v3.pt"
@@ -70,6 +72,33 @@ ALERT_HOLD_SECONDS = 5.0  # keep the alarm latched this long before it can re-ar
 # last ~300 Standing frames, and the LSTM needs window_size+1; 320 covers both
 # while keeping a long-running session's memory bounded.
 HISTORY_CAP = 320
+
+# ── GAIT streaming defaults ────────────────────────────────────────────────
+# GAIT is a separate, PARALLEL signal, not part of the fall_detected decision
+# path (see docs/IMPLEMENTATION_PLAN.md Section 5.3: "Gait's risk score is a
+# separate, parallel output ... wired into a dashboard/alert system as its
+# own independent signal" -- this is that wiring). See src/gait/gait_risk.py's
+# own module docstring for why: it is a risk-score interface, not a
+# fall/no-fall classifier, and stays that way here too -- nothing below ever
+# feeds `fall_flags`/`alarm_active`.
+#
+# gait_features.MIN_WINDOW_FRAMES (90) is the hard floor `RingFrameBuffer`
+# enforces; gait_stream.StreamingGaitRiskAssessor's own constructor default
+# (~5s at 30fps) is the intended live-streaming value per that module's
+# docstring -- reused here rather than re-derived, since nothing about this
+# integration changes what window length is appropriate. Read directly off
+# the class's own signature (a later audit session's config-drift fix)
+# instead of a second hardcoded literal, so a future retune of that default
+# can't silently desync this caller.
+GAIT_WINDOW_FRAMES = inspect.signature(StreamingGaitRiskAssessor.__init__).parameters["window_frames"].default
+GAIT_REASSESS_EVERY_N_FRAMES = 15
+# Minimum contiguous CONFIRMED-Standing, non-fall frames (see
+# gait_stream.TorsoBaselineCalibrator's own docstring for the full safety
+# rationale) before a torso-length calibration is even attempted. ~2s at
+# 30fps -- generous headroom over gait_features.CALIBRATION_SEGMENT_FRAMES
+# (20) so that function's own least-noisy-sub-segment search has real room
+# to work with, matching the calibrator's own documented default.
+GAIT_MIN_CALIBRATION_FRAMES = 60
 
 # Standard 33-point MediaPipe Pose topology (index meanings per the official
 # spec: 0 nose, 11/12 shoulders, 23/24 hips, 25/26 knees, 27/28 ankles, ...).
@@ -118,6 +147,28 @@ def _load_lstm(enabled: bool):
     return None
 
 
+def _load_gait(enabled: bool, window_frames: int = GAIT_WINDOW_FRAMES,
+               reassess_every_n_frames: int = GAIT_REASSESS_EVERY_N_FRAMES,
+               min_calibration_frames: int = GAIT_MIN_CALIBRATION_FRAMES):
+    """Mirrors `_load_lstm`/`_load_object_detector`'s own defensive-loading
+    pattern: GAIT is an ADDITIVE, non-gating signal (see GAIT_WINDOW_FRAMES's
+    own comment), so a failure constructing it must never prevent fall
+    detection itself from starting. Returns (assessor, calibrator), both
+    None if disabled or construction failed."""
+    if not enabled:
+        return None, None
+    try:
+        assessor = StreamingGaitRiskAssessor(
+            window_frames=window_frames, reassess_every_n_frames=reassess_every_n_frames)
+        calibrator = TorsoBaselineCalibrator(min_run_frames=min_calibration_frames)
+        print(f"[realtime] GAIT streaming assessor loaded (window={window_frames} frames, "
+              f"reassess every {reassess_every_n_frames} frames).")
+        return assessor, calibrator
+    except Exception as e:
+        print(f"[realtime] Could not load GAIT assessor ({e}) — running without gait risk.")
+        return None, None
+
+
 def _load_object_detector(enabled: bool, model_path: Path, conf: float, imgsz: int):
     # Independent of the pose/fall pipeline -- object detection never gates or
     # feeds the fall alarm (that stays purely posture/LSTM-driven). It only
@@ -139,7 +190,11 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
         alert_hold=ALERT_HOLD_SECONDS, on_alert=None,
         min_visibility=MIN_LANDMARK_VISIBILITY,
         use_objects=True, object_model_path=DEFAULT_OBJECT_MODEL_PATH,
-        object_conf=0.25, object_imgsz=320):
+        object_conf=0.25, object_imgsz=320,
+        use_gait=True, on_gait_update=None,
+        gait_window_frames=GAIT_WINDOW_FRAMES,
+        gait_reassess_every_n_frames=GAIT_REASSESS_EVERY_N_FRAMES,
+        gait_min_calibration_frames=GAIT_MIN_CALIBRATION_FRAMES):
     """
     Main real-time loop.
 
@@ -151,10 +206,57 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
         Optional callback invoked once per confirmed fall event. Receives a
         dict with keys: frame, timestamp, posture, source ("heuristic"/"lstm"/
         "hybrid"). Hook your SMS/email/dashboard notification here.
+    use_gait : bool
+        Run the GAIT (gait-quality fall-RISK) streaming assessor alongside
+        fall detection -- see "GAIT integration" below. Defaults on; a
+        failure to load it never blocks fall detection itself (see
+        `_load_gait`).
+    on_gait_update : callable(dict) | None
+        Optional callback invoked every time the GAIT streaming assessor
+        produces a fresh result (roughly every `gait_reassess_every_n_frames`
+        frames once its window is full -- see GAIT_WINDOW_FRAMES's own
+        comment). Receives
+        `{"frame": int, "timestamp": float, "result": <GaitRiskAssessor.
+        assess_risk() output, or None>, "torso_baseline": float | None,
+        "torso_baseline_mode": "2d" | "3d" | None}`. This is the primary
+        integration/instrumentation hook for verifying GAIT is actually
+        reachable from this loop (see tests/test_realtime_gait_integration.py)
+        and for wiring GAIT's risk score into a dashboard -- per
+        docs/IMPLEMENTATION_PLAN.md Section 5.3, it is intentionally a
+        SEPARATE, parallel output, never merged into `fall_flags`/
+        `alarm_active`/`on_alert`'s own gating logic.
+
+    GAIT integration
+    -----------------
+    Runs a `StreamingGaitRiskAssessor` alongside the existing posture/LSTM
+    fall pipeline, fed the SAME per-frame `row` this loop already builds
+    for `classify_posture_and_fall()` (see `build_pose_row`'s own
+    `world_landmarks` parameter for how MediaPipe's `pose_world_landmarks`
+    -- already computed by the SAME `detect_for_video()` call as the 2D
+    landmarks, previously discarded -- is threaded through). A
+    `TorsoBaselineCalibrator` watches the stream of
+    `classify_posture_and_fall()` verdicts already being computed for the
+    fall decision and, the FIRST time it sees a long enough confirmed-
+    Standing, non-fall run, establishes a one-time session torso-length
+    baseline and hands it to the assessor via `set_torso_baseline()` --
+    this is what makes the walking_speed/stride_regularity/postural_sway
+    torso-collapse protections (see gait_features.MIN_TORSO_BASELINE_RATIO's
+    docstring) actually reachable in a live session, not just in unit
+    tests (previously, nothing in this repository ever supplied
+    `_torso_baseline`, so those protections -- though correctly
+    implemented and tested -- were inert in every runnable path; see
+    docs/GAIT_DATA_ASSESSMENT.md Section 9.2 for the audit finding this
+    closes). GAIT's own output (`risk_score`, per-signal detail) is
+    surfaced via `on_gait_update` and the on-screen overlay ONLY -- it
+    never feeds `fall_detected`/the debounced alarm, matching the existing
+    "additive, not gating" pattern this file already uses for
+    `object_detector` (see that variable's own comment below).
     """
     detector = _make_detector()
     lstm = _load_lstm(use_lstm)
     object_detector = _load_object_detector(use_objects, object_model_path, object_conf, object_imgsz)
+    gait_assessor, gait_calibrator = _load_gait(
+        use_gait, gait_window_frames, gait_reassess_every_n_frames, gait_min_calibration_frames)
 
     cap = cv2.VideoCapture(input_source)
     if not cap.isOpened():
@@ -173,6 +275,7 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
     fps_ema = None
     last_t = time.time()
     t_start = last_t   # base for the monotonic VIDEO-mode timestamp
+    latest_gait_result = None   # most recent non-None GAIT assess_risk() output, for overlay/on_alert context
 
     print("[realtime] Started. Press 'q' in the window (or Ctrl+C) to quit.")
     try:
@@ -189,7 +292,7 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
             # VIDEO mode needs a monotonically increasing millisecond timestamp.
             result = detector.detect_for_video(mp_image, int((now - t_start) * 1000))
 
-            landmarks, visibility = [], []
+            landmarks, visibility, world_landmarks = [], [], []
             if result.pose_landmarks:
                 landmarks = [(lm.x, lm.y) for lm in result.pose_landmarks[0]]
                 # Carry MediaPipe's own per-joint confidence through. Without it
@@ -197,12 +300,22 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
                 # GUESSED behind furniture, and guessed joints are what produce
                 # phantom "Lying"/fall readings.
                 visibility = [lm.visibility for lm in result.pose_landmarks[0]]
+            if result.pose_world_landmarks:
+                # MediaPipe's real-world-metric 3D output (x/y/z meters, roughly
+                # hip-relative), computed by the SAME detect_for_video() call
+                # above -- no extra inference cost. Feeds src/gait/gait_features.py's
+                # optional "world_keypoints" row field via build_pose_row's
+                # world_landmarks param (see that param's own docstring); every
+                # OTHER consumer of `row` (posture/fall classification, LSTM)
+                # ignores this entirely.
+                world_landmarks = [(lm.x, lm.y, lm.z) for lm in result.pose_world_landmarks[0]]
 
             # Wall-clock timestamp so _compute_velocity's dt is the true elapsed
             # inter-frame time (correct for a live feed with variable frame rate).
             row = build_pose_row(timestamp=str(now), frame=frame_count, landmarks=landmarks,
                                  visibility=visibility or None,
-                                 min_visibility=min_visibility)
+                                 min_visibility=min_visibility,
+                                 world_landmarks=world_landmarks or None)
             result_dict = classify_posture_and_fall(row, previous_rows=previous_rows,
                                                     lstm_classifier=lstm)
             row.update(result_dict)
@@ -213,6 +326,32 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
             posture = result_dict.get("posture_label", "Unknown")
             fall_now = bool(result_dict.get("fall_detected", False))
             fall_flags.append(1 if fall_now else 0)
+
+            # ── GAIT (separate, parallel risk signal -- never gates fall_flags) ──
+            # Wrapped defensively: a bug in GAIT must never be able to stall or
+            # crash the fall-detection loop it rides alongside (same standard
+            # object_detector is already held to just below).
+            if gait_assessor is not None:
+                try:
+                    if gait_calibrator is not None and not gait_calibrator.is_calibrated:
+                        if gait_calibrator.observe(row, posture, fall_now):
+                            gait_assessor.set_torso_baseline(gait_calibrator.baseline)
+                            print(f"[realtime] GAIT torso baseline established "
+                                  f"({gait_calibrator.baseline_mode}-mode, "
+                                  f"{gait_calibrator.baseline:.4f}) at frame {frame_count}.")
+                    gait_result = gait_assessor.push_frame(row)
+                    if gait_result is not None:
+                        latest_gait_result = gait_result
+                        if on_gait_update is not None:
+                            on_gait_update({
+                                "frame": frame_count,
+                                "timestamp": now,
+                                "result": gait_result,
+                                "torso_baseline": gait_calibrator.baseline if gait_calibrator else None,
+                                "torso_baseline_mode": gait_calibrator.baseline_mode if gait_calibrator else None,
+                            })
+                except Exception as e:
+                    print(f"[realtime] GAIT assessment error (frame {frame_count}): {e}")
 
             # Object detection runs alongside pose, not instead of it -- purely
             # additive context (what furniture/objects are in view). It never
@@ -229,6 +368,11 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
                     "timestamp": now,
                     "posture": posture,
                     "labels": result_dict.get("other_labels", ""),
+                    # Contextual only -- GAIT never influenced this alert firing
+                    # (see the "GAIT integration" note in this function's own
+                    # docstring). None if GAIT hasn't produced a result yet
+                    # (e.g. still filling its window) or is disabled.
+                    "gait_risk_score": latest_gait_result["risk_score"] if latest_gait_result else None,
                 }
                 print(f"\n*** FALL ALERT *** frame={frame_count} posture={posture} "
                       f"labels={event['labels']}  ({hits}/{alert_window} recent frames)\n")
@@ -254,6 +398,7 @@ def run(input_source, use_lstm=True, show_display=True, show_skeleton=True,
                     _draw_skeleton(frame, landmarks, visibility, min_visibility)
                 _draw_objects(frame, objects)
                 _draw_overlay(frame, posture, fall_now, alarm_active, fps_ema, hits, alert_window)
+                _draw_gait(frame, latest_gait_result, gait_calibrator)
                 try:
                     cv2.imshow("S.A.G.E. Real-Time Fall Detection", frame)
                     if (cv2.waitKey(1) & 0xFF) in (ord("q"), ord("Q")):
@@ -339,6 +484,34 @@ def _draw_overlay(frame, posture, fall_now, alarm_active, fps, hits, window):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, amber, 2, cv2.LINE_AA)
 
 
+def _draw_gait(frame, gait_result, gait_calibrator):
+    """Purely informational overlay for GAIT's own risk score -- see this
+    module's "GAIT integration" docstring note: displayed for visibility
+    only, never influences `fall_now`/`alarm_active` drawn by
+    `_draw_overlay` just above this call. Shows "warming up" (no result
+    yet -- window not full, or calibration not yet established) rather
+    than silently drawing nothing, so it's visually obvious GAIT is
+    running at all, not merely absent from the frame."""
+    white, amber = (255, 255, 255), (0, 165, 255)
+    if gait_result is None:
+        calib_note = "" if gait_calibrator is None else (
+            " (baseline pending)" if not gait_calibrator.is_calibrated else "")
+        cv2.putText(frame, f"Gait: warming up{calib_note}", (12, 142),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, white, 1, cv2.LINE_AA)
+        return
+    score = gait_result.get("risk_score")
+    if score is None:
+        cv2.putText(frame, "Gait risk: n/a this window", (12, 142),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, white, 1, cv2.LINE_AA)
+        return
+    color = amber if score >= 0.6 else white
+    baseline_note = ""
+    if gait_calibrator is not None and gait_calibrator.is_calibrated:
+        baseline_note = f"  [baseline: {gait_calibrator.baseline_mode}]"
+    cv2.putText(frame, f"Gait risk: {score:.2f}{baseline_note}", (12, 142),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.55, color, 1, cv2.LINE_AA)
+
+
 def main():
     p = argparse.ArgumentParser(description="S.A.G.E. real-time fall detection")
     p.add_argument("--input", default="0",
@@ -363,6 +536,10 @@ def main():
                         "under-detect a person overlapping a bed on the merged v4 model).")
     p.add_argument("--object-imgsz", type=int, default=320,
                    help="Object-detection inference size (default 320, matches training/gating).")
+    p.add_argument("--no-gait", action="store_true",
+                   help="Disable the GAIT streaming risk assessor. It never feeds the fall alarm "
+                        "either way (see docs/IMPLEMENTATION_PLAN.md Section 5.3) -- this only "
+                        "turns off the additional gait-risk overlay/computation.")
     args = p.parse_args()
 
     source = int(args.input) if str(args.input).isdigit() else args.input
@@ -378,6 +555,7 @@ def main():
         object_model_path=Path(args.object_model),
         object_conf=args.object_conf,
         object_imgsz=args.object_imgsz,
+        use_gait=not args.no_gait,
     )
 
 

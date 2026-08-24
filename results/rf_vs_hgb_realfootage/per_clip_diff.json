@@ -1,0 +1,282 @@
+[
+  {
+    "clip_name": "SitFloor_crossedLegs",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 0.0,
+    "acc_diff": 100.0,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "false_positive",
+    "fall_result_differs": true
+  },
+  {
+    "clip_name": "Bend_pickup_normalLight_back",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "false_positive",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": true
+  },
+  {
+    "clip_name": "SitFloor_lowKeypoints",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "false_positive",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": true
+  },
+  {
+    "clip_name": "Slow_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 78.26086956521739,
+    "hgb_default_acc": 94.78260869565217,
+    "acc_diff": 16.52173913043478,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Chair_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 9.782608695652174,
+    "hgb_default_acc": 23.91304347826087,
+    "acc_diff": 14.130434782608697,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Kneeling",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 31.3953488372093,
+    "hgb_default_acc": 19.767441860465116,
+    "acc_diff": 11.627906976744185,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Fall_and_lie",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 27.430555555555557,
+    "hgb_default_acc": 38.88888888888889,
+    "acc_diff": 11.458333333333336,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Forward_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 91.30434782608695,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 8.695652173913047,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Off_axis_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 78.68852459016394,
+    "hgb_default_acc": 73.77049180327869,
+    "acc_diff": 4.918032786885249,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Moving_in_out_frame_withFall",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 36.2962962962963,
+    "hgb_default_acc": 33.33333333333333,
+    "acc_diff": 2.962962962962969,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Moving_in_out_frame",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 33.714285714285715,
+    "hgb_default_acc": 35.42857142857142,
+    "acc_diff": 1.7142857142857082,
+    "rf_baseline (production)_fall": "false_positive",
+    "hgb_default_fall": "false_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Sitting_Lying_FewLandmarks_back",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 90.15151515151516,
+    "hgb_default_acc": 91.28787878787878,
+    "acc_diff": 1.136363636363626,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Backward_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 10.416666666666668,
+    "hgb_default_acc": 10.416666666666668,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "false_negative",
+    "hgb_default_fall": "false_negative",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Far_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Occluded_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Side_fall",
+    "corpus": "Sanawar",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Bend_pickup_lowLight",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "false_positive",
+    "hgb_default_fall": "false_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Bend_pickup_lowLight_leftRight",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "false_positive",
+    "hgb_default_fall": "false_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Bend_pickup_normalLight",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Bend_pickup_normalLight_leftRight",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Bend_pickup_squat_lowLight",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Bend_pickup_squat_normalLight",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "LyingdownSlowly",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Sit_Stand_AnklesInvisible",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 14.399999999999999,
+    "hgb_default_acc": 14.399999999999999,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "SitFast_GetupFast",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 0.0,
+    "hgb_default_acc": 0.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "no_fall",
+    "hgb_default_fall": "no_fall",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "SitFloor_lowKeypoints_crossedLegs",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 100.0,
+    "hgb_default_acc": 100.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "false_positive",
+    "hgb_default_fall": "false_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Sitting_HalfLandmarks",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 0.0,
+    "hgb_default_acc": 0.0,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "false_positive",
+    "hgb_default_fall": "false_positive",
+    "fall_result_differs": false
+  },
+  {
+    "clip_name": "Sitting_Lying_FewLandmarks",
+    "corpus": "Hussain",
+    "rf_baseline (production)_acc": 41.843971631205676,
+    "hgb_default_acc": 41.843971631205676,
+    "acc_diff": 0.0,
+    "rf_baseline (production)_fall": "true_positive",
+    "hgb_default_fall": "true_positive",
+    "fall_result_differs": false
+  }
+]

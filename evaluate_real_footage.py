@@ -293,6 +293,29 @@ def extract_keypoints(video_path: str) -> Tuple[List[dict], float, int]:
                     row[f"lm_{i}_visibility"] = np.nan
                     row[f"lm_{i}_presence"]   = np.nan
 
+            # pose_world_landmarks: MediaPipe's real-world-metric 3D output
+            # (x/y/z in meters, roughly hip-relative), computed by the SAME
+            # detect_for_video() call as pose_landmarks above -- no extra
+            # inference cost, just reading a second field of a result this
+            # function already has. Feeds src/gait/gait_features.py's
+            # optional `"world_keypoints"` row contract (see
+            # gait_features.WORLD_LANDMARKS_ROOT_CAUSE_FIX's docstring) --
+            # purely additive; every existing consumer of extract_keypoints()
+            # (posture/fall classification via _keypoints_from_row) ignores
+            # these new lm_{i}_world_* fields entirely, so this doesn't
+            # change any existing behavior.
+            if result.pose_world_landmarks:
+                world_landmarks = result.pose_world_landmarks[0]
+                for i, lm in enumerate(world_landmarks):
+                    row[f"lm_{i}_world_x"] = lm.x
+                    row[f"lm_{i}_world_y"] = lm.y
+                    row[f"lm_{i}_world_z"] = lm.z
+            else:
+                for i in range(33):
+                    row[f"lm_{i}_world_x"] = np.nan
+                    row[f"lm_{i}_world_y"] = np.nan
+                    row[f"lm_{i}_world_z"] = np.nan
+
             rows.append(row)
 
             if frame_count % 60 == 0:
@@ -315,6 +338,21 @@ def _keypoints_from_row(kp_row: dict) -> List[float]:
     for i in range(LANDMARK_COUNT):
         flat.append(kp_row.get(f"lm_{i}_x", np.nan))
         flat.append(kp_row.get(f"lm_{i}_y", np.nan))
+    return flat
+
+
+def _world_keypoints_from_row(kp_row: dict) -> List[float]:
+    """Flat [x1,y1,z1,...,x33,y33,z33] world-metric coordinates (meters),
+    mirroring _keypoints_from_row's flattening convention -- feeds
+    src/gait/gait_features.py's optional `"world_keypoints"` row field (see
+    that module's WORLD_LANDMARKS_ROOT_CAUSE_FIX docstring). A row from a
+    frame where pose_world_landmarks wasn't available (see extract_keypoints)
+    already has these keys as NaN, so this never raises."""
+    flat = []
+    for i in range(LANDMARK_COUNT):
+        flat.append(kp_row.get(f"lm_{i}_world_x", np.nan))
+        flat.append(kp_row.get(f"lm_{i}_world_y", np.nan))
+        flat.append(kp_row.get(f"lm_{i}_world_z", np.nan))
     return flat
 
 

@@ -34,7 +34,7 @@ throughout.
 | Real-time camera entry point | Done | `realtime_fall_detection.py` |
 | 3-way model comparison (LSTM/TCN/RF) | Done | `compare_all_models.py`, `results/all_models_*/` |
 | Gait/fall-risk assessment (`assess_risk`) | First-pass rule-based implementation, **not clinically validated** — see limitations | `src/gait/` |
-| YOLO object detection layer | Not started (separate branch, `YOLO_fatima`) | — |
+| YOLO object detection layer | Done, integrated as an additive (non-gating) signal in the real-time loop (this audit session found this table was stale — `src/detection/` is real, committed, and wired in, contradicting the "not started" this row previously said) | `src/detection/`, `realtime_fall_detection.py` |
 | Structured event schema / LLM reasoning layer | Not started (planned integration phase, see `docs/IMPLEMENTATION_PLAN.md` Section 5) | — |
 
 ## 3. Model architectures
@@ -188,10 +188,14 @@ and correctly rejected.
 
 ## 11. Fine-tuning / overfitting mitigation
 
-- **LSTM/TCN**: Dropout (0.3 / 0.2) plus optional L1/L2 weight
-  regularization (`l1`/`l2` params on both trainers; TCN uses `l2=1e-5` by
-  default, evidence-supported — see `docs/TCN_IMPLEMENTATION_NOTES.md`
-  Section 6). `use_class_weights` exists on all three trainers
+- **LSTM/TCN**: Dropout (0.3 / 0.2) plus L1/L2 weight regularization
+  (`l1`/`l2` params on both trainers). Both now default to `l2=1e-5`
+  (`l1=0`) in production — TCN's value chosen via its own 4-config sweep
+  (`docs/TCN_IMPLEMENTATION_NOTES.md` Section 6); the LSTM shipped with no
+  regularization until a later audit session found the identical value won
+  an independent sweep on the LSTM too, then confirmed it on both
+  real-footage test sets before adopting it (`docs/IMPLEMENTATION_PLAN.md`
+  Section 7.3). `use_class_weights` exists on all three trainers
   (LSTM/TCN/RF) for class-imbalance handling but **defaults to `False`
   everywhere** — balanced class weighting was tried on the TCN, measured,
   and reverted after it collapsed real-footage accuracy from 76.0% to
@@ -331,13 +335,25 @@ src/
     sequence_window_classifier.py  # shared LSTM/TCN inference base class
     lstm/                     # LSTM: features, dataset, trainer, classifier
     tcn/                      # TCN: model, trainer, classifier
-    rf/                       # Random Forest: trainer, classifier
-  gait/                       # gait/fall-risk assessment (separate module)
+    rf/                       # Random Forest: trainer, classifier -- the ONLY Random Forest
+                               # code in this repo (module boundary, for task/scope references)
+  gait/                       # gait/fall-risk assessment: gait_features.py, gait_risk.py,
+                               # gait_stream.py -- a separate module, NOT Random Forest code,
+                               # and shares no code with posture/rf/ above
+  detection/                   # YOLO object detection: yolo_objects.py (the
+                               # YOLOObjectDetector realtime_fall_detection.py wires in
+                               # as an additive, non-gating signal), finetune_person.py,
+                               # and the training/labeling/scoring scripts behind it
   data_processing/            # raw video/dataset -> keypoint CSVs
   camera/, pose/               # standalone dev utilities (webcam smoke test,
                                # live pose-keypoint logging) -- not part of the
                                # main train/evaluate/infer pipeline, useful for
                                # ad-hoc camera/MediaPipe setup checks
+benchmarks/                   # GAIT profiling, old-vs-new implementation regression
+                               # checks, and validation-corpus summary scripts -- not
+                               # part of the main train/evaluate/infer pipeline either
+check_cameras.py              # dev utility: scans camera indices to find the real
+                               # physical webcam (see its own docstring)
 compare_tcn_lstm.py           # 2-way LSTM/TCN evaluation harness
 compare_all_models.py         # 3-way LSTM/TCN/RF evaluation harness
 evaluate_real_footage.py      # heuristic-only batch evaluation + keypoint extraction
@@ -454,17 +470,25 @@ Wire a real notification via the `on_alert(event: dict)` callback to
 ## 23. How to test
 
 ```bash
-python -m unittest tests.test_lstm_pipeline tests.test_posture_pipeline tests.test_gait_risk tests.test_rf_classifier -v
+python -m unittest discover -s tests -v
 ```
-66 tests total (21 LSTM pipeline + 16 posture pipeline + 19 gait-risk + 10
-Random Forest, per `grep -c "    def test_" tests/*.py`): LSTM/posture
-pipeline tests, gait-risk tests (contract, signal-direction regression
-checks, input validation, NaN/Inf/occlusion robustness, and an integration
-check against real extracted keypoints), and Random Forest tests
-(checkpoint loading, the `n_jobs=1` inference fix, prediction determinism,
+271 tests total across 8 files (per `grep -c "    def test_" tests/*.py`):
+`test_lstm_pipeline.py` (21), `test_posture_pipeline.py` (16),
+`test_gait_risk.py` (176), `test_gait_stream.py` (21),
+`test_realtime_gait_integration.py` (5), `test_rf_classifier.py` (22),
+`test_regularization.py` (7 — experimentally verifies L1/L2 attachment,
+scaling, and loss-inclusion for both LSTM and TCN), and
+`test_preprocessing_leakage.py` (3 — regression tests for the
+train-fold-only NaN-imputation leakage fix). Covers LSTM/TCN/RF/posture
+pipeline tests, gait-risk and streaming tests (contract, signal-direction
+regression checks, input validation, NaN/Inf/occlusion robustness, and
+integration checks against real extracted keypoints and the live
+`realtime_fall_detection.py` loop), and Random Forest tests (checkpoint
+loading, the `n_jobs=1` inference fix, prediction determinism,
 `fall_confirm_frames`, and the summary feature-representation path). Some
 tests are skipped if a given model checkpoint is missing. Verified passing
-(66/66) as of the August 2026 cleanup audit (`context.txt` Section 16).
+(271/271) as of the latest full-project audit (`docs/IMPLEMENTATION_PLAN.md`
+Section 7).
 
 ## 24. Known limitations
 
@@ -487,8 +511,11 @@ tests are skipped if a given model checkpoint is missing. Verified passing
   flattened, discarding explicit sequence structure) and still shows a
   visible train/val gap (92%/67%) even after pruning — it may be relying
   more on memorized spatial poses than genuine motion understanding.
-- **No YOLO/object-detection layer or structured multi-signal event
-  schema exists yet** — planned, not started (see
+- **No structured multi-signal event schema exists yet** — a YOLO
+  object-detection layer (`src/detection/`) is now integrated as an
+  additive, non-gating signal in `realtime_fall_detection.py`, but
+  combining it with the temporal-model/gait output into one structured
+  schema for an LLM reasoning layer is still planned, not started (see
   `docs/IMPLEMENTATION_PLAN.md` Section 5).
 
 ## 25. Current status
@@ -496,10 +523,13 @@ tests are skipped if a given model checkpoint is missing. Verified passing
 TCN/LSTM/RF fall-detection pipeline: complete, cross-validated, and
 compared on two real-footage test sets. Gait/fall-risk module: first-pass
 rule-based implementation complete and unit-tested, explicitly not
-clinically validated. Real-time hybrid detection: production-usable.
-Integration of gait risk + a future object-detection layer into one
-structured event schema: not started (deliberately sequenced after the
-per-branch work lands — see `docs/IMPLEMENTATION_PLAN.md` Section 5).
+clinically validated. YOLO object detection: integrated as an additive,
+non-gating signal in the real-time loop. Real-time hybrid detection:
+production-usable, now running posture/LSTM + gait + object detection
+side by side. Integration of gait risk + object detection into one
+structured event schema (for a future LLM reasoning layer): not started
+(deliberately sequenced after the per-branch work lands — see
+`docs/IMPLEMENTATION_PLAN.md` Section 5).
 
 ## 26. Future work
 
@@ -509,9 +539,11 @@ per-branch work lands — see `docs/IMPLEMENTATION_PLAN.md` Section 5).
 - Investigate the post-merge TCN fall-recall regression (Section 24).
 - A 3-way ensemble/voting gate (heuristic + best neural model + RF), since
   TCN and RF each win on a different real-footage test set.
-- YOLO object-detection layer (`YOLO_fatima` branch) and the structured
-  event schema that eventually combines heuristic/temporal-model/YOLO/gait
-  output for an LLM reasoning layer (`docs/IMPLEMENTATION_PLAN.md` Section 5).
+- The structured event schema that eventually combines
+  heuristic/temporal-model/YOLO/gait output for an LLM reasoning layer
+  (`docs/IMPLEMENTATION_PLAN.md` Section 5) — YOLO itself (`src/detection/`)
+  is already integrated; this is specifically the still-unbuilt schema/
+  reasoning layer on top of it.
 - TFLite/TensorRT export for a genuine on-device Jetson latency/RAM
   comparison, rather than the development-machine numbers in
   `docs/TCN_REGRESSION_REPORT.md`.

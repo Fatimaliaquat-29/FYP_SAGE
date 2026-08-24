@@ -8,11 +8,23 @@ training-data drop) instead of `datasets/UR_data/ADL` and `datasets/UR_data/Fall
 
 Rather than duplicating the MediaPipe extraction logic or modifying
 build_lstm_datasets.py's hardcoded DATASETS_DIR-based paths, this script
-imports and reuses `process_ur_sequence` from that module unchanged and
-points it at `data/ADL` / `data/Fall` directly. Output is written to the
-exact same `data/processed_keypoints/pose_keypoints.csv` /
-`posture_output.csv` paths `src/posture/lstm/lstm_dataset.py` already reads,
-so no downstream file needs to change either.
+imports and reuses `process_ur_sequence` (and now also `make_video_detector`)
+from that module unchanged and points it at `data/ADL` / `data/Fall`
+directly. Output is written to the exact same
+`data/processed_keypoints/pose_keypoints.csv` / `posture_output.csv` paths
+`src/posture/lstm/lstm_dataset.py` already reads, so no downstream file
+needs to change either.
+
+This adapter had never actually been exercised end-to-end before the
+UR-Fall cam1-ingestion round of the GAIT audit first ran it: it built its
+own PoseLandmarker in IMAGE mode (process_ur_sequence always calls
+detect_for_video, which requires VIDEO mode) and shared one detector
+across every sequence in the run (VIDEO mode requires monotonically
+increasing timestamps across all calls on one detector instance, and each
+sequence's own clock restarts at 0). Both are fixed now by delegating
+detector construction to build_lstm_datasets.py's own
+`make_video_detector()`, exactly as that module's own `main()` already
+does for the same dataset.
 
 Usage:
     python src/data_processing/build_ur_dataset_from_data_root.py
@@ -22,14 +34,12 @@ import csv
 import sys
 from pathlib import Path
 
-import mediapipe as mp
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.posture.pipeline_utils import LANDMARK_COUNT
-from src.data_processing.build_lstm_datasets import process_ur_sequence
+from src.data_processing.build_lstm_datasets import process_ur_sequence, make_video_detector
 
 DATA_DIR = REPO_ROOT / "data"
 MODELS_DIR = REPO_ROOT / "models"
@@ -46,25 +56,29 @@ def main():
         print(f"Error: Model not found at {MODEL_PATH}")
         sys.exit(1)
 
-    BaseOptions = mp.tasks.BaseOptions
-    PoseLandmarker = mp.tasks.vision.PoseLandmarker
-    PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-
-    options = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=str(MODEL_PATH)),
-        running_mode=mp.tasks.vision.RunningMode.IMAGE,
-    )
-    detector = PoseLandmarker.create_from_options(options)
-
     all_pose_rows = []
     all_posture_rows = []
 
+    # A FRESH VIDEO-mode detector per sequence, not one shared across the
+    # whole run -- see make_video_detector()'s own docstring: VIDEO mode
+    # carries tracking state AND requires monotonically-increasing
+    # timestamps between calls, and every sequence's own current_time
+    # restarts at 0. A single shared detector both leaks tracking state
+    # across sequence boundaries and crashes outright ("Input timestamp
+    # must be monotonically increasing") the moment a second sequence's
+    # first frame is fed in after a first sequence already advanced the
+    # clock -- this is exactly what build_lstm_datasets.py::main() itself
+    # already does for the same dataset via its own datasets/UR_data path.
     adl_dir = DATA_DIR / "ADL"
     if adl_dir.exists():
         for seq_path in sorted(adl_dir.iterdir()):
             if seq_path.is_dir():
                 img_dir = seq_path / seq_path.name if (seq_path / seq_path.name).exists() else seq_path
-                p_rows, post_rows = process_ur_sequence(detector, str(img_dir), seq_path.name, expected_fall=False)
+                detector = make_video_detector()
+                try:
+                    p_rows, post_rows = process_ur_sequence(detector, str(img_dir), seq_path.name, expected_fall=False)
+                finally:
+                    detector.close()
                 all_pose_rows.extend(p_rows)
                 all_posture_rows.extend(post_rows)
     else:
@@ -75,13 +89,15 @@ def main():
         for seq_path in sorted(fall_dir.iterdir()):
             if seq_path.is_dir():
                 img_dir = seq_path / seq_path.name if (seq_path / seq_path.name).exists() else seq_path
-                p_rows, post_rows = process_ur_sequence(detector, str(img_dir), seq_path.name, expected_fall=True)
+                detector = make_video_detector()
+                try:
+                    p_rows, post_rows = process_ur_sequence(detector, str(img_dir), seq_path.name, expected_fall=True)
+                finally:
+                    detector.close()
                 all_pose_rows.extend(p_rows)
                 all_posture_rows.extend(post_rows)
     else:
         print(f"  {fall_dir} not found - skipping.")
-
-    detector.close()
 
     if not all_pose_rows:
         print("No sequences found under data/ADL or data/Fall.")

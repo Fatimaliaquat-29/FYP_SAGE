@@ -58,9 +58,10 @@ from evaluate_real_footage import (
 MODEL_PATH         = str(REPO_ROOT / "models" / "pose_landmarker_full.task")
 LSTM_MODEL_PATH    = REPO_ROOT / "models" / "lstm_posture.keras"
 LSTM_ENCODER_PATH  = REPO_ROOT / "models" / "lstm_label_encoder.json"
-WINDOW_SIZE        = 30   # must match what the model was trained on
-RAW_FEATURE_DIM    = 66   # 33 landmarks x (x, y), raw screen-space
-RAW_HISTORY_NEEDED = WINDOW_SIZE + 1  # +1 so the oldest window row gets a real velocity, see lstm_features.py
+WINDOW_SIZE        = 30   # fallback only -- load_lstm_model() reads the authoritative
+                           # value from the encoder JSON; see that function's own comment.
+RAW_FEATURE_DIM    = LANDMARK_COUNT * 2   # raw screen-space (x, y) per landmark
+RAW_HISTORY_NEEDED = WINDOW_SIZE + 1  # fallback only, same caveat as WINDOW_SIZE above
 FALL_CLASS_NAME    = "Fall"
 
 FLAG_ACCURACY_THRESHOLD = 90.0
@@ -71,17 +72,27 @@ FLAG_ACCURACY_THRESHOLD = 90.0
 # ---------------------------------------------------------------------------
 
 def load_lstm_model():
-    """Load the trained LSTM model and its label encoder. Returns (model, fall_idx, col_medians)."""
+    """Load the trained LSTM model and its label encoder.
+
+    Returns (model, fall_idx, col_medians, raw_history_needed). The last
+    value is read from the encoder's own `window_size` (this audit
+    session's fix -- see WINDOW_SIZE's own comment): previously this file
+    hardcoded WINDOW_SIZE=30 as a module constant instead of reading the
+    checkpoint's actual training window size, a latent config-drift risk
+    (the module constant would silently desync from a retrain that used a
+    different --window-size). Falls back to the WINDOW_SIZE module
+    constant only if the encoder predates this field.
+    """
     try:
         import tensorflow as tf
         model = tf.keras.models.load_model(str(LSTM_MODEL_PATH))
     except Exception as e:
         print(f"  [LSTM] Could not load model: {e}")
-        return None, None, None
+        return None, None, None, RAW_HISTORY_NEEDED
 
     if not LSTM_ENCODER_PATH.exists():
         print(f"  [LSTM] Encoder not found at {LSTM_ENCODER_PATH}")
-        return None, None, None
+        return None, None, None, RAW_HISTORY_NEEDED
 
     with open(LSTM_ENCODER_PATH, "r", encoding="utf-8") as fh:
         encoder = json.load(fh)
@@ -90,13 +101,16 @@ def load_lstm_model():
     fall_idx = classes.index(FALL_CLASS_NAME) if FALL_CLASS_NAME in classes else None
     if fall_idx is None:
         print(f"  [LSTM] '{FALL_CLASS_NAME}' class not found in encoder: {classes}")
-        return None, None, None
+        return None, None, None, RAW_HISTORY_NEEDED
 
     col_medians = encoder.get("col_medians")
     col_medians = np.array(col_medians, dtype=np.float32) if col_medians is not None else None
 
-    print(f"  [LSTM] Loaded model — classes: {classes}  fall_idx={fall_idx}")
-    return model, fall_idx, col_medians
+    window_size = int(encoder.get("window_size", WINDOW_SIZE))
+    raw_history_needed = window_size + 1
+
+    print(f"  [LSTM] Loaded model — classes: {classes}  fall_idx={fall_idx}  window_size={window_size}")
+    return model, fall_idx, col_medians, raw_history_needed
 
 
 # ---------------------------------------------------------------------------
@@ -127,6 +141,7 @@ def classify_frames_hybrid(
     lstm_threshold: float = LSTM_FALL_MIN_CONFIDENCE,
     lstm_warmup_frames: int = 45,
     lstm_consecutive_frames: int = LSTM_FALL_SUSTAIN_FRAMES,
+    raw_history_needed: int = RAW_HISTORY_NEEDED,
 ) -> List[dict]:
     """
     Run heuristic AND LSTM in lock-step over every frame.
@@ -153,7 +168,7 @@ def classify_frames_hybrid(
     previous_rows: List[dict] = []
     # Rolling buffer of RAW keypoint vectors; +1 so the oldest frame in the
     # model's window still gets a genuine (not zero-padded) velocity value.
-    window_buffer: deque = deque(maxlen=RAW_HISTORY_NEEDED)
+    window_buffer: deque = deque(maxlen=raw_history_needed)
     results = []
     lstm_available = lstm_model is not None and fall_idx is not None
     lstm_consecutive_count = 0
@@ -199,7 +214,7 @@ def classify_frames_hybrid(
         frame_number = int(kp_row.get("frame_number", 0))
         in_warmup    = frame_number <= lstm_warmup_frames
 
-        if lstm_available and len(window_buffer) == RAW_HISTORY_NEEDED and not in_warmup:
+        if lstm_available and len(window_buffer) == raw_history_needed and not in_warmup:
             raw_window = np.array(window_buffer, dtype=np.float32)       # (31, 66)
             feat_window = lf.build_features_from_raw_window(raw_window)  # (30, 132)
             feat_window = lf.impute_nan(feat_window, col_medians)
@@ -274,6 +289,7 @@ def evaluate_clip_hybrid(
     lstm_threshold: float = LSTM_FALL_MIN_CONFIDENCE,
     lstm_warmup_frames: int = 45,
     lstm_consecutive_frames: int = LSTM_FALL_SUSTAIN_FRAMES,
+    raw_history_needed: int = RAW_HISTORY_NEEDED,
 ) -> dict:
     print(f"\n[{clip_name}] Extracting keypoints from: {video_path}")
     kp_rows, fps, total_frames = extract_keypoints(video_path)
@@ -285,6 +301,7 @@ def evaluate_clip_hybrid(
         lstm_threshold=lstm_threshold,
         lstm_warmup_frames=lstm_warmup_frames,
         lstm_consecutive_frames=lstm_consecutive_frames,
+        raw_history_needed=raw_history_needed,
     )
 
     gt_df       = load_ground_truth(gt_path)
@@ -376,7 +393,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("Loading LSTM model...")
-    lstm_model, fall_idx, col_medians = load_lstm_model()
+    lstm_model, fall_idx, col_medians, raw_history_needed = load_lstm_model()
     if lstm_model is None:
         print("WARNING: LSTM model unavailable — LSTM column will be all False.")
 
@@ -394,6 +411,7 @@ def main():
                 lstm_model, fall_idx, col_medians, args.lstm_threshold,
                 lstm_warmup_frames=args.lstm_warmup,
                 lstm_consecutive_frames=args.lstm_consecutive,
+                raw_history_needed=raw_history_needed,
             )
             summary_rows.append(row)
         print_summary(summary_rows)
@@ -407,6 +425,7 @@ def main():
             lstm_model, fall_idx, col_medians, args.lstm_threshold,
             lstm_warmup_frames=args.lstm_warmup,
             lstm_consecutive_frames=args.lstm_consecutive,
+            raw_history_needed=raw_history_needed,
         )
         print_summary([row])
 

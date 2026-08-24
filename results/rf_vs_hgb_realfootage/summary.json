@@ -1,0 +1,1494 @@
+{
+  "rf_baseline (production)": {
+    "val_acc_cv_split": 0.8125,
+    "model_size_kb": 6375.0166015625,
+    "per_corpus": {
+      "Sanawar": {
+        "n_clips": 9,
+        "accuracy": 0.5618508026440038,
+        "balanced_accuracy": 0.5065394132202191,
+        "macro_f1": 0.310969993021633,
+        "macro_precision": 0.3472222222222222,
+        "macro_recall": 0.37990455991516436,
+        "weighted_f1": 0.6644936861922562,
+        "per_class": {
+          "Standing": {
+            "precision": 0.3888888888888889,
+            "recall": 1.0,
+            "f1-score": 0.56,
+            "support": 105.0
+          },
+          "Sitting": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 11.0
+          },
+          "Lying": {
+            "precision": 1.0,
+            "recall": 0.5196182396606575,
+            "f1-score": 0.6838799720865317,
+            "support": 943.0
+          },
+          "Unknown": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            105,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            165,
+            244,
+            490,
+            44
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "confusion_labels": [
+          "Standing",
+          "Sitting",
+          "Lying",
+          "Unknown"
+        ],
+        "fall_tp": 8,
+        "fall_fn": 1,
+        "fall_fp": 0,
+        "fall_n_fall_clips": 9,
+        "fall_n_non_fall_clips": 0,
+        "fall_recall": 0.8888888888888888,
+        "fall_precision": 1.0,
+        "fall_f1": 0.9411764705882353,
+        "fall_false_positive_rate": NaN,
+        "latency_ms": {
+          "mean": 34.438525305535585,
+          "median": 30.2099,
+          "p95": 58.9058,
+          "min": 18.7247,
+          "max": 220.1181,
+          "n": 1391,
+          "p99": 87.9512
+        },
+        "peak_ram_mb": 813.81640625,
+        "per_clip_summary": [
+          {
+            "clip_name": "Backward_fall",
+            "n_windows": 81,
+            "avg_latency_ms": 65.53847284018879,
+            "n_scored": 48,
+            "n_correct": 5,
+            "fall_result": "false_negative"
+          },
+          {
+            "clip_name": "Chair_fall",
+            "n_windows": 220,
+            "avg_latency_ms": 46.24774181833015,
+            "n_scored": 184,
+            "n_correct": 18,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Fall_and_lie",
+            "n_windows": 324,
+            "avg_latency_ms": 29.615528703827835,
+            "n_scored": 288,
+            "n_correct": 79,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Far_fall",
+            "n_windows": 99,
+            "avg_latency_ms": 22.835720203037262,
+            "n_scored": 66,
+            "n_correct": 66,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Forward_fall",
+            "n_windows": 124,
+            "avg_latency_ms": 30.0091701621216,
+            "n_scored": 92,
+            "n_correct": 84,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Occluded_fall",
+            "n_windows": 141,
+            "avg_latency_ms": 25.114533333219292,
+            "n_scored": 108,
+            "n_correct": 108,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Off_axis_fall",
+            "n_windows": 94,
+            "avg_latency_ms": 27.096651063209023,
+            "n_scored": 61,
+            "n_correct": 48,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Side_fall",
+            "n_windows": 133,
+            "avg_latency_ms": 34.26512857210644,
+            "n_scored": 97,
+            "n_correct": 97,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Slow_fall",
+            "n_windows": 175,
+            "avg_latency_ms": 35.41753142872559,
+            "n_scored": 115,
+            "n_correct": 90,
+            "fall_result": "true_positive"
+          }
+        ]
+      },
+      "Hussain": {
+        "n_clips": 19,
+        "accuracy": 0.6700819672131147,
+        "balanced_accuracy": 0.5647843045643752,
+        "macro_f1": 0.530673099271086,
+        "macro_precision": 0.5422066974792605,
+        "macro_recall": 0.5647843045643752,
+        "weighted_f1": 0.6931155054213322,
+        "per_class": {
+          "Standing": {
+            "precision": 0.5534391534391534,
+            "recall": 0.8573770491803279,
+            "f1-score": 0.6726688102893891,
+            "support": 610.0
+          },
+          "Sitting": {
+            "precision": 0.9137931034482759,
+            "recall": 0.5341545352743561,
+            "f1-score": 0.6742049469964664,
+            "support": 893.0
+          },
+          "Lying": {
+            "precision": 0.7015945330296127,
+            "recall": 0.8676056338028169,
+            "f1-score": 0.7758186397984886,
+            "support": 355.0
+          },
+          "Unknown": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            523,
+            0,
+            67,
+            20
+          ],
+          [
+            401,
+            477,
+            15,
+            0
+          ],
+          [
+            2,
+            45,
+            308,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "confusion_labels": [
+          "Standing",
+          "Sitting",
+          "Lying",
+          "Unknown"
+        ],
+        "fall_tp": 4,
+        "fall_fn": 0,
+        "fall_fp": 7,
+        "fall_n_fall_clips": 4,
+        "fall_n_non_fall_clips": 15,
+        "fall_recall": 1.0,
+        "fall_precision": 0.36363636363636365,
+        "fall_f1": 0.5333333333333333,
+        "fall_false_positive_rate": 0.4666666666666667,
+        "latency_ms": {
+          "mean": 28.63740467690917,
+          "median": 26.588549999999998,
+          "p95": 43.7082,
+          "min": 18.073,
+          "max": 242.3765,
+          "n": 4426,
+          "p99": 54.9629
+        },
+        "peak_ram_mb": 816.6640625,
+        "per_clip_summary": [
+          {
+            "clip_name": "Bend_pickup_lowLight",
+            "n_windows": 84,
+            "avg_latency_ms": 29.43165119064534,
+            "n_scored": 23,
+            "n_correct": 23,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Bend_pickup_lowLight_leftRight",
+            "n_windows": 212,
+            "avg_latency_ms": 26.462499528586807,
+            "n_scored": 66,
+            "n_correct": 66,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Bend_pickup_normalLight_back",
+            "n_windows": 399,
+            "avg_latency_ms": 26.55189874695636,
+            "n_scored": 86,
+            "n_correct": 86,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Bend_pickup_normalLight",
+            "n_windows": 110,
+            "avg_latency_ms": 27.39337454563197,
+            "n_scored": 28,
+            "n_correct": 28,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Bend_pickup_normalLight_leftRight",
+            "n_windows": 303,
+            "avg_latency_ms": 31.562361055842935,
+            "n_scored": 147,
+            "n_correct": 147,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Bend_pickup_squat_lowLight",
+            "n_windows": 144,
+            "avg_latency_ms": 30.89095833325296,
+            "n_scored": 31,
+            "n_correct": 31,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Bend_pickup_squat_normalLight",
+            "n_windows": 130,
+            "avg_latency_ms": 30.784549999561232,
+            "n_scored": 12,
+            "n_correct": 12,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Kneeling",
+            "n_windows": 160,
+            "avg_latency_ms": 24.425616250118765,
+            "n_scored": 86,
+            "n_correct": 27,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "LyingdownSlowly",
+            "n_windows": 351,
+            "avg_latency_ms": 31.567046438769022,
+            "n_scored": 118,
+            "n_correct": 118,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Moving_in_out_frame",
+            "n_windows": 180,
+            "avg_latency_ms": 25.12357333390456,
+            "n_scored": 175,
+            "n_correct": 59,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Moving_in_out_frame_withFall",
+            "n_windows": 187,
+            "avg_latency_ms": 25.815073795738645,
+            "n_scored": 135,
+            "n_correct": 49,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Sit_Stand_AnklesInvisible",
+            "n_windows": 178,
+            "avg_latency_ms": 29.50590786570225,
+            "n_scored": 125,
+            "n_correct": 18,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "SitFast_GetupFast",
+            "n_windows": 144,
+            "avg_latency_ms": 35.11940208318265,
+            "n_scored": 80,
+            "n_correct": 0,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "SitFloor_crossedLegs",
+            "n_windows": 259,
+            "avg_latency_ms": 28.193371814296267,
+            "n_scored": 118,
+            "n_correct": 118,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "SitFloor_lowKeypoints_crossedLegs",
+            "n_windows": 285,
+            "avg_latency_ms": 33.08062350909479,
+            "n_scored": 115,
+            "n_correct": 115,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "SitFloor_lowKeypoints",
+            "n_windows": 276,
+            "avg_latency_ms": 23.933620289861448,
+            "n_scored": 114,
+            "n_correct": 114,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Sitting_HalfLandmarks",
+            "n_windows": 194,
+            "avg_latency_ms": 27.57480463955777,
+            "n_scored": 88,
+            "n_correct": 0,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Sitting_Lying_FewLandmarks_back",
+            "n_windows": 459,
+            "avg_latency_ms": 29.473549019393648,
+            "n_scored": 264,
+            "n_correct": 238,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Sitting_Lying_FewLandmarks",
+            "n_windows": 371,
+            "avg_latency_ms": 27.452911320738647,
+            "n_scored": 141,
+            "n_correct": 59,
+            "fall_result": "true_positive"
+          }
+        ]
+      }
+    },
+    "pooled": {
+      "n_clips": 28,
+      "accuracy": 0.6320159415476586,
+      "balanced_accuracy": 0.5051921333129148,
+      "macro_f1": 0.4846734674648878,
+      "weighted_f1": 0.6554494635473469,
+      "macro_precision": 0.49964399799859127,
+      "macro_recall": 0.5051921333129148,
+      "per_class": {
+        "Standing": {
+          "precision": 0.516872427983539,
+          "recall": 0.8783216783216783,
+          "f1-score": 0.6507772020725389,
+          "support": 715.0
+        },
+        "Sitting": {
+          "precision": 0.6227154046997389,
+          "recall": 0.5276548672566371,
+          "f1-score": 0.5712574850299401,
+          "support": 904.0
+        },
+        "Lying": {
+          "precision": 0.8589881593110872,
+          "recall": 0.6147919876733436,
+          "f1-score": 0.7166591827570723,
+          "support": 1298.0
+        },
+        "Unknown": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          628,
+          0,
+          67,
+          20
+        ],
+        [
+          401,
+          477,
+          15,
+          11
+        ],
+        [
+          167,
+          289,
+          798,
+          44
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "confusion_labels": [
+        "Standing",
+        "Sitting",
+        "Lying",
+        "Unknown"
+      ],
+      "fall_tp": 12,
+      "fall_fn": 1,
+      "fall_fp": 7,
+      "fall_n_fall_clips": 13,
+      "fall_n_non_fall_clips": 15,
+      "fall_recall": 0.9230769230769231,
+      "fall_precision": 0.631578947368421,
+      "fall_f1": 0.7499999999999999,
+      "fall_false_positive_rate": 0.4666666666666667,
+      "latency_ms": {
+        "mean": 30.02460749527248,
+        "median": 27.1295,
+        "p95": 48.2931,
+        "min": 18.073,
+        "max": 242.3765,
+        "n": 5817,
+        "p99": 63.9289
+      },
+      "peak_ram_mb_max": 816.6640625
+    },
+    "per_clip": [
+      {
+        "clip_name": "Backward_fall",
+        "n_windows": 81,
+        "avg_latency_ms": 65.53847284018879,
+        "n_scored": 48,
+        "n_correct": 5,
+        "fall_result": "false_negative",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Chair_fall",
+        "n_windows": 220,
+        "avg_latency_ms": 46.24774181833015,
+        "n_scored": 184,
+        "n_correct": 18,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Fall_and_lie",
+        "n_windows": 324,
+        "avg_latency_ms": 29.615528703827835,
+        "n_scored": 288,
+        "n_correct": 79,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Far_fall",
+        "n_windows": 99,
+        "avg_latency_ms": 22.835720203037262,
+        "n_scored": 66,
+        "n_correct": 66,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Forward_fall",
+        "n_windows": 124,
+        "avg_latency_ms": 30.0091701621216,
+        "n_scored": 92,
+        "n_correct": 84,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Occluded_fall",
+        "n_windows": 141,
+        "avg_latency_ms": 25.114533333219292,
+        "n_scored": 108,
+        "n_correct": 108,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Off_axis_fall",
+        "n_windows": 94,
+        "avg_latency_ms": 27.096651063209023,
+        "n_scored": 61,
+        "n_correct": 48,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Side_fall",
+        "n_windows": 133,
+        "avg_latency_ms": 34.26512857210644,
+        "n_scored": 97,
+        "n_correct": 97,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Slow_fall",
+        "n_windows": 175,
+        "avg_latency_ms": 35.41753142872559,
+        "n_scored": 115,
+        "n_correct": 90,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Bend_pickup_lowLight",
+        "n_windows": 84,
+        "avg_latency_ms": 29.43165119064534,
+        "n_scored": 23,
+        "n_correct": 23,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_lowLight_leftRight",
+        "n_windows": 212,
+        "avg_latency_ms": 26.462499528586807,
+        "n_scored": 66,
+        "n_correct": 66,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_normalLight_back",
+        "n_windows": 399,
+        "avg_latency_ms": 26.55189874695636,
+        "n_scored": 86,
+        "n_correct": 86,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_normalLight",
+        "n_windows": 110,
+        "avg_latency_ms": 27.39337454563197,
+        "n_scored": 28,
+        "n_correct": 28,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_normalLight_leftRight",
+        "n_windows": 303,
+        "avg_latency_ms": 31.562361055842935,
+        "n_scored": 147,
+        "n_correct": 147,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_squat_lowLight",
+        "n_windows": 144,
+        "avg_latency_ms": 30.89095833325296,
+        "n_scored": 31,
+        "n_correct": 31,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_squat_normalLight",
+        "n_windows": 130,
+        "avg_latency_ms": 30.784549999561232,
+        "n_scored": 12,
+        "n_correct": 12,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Kneeling",
+        "n_windows": 160,
+        "avg_latency_ms": 24.425616250118765,
+        "n_scored": 86,
+        "n_correct": 27,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "LyingdownSlowly",
+        "n_windows": 351,
+        "avg_latency_ms": 31.567046438769022,
+        "n_scored": 118,
+        "n_correct": 118,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Moving_in_out_frame",
+        "n_windows": 180,
+        "avg_latency_ms": 25.12357333390456,
+        "n_scored": 175,
+        "n_correct": 59,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Moving_in_out_frame_withFall",
+        "n_windows": 187,
+        "avg_latency_ms": 25.815073795738645,
+        "n_scored": 135,
+        "n_correct": 49,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sit_Stand_AnklesInvisible",
+        "n_windows": 178,
+        "avg_latency_ms": 29.50590786570225,
+        "n_scored": 125,
+        "n_correct": 18,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFast_GetupFast",
+        "n_windows": 144,
+        "avg_latency_ms": 35.11940208318265,
+        "n_scored": 80,
+        "n_correct": 0,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFloor_crossedLegs",
+        "n_windows": 259,
+        "avg_latency_ms": 28.193371814296267,
+        "n_scored": 118,
+        "n_correct": 118,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFloor_lowKeypoints_crossedLegs",
+        "n_windows": 285,
+        "avg_latency_ms": 33.08062350909479,
+        "n_scored": 115,
+        "n_correct": 115,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFloor_lowKeypoints",
+        "n_windows": 276,
+        "avg_latency_ms": 23.933620289861448,
+        "n_scored": 114,
+        "n_correct": 114,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sitting_HalfLandmarks",
+        "n_windows": 194,
+        "avg_latency_ms": 27.57480463955777,
+        "n_scored": 88,
+        "n_correct": 0,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sitting_Lying_FewLandmarks_back",
+        "n_windows": 459,
+        "avg_latency_ms": 29.473549019393648,
+        "n_scored": 264,
+        "n_correct": 238,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sitting_Lying_FewLandmarks",
+        "n_windows": 371,
+        "avg_latency_ms": 27.452911320738647,
+        "n_scored": 141,
+        "n_correct": 59,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      }
+    ]
+  },
+  "hgb_default": {
+    "val_acc_cv_split": 0.8110902255639098,
+    "model_size_kb": 5736.4140625,
+    "per_corpus": {
+      "Sanawar": {
+        "n_clips": 9,
+        "accuracy": 0.6402266288951841,
+        "balanced_accuracy": 0.5358784022622834,
+        "macro_f1": 0.33550763599135314,
+        "macro_precision": 0.353319400641776,
+        "macro_recall": 0.4019088016967126,
+        "weighted_f1": 0.7308503844658434,
+        "per_class": {
+          "Standing": {
+            "precision": 0.4150197628458498,
+            "recall": 1.0,
+            "f1-score": 0.5865921787709497,
+            "support": 105.0
+          },
+          "Sitting": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 11.0
+          },
+          "Lying": {
+            "precision": 0.9982578397212544,
+            "recall": 0.6076352067868505,
+            "f1-score": 0.7554383651944627,
+            "support": 943.0
+          },
+          "Unknown": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            105,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            10
+          ],
+          [
+            148,
+            192,
+            573,
+            30
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "confusion_labels": [
+          "Standing",
+          "Sitting",
+          "Lying",
+          "Unknown"
+        ],
+        "fall_tp": 8,
+        "fall_fn": 1,
+        "fall_fp": 0,
+        "fall_n_fall_clips": 9,
+        "fall_n_non_fall_clips": 0,
+        "fall_recall": 0.8888888888888888,
+        "fall_precision": 1.0,
+        "fall_f1": 0.9411764705882353,
+        "fall_false_positive_rate": NaN,
+        "latency_ms": {
+          "mean": 9.055501365923796,
+          "median": 8.5116,
+          "p95": 13.7556,
+          "min": 4.3826,
+          "max": 106.0089,
+          "n": 1391,
+          "p99": 20.0482
+        },
+        "peak_ram_mb": 814.33984375,
+        "per_clip_summary": [
+          {
+            "clip_name": "Backward_fall",
+            "n_windows": 81,
+            "avg_latency_ms": 9.257991358071543,
+            "n_scored": 48,
+            "n_correct": 5,
+            "fall_result": "false_negative"
+          },
+          {
+            "clip_name": "Chair_fall",
+            "n_windows": 220,
+            "avg_latency_ms": 10.077946363493208,
+            "n_scored": 184,
+            "n_correct": 44,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Fall_and_lie",
+            "n_windows": 324,
+            "avg_latency_ms": 8.94204567880535,
+            "n_scored": 288,
+            "n_correct": 112,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Far_fall",
+            "n_windows": 99,
+            "avg_latency_ms": 8.82797777820896,
+            "n_scored": 66,
+            "n_correct": 66,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Forward_fall",
+            "n_windows": 124,
+            "avg_latency_ms": 6.892078227059345,
+            "n_scored": 92,
+            "n_correct": 92,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Occluded_fall",
+            "n_windows": 141,
+            "avg_latency_ms": 9.095843970434615,
+            "n_scored": 108,
+            "n_correct": 108,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Off_axis_fall",
+            "n_windows": 94,
+            "avg_latency_ms": 9.245713829202826,
+            "n_scored": 61,
+            "n_correct": 45,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Side_fall",
+            "n_windows": 133,
+            "avg_latency_ms": 9.338255638726707,
+            "n_scored": 97,
+            "n_correct": 97,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Slow_fall",
+            "n_windows": 175,
+            "avg_latency_ms": 9.198557142933298,
+            "n_scored": 115,
+            "n_correct": 109,
+            "fall_result": "true_positive"
+          }
+        ]
+      },
+      "Hussain": {
+        "n_clips": 19,
+        "accuracy": 0.6055327868852459,
+        "balanced_accuracy": 0.5297697101781655,
+        "macro_f1": 0.47330410825992664,
+        "macro_precision": 0.4978436199011582,
+        "macro_recall": 0.5297697101781655,
+        "weighted_f1": 0.6097905782418116,
+        "per_class": {
+          "Standing": {
+            "precision": 0.541795665634675,
+            "recall": 0.860655737704918,
+            "f1-score": 0.6649778340721976,
+            "support": 610.0
+          },
+          "Sitting": {
+            "precision": 0.8813131313131313,
+            "recall": 0.3908174692049272,
+            "f1-score": 0.5415050426687354,
+            "support": 893.0
+          },
+          "Lying": {
+            "precision": 0.5682656826568265,
+            "recall": 0.8676056338028169,
+            "f1-score": 0.6867335562987736,
+            "support": 355.0
+          },
+          "Unknown": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            525,
+            0,
+            67,
+            18
+          ],
+          [
+            424,
+            349,
+            120,
+            0
+          ],
+          [
+            0,
+            47,
+            308,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "confusion_labels": [
+          "Standing",
+          "Sitting",
+          "Lying",
+          "Unknown"
+        ],
+        "fall_tp": 4,
+        "fall_fn": 0,
+        "fall_fp": 6,
+        "fall_n_fall_clips": 4,
+        "fall_n_non_fall_clips": 15,
+        "fall_recall": 1.0,
+        "fall_precision": 0.4,
+        "fall_f1": 0.5714285714285715,
+        "fall_false_positive_rate": 0.4,
+        "latency_ms": {
+          "mean": 8.964393515589698,
+          "median": 8.335149999999999,
+          "p95": 13.6879,
+          "min": 4.244,
+          "max": 72.1383,
+          "n": 4426,
+          "p99": 20.6884
+        },
+        "peak_ram_mb": 814.5546875,
+        "per_clip_summary": [
+          {
+            "clip_name": "Bend_pickup_lowLight",
+            "n_windows": 84,
+            "avg_latency_ms": 11.725515476254735,
+            "n_scored": 23,
+            "n_correct": 23,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Bend_pickup_lowLight_leftRight",
+            "n_windows": 212,
+            "avg_latency_ms": 9.747750943752866,
+            "n_scored": 66,
+            "n_correct": 66,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Bend_pickup_normalLight_back",
+            "n_windows": 399,
+            "avg_latency_ms": 9.446877442811788,
+            "n_scored": 86,
+            "n_correct": 86,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Bend_pickup_normalLight",
+            "n_windows": 110,
+            "avg_latency_ms": 8.62569545358631,
+            "n_scored": 28,
+            "n_correct": 28,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Bend_pickup_normalLight_leftRight",
+            "n_windows": 303,
+            "avg_latency_ms": 8.16156204646567,
+            "n_scored": 147,
+            "n_correct": 147,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Bend_pickup_squat_lowLight",
+            "n_windows": 144,
+            "avg_latency_ms": 8.04626388879923,
+            "n_scored": 31,
+            "n_correct": 31,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Bend_pickup_squat_normalLight",
+            "n_windows": 130,
+            "avg_latency_ms": 10.40399230741269,
+            "n_scored": 12,
+            "n_correct": 12,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Kneeling",
+            "n_windows": 160,
+            "avg_latency_ms": 8.994491874818777,
+            "n_scored": 86,
+            "n_correct": 17,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "LyingdownSlowly",
+            "n_windows": 351,
+            "avg_latency_ms": 8.100957265400668,
+            "n_scored": 118,
+            "n_correct": 118,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Moving_in_out_frame",
+            "n_windows": 180,
+            "avg_latency_ms": 8.580546111867685,
+            "n_scored": 175,
+            "n_correct": 62,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Moving_in_out_frame_withFall",
+            "n_windows": 187,
+            "avg_latency_ms": 8.429526737990745,
+            "n_scored": 135,
+            "n_correct": 45,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Sit_Stand_AnklesInvisible",
+            "n_windows": 178,
+            "avg_latency_ms": 8.863762359110654,
+            "n_scored": 125,
+            "n_correct": 18,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "SitFast_GetupFast",
+            "n_windows": 144,
+            "avg_latency_ms": 9.836822222900487,
+            "n_scored": 80,
+            "n_correct": 0,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "SitFloor_crossedLegs",
+            "n_windows": 259,
+            "avg_latency_ms": 8.89800270203758,
+            "n_scored": 118,
+            "n_correct": 0,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "SitFloor_lowKeypoints_crossedLegs",
+            "n_windows": 285,
+            "avg_latency_ms": 7.3353101751611876,
+            "n_scored": 115,
+            "n_correct": 115,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "SitFloor_lowKeypoints",
+            "n_windows": 276,
+            "avg_latency_ms": 7.659926812345435,
+            "n_scored": 114,
+            "n_correct": 114,
+            "fall_result": "no_fall"
+          },
+          {
+            "clip_name": "Sitting_HalfLandmarks",
+            "n_windows": 194,
+            "avg_latency_ms": 9.010948452734887,
+            "n_scored": 88,
+            "n_correct": 0,
+            "fall_result": "false_positive"
+          },
+          {
+            "clip_name": "Sitting_Lying_FewLandmarks_back",
+            "n_windows": 459,
+            "avg_latency_ms": 9.042685621192076,
+            "n_scored": 264,
+            "n_correct": 241,
+            "fall_result": "true_positive"
+          },
+          {
+            "clip_name": "Sitting_Lying_FewLandmarks",
+            "n_windows": 371,
+            "avg_latency_ms": 11.097156603871142,
+            "n_scored": 141,
+            "n_correct": 59,
+            "fall_result": "true_positive"
+          }
+        ]
+      }
+    },
+    "pooled": {
+      "n_clips": 28,
+      "accuracy": 0.617734971770176,
+      "balanced_accuracy": 0.4864793364352762,
+      "macro_f1": 0.46205693308329066,
+      "weighted_f1": 0.6292215522565039,
+      "macro_precision": 0.4746280549423015,
+      "macro_recall": 0.48647933643527613,
+      "per_class": {
+        "Standing": {
+          "precision": 0.5155482815057283,
+          "recall": 0.8811188811188811,
+          "f1-score": 0.6504904491481672,
+          "support": 715.0
+        },
+        "Sitting": {
+          "precision": 0.5935374149659864,
+          "recall": 0.3860619469026549,
+          "f1-score": 0.467828418230563,
+          "support": 904.0
+        },
+        "Lying": {
+          "precision": 0.7894265232974911,
+          "recall": 0.6787365177195686,
+          "f1-score": 0.7299088649544325,
+          "support": 1298.0
+        },
+        "Unknown": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          630,
+          0,
+          67,
+          18
+        ],
+        [
+          424,
+          349,
+          121,
+          10
+        ],
+        [
+          148,
+          239,
+          881,
+          30
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "confusion_labels": [
+        "Standing",
+        "Sitting",
+        "Lying",
+        "Unknown"
+      ],
+      "fall_tp": 12,
+      "fall_fn": 1,
+      "fall_fp": 6,
+      "fall_n_fall_clips": 13,
+      "fall_n_non_fall_clips": 15,
+      "fall_recall": 0.9230769230769231,
+      "fall_precision": 0.6666666666666666,
+      "fall_f1": 0.7741935483870968,
+      "fall_false_positive_rate": 0.4,
+      "latency_ms": {
+        "mean": 8.986179834966476,
+        "median": 8.3859,
+        "p95": 13.7088,
+        "min": 4.244,
+        "max": 106.0089,
+        "n": 5817,
+        "p99": 20.5723
+      },
+      "peak_ram_mb_max": 814.5546875
+    },
+    "per_clip": [
+      {
+        "clip_name": "Backward_fall",
+        "n_windows": 81,
+        "avg_latency_ms": 9.257991358071543,
+        "n_scored": 48,
+        "n_correct": 5,
+        "fall_result": "false_negative",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Chair_fall",
+        "n_windows": 220,
+        "avg_latency_ms": 10.077946363493208,
+        "n_scored": 184,
+        "n_correct": 44,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Fall_and_lie",
+        "n_windows": 324,
+        "avg_latency_ms": 8.94204567880535,
+        "n_scored": 288,
+        "n_correct": 112,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Far_fall",
+        "n_windows": 99,
+        "avg_latency_ms": 8.82797777820896,
+        "n_scored": 66,
+        "n_correct": 66,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Forward_fall",
+        "n_windows": 124,
+        "avg_latency_ms": 6.892078227059345,
+        "n_scored": 92,
+        "n_correct": 92,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Occluded_fall",
+        "n_windows": 141,
+        "avg_latency_ms": 9.095843970434615,
+        "n_scored": 108,
+        "n_correct": 108,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Off_axis_fall",
+        "n_windows": 94,
+        "avg_latency_ms": 9.245713829202826,
+        "n_scored": 61,
+        "n_correct": 45,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Side_fall",
+        "n_windows": 133,
+        "avg_latency_ms": 9.338255638726707,
+        "n_scored": 97,
+        "n_correct": 97,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Slow_fall",
+        "n_windows": 175,
+        "avg_latency_ms": 9.198557142933298,
+        "n_scored": 115,
+        "n_correct": 109,
+        "fall_result": "true_positive",
+        "corpus": "Sanawar"
+      },
+      {
+        "clip_name": "Bend_pickup_lowLight",
+        "n_windows": 84,
+        "avg_latency_ms": 11.725515476254735,
+        "n_scored": 23,
+        "n_correct": 23,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_lowLight_leftRight",
+        "n_windows": 212,
+        "avg_latency_ms": 9.747750943752866,
+        "n_scored": 66,
+        "n_correct": 66,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_normalLight_back",
+        "n_windows": 399,
+        "avg_latency_ms": 9.446877442811788,
+        "n_scored": 86,
+        "n_correct": 86,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_normalLight",
+        "n_windows": 110,
+        "avg_latency_ms": 8.62569545358631,
+        "n_scored": 28,
+        "n_correct": 28,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_normalLight_leftRight",
+        "n_windows": 303,
+        "avg_latency_ms": 8.16156204646567,
+        "n_scored": 147,
+        "n_correct": 147,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_squat_lowLight",
+        "n_windows": 144,
+        "avg_latency_ms": 8.04626388879923,
+        "n_scored": 31,
+        "n_correct": 31,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Bend_pickup_squat_normalLight",
+        "n_windows": 130,
+        "avg_latency_ms": 10.40399230741269,
+        "n_scored": 12,
+        "n_correct": 12,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Kneeling",
+        "n_windows": 160,
+        "avg_latency_ms": 8.994491874818777,
+        "n_scored": 86,
+        "n_correct": 17,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "LyingdownSlowly",
+        "n_windows": 351,
+        "avg_latency_ms": 8.100957265400668,
+        "n_scored": 118,
+        "n_correct": 118,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Moving_in_out_frame",
+        "n_windows": 180,
+        "avg_latency_ms": 8.580546111867685,
+        "n_scored": 175,
+        "n_correct": 62,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Moving_in_out_frame_withFall",
+        "n_windows": 187,
+        "avg_latency_ms": 8.429526737990745,
+        "n_scored": 135,
+        "n_correct": 45,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sit_Stand_AnklesInvisible",
+        "n_windows": 178,
+        "avg_latency_ms": 8.863762359110654,
+        "n_scored": 125,
+        "n_correct": 18,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFast_GetupFast",
+        "n_windows": 144,
+        "avg_latency_ms": 9.836822222900487,
+        "n_scored": 80,
+        "n_correct": 0,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFloor_crossedLegs",
+        "n_windows": 259,
+        "avg_latency_ms": 8.89800270203758,
+        "n_scored": 118,
+        "n_correct": 0,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFloor_lowKeypoints_crossedLegs",
+        "n_windows": 285,
+        "avg_latency_ms": 7.3353101751611876,
+        "n_scored": 115,
+        "n_correct": 115,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "SitFloor_lowKeypoints",
+        "n_windows": 276,
+        "avg_latency_ms": 7.659926812345435,
+        "n_scored": 114,
+        "n_correct": 114,
+        "fall_result": "no_fall",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sitting_HalfLandmarks",
+        "n_windows": 194,
+        "avg_latency_ms": 9.010948452734887,
+        "n_scored": 88,
+        "n_correct": 0,
+        "fall_result": "false_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sitting_Lying_FewLandmarks_back",
+        "n_windows": 459,
+        "avg_latency_ms": 9.042685621192076,
+        "n_scored": 264,
+        "n_correct": 241,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      },
+      {
+        "clip_name": "Sitting_Lying_FewLandmarks",
+        "n_windows": 371,
+        "avg_latency_ms": 11.097156603871142,
+        "n_scored": 141,
+        "n_correct": 59,
+        "fall_result": "true_positive",
+        "corpus": "Hussain"
+      }
+    ]
+  }
+}

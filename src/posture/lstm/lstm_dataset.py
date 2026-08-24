@@ -338,6 +338,24 @@ def impute_nan(X: np.ndarray) -> np.ndarray:
     """
     Replace NaN values in X (N, window_size, 66) with per-feature column median.
     Columns that are entirely NaN are set to 0.
+
+    SCOPE (a later audit session): this self-contained (no external
+    col_medians argument) version is now used ONLY for imputing freshly-
+    generated SYNTHETIC windows (see generate_synthetic_windows/each
+    trainer's own post-split synthetic-injection block) -- synthetic
+    templates have a fixed, by-construction missing-landmark pattern (only
+    certain joints are ever populated), not a data-derived one, so
+    computing medians from the synthetic batch itself carries no train/val
+    leakage risk the way doing so for REAL data would.
+    REAL data (X_real, the actual pose-derived windows) is NO LONGER
+    imputed by this function -- build_dataset() now saves X_real raw
+    (NaNs preserved); each trainer imputes its own real train/validation
+    folds separately using lstm_features.impute_nan(X, col_medians) with
+    medians computed from that trainer's OWN training fold only, after its
+    own split (see e.g. lstm_trainer.py's "LEAKAGE FIX" comment). Do not
+    reuse THIS function for that purpose -- it has no col_medians parameter
+    to pin statistics to a specific fold, which is exactly the leakage
+    this project's redesign exists to avoid.
     """
     flat = X.reshape(-1, X.shape[-1])  # (N * window_size, 66)
     for col_idx in range(flat.shape[1]):
@@ -424,17 +442,39 @@ def build_dataset(
         y_real = np.empty(0, dtype=np.int32)
         g_real = np.empty(0, dtype=object)
 
-    # Compute per-feature column medians from the real (pre-imputation) data
-    # so lstm_classifier.py can use the SAME imputation statistics at live
-    # inference time instead of an arbitrary constant fill value (previously
-    # this was never computed/persisted at all -- inference silently filled
-    # NaNs with a flat 0.5 while training used per-column medians, a real
-    # train/inference skew bug).
+    # LEAKAGE FIX (a later audit session -- see docs/IMPLEMENTATION_PLAN.md's
+    # "Preprocessing / imputation leakage" section for the full trace):
+    # NaN imputation used to happen HERE, before any train/val split exists,
+    # using medians computed over the ENTIRE real dataset (train + validation
+    # windows combined) -- every one of LSTM/TCN/RF's trainers then loaded
+    # the ALREADY-IMPUTED `X` straight from this npz with no further
+    # imputation step of their own, meaning validation-fold statistics
+    # genuinely influenced how training-fold NaNs were filled, and vice
+    # versa. This is real preprocessing leakage, confirmed by reading
+    # every trainer's own data-loading code (none of them called impute_nan
+    # on the loaded X again), not merely suspected.
+    #
+    # FIX: this function no longer imputes X_real at all -- the saved `X`
+    # in the npz now contains RAW, un-imputed data (NaNs preserved exactly
+    # as extracted). Each trainer (lstm_trainer.py/tcn_trainer.py/
+    # rf_trainer.py) now computes its OWN col_medians from its OWN training
+    # fold ONLY, after its own group-aware split, and imputes its train and
+    # validation folds with those train-only statistics (see each trainer's
+    # own "LEAKAGE FIX" comment for the mirrored logic). This is the
+    # textbook-correct "fit preprocessing on train, apply to val" ordering.
+    #
+    # `col_medians` is still computed and saved here, but ONLY as a coarse,
+    # whole-real-dataset DIAGNOSTIC reference (e.g. for a quick sanity check
+    # of what a typical column median looks like across all real footage) --
+    # NOT as something any trainer should use to impute an actual train/val
+    # split. Every trainer that reads this npz now computes and uses its own
+    # split-appropriate medians instead of this field.
     col_medians = lf.compute_col_medians(X_real)
-
-    # Impute NaNs on real data only
-    print("  Imputing NaN values...")
-    X_real = impute_nan(X_real)
+    print("  NOTE: X is saved RAW (NaNs preserved) -- imputation now happens "
+          "per-trainer, post-split, on that trainer's own training fold only. "
+          "The col_medians saved below are a whole-dataset DIAGNOSTIC "
+          "reference only; no trainer should treat them as ready-to-use "
+          "split-safe imputation statistics.")
 
     if oversample_factor > 1:
         mask = np.array([str(g).startswith(oversample_prefix) for g in g_real])

@@ -27,8 +27,9 @@ Usage (demo):
 import argparse
 import json
 import sys
+from collections import Counter
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -66,7 +67,7 @@ class RFPostureClassifier:
     LABEL_TAG = "rf"
 
     def __init__(self, model_path: Optional[Path] = None, encoder_path: Optional[Path] = None,
-                 fall_confirm_frames: int = 1):
+                 fall_confirm_frames: int = 1, smoothing_window: int = 1):
         """
         fall_confirm_frames (default 1 -- no change from raw per-window
         behavior): requires this many *consecutive* raw "Fall" predictions
@@ -82,17 +83,37 @@ class RFPostureClassifier:
         underlying decision boundary. Left at the default (disabled) for
         `compare_all_models.py`'s architecture comparisons, same reasoning
         as the TCN's default.
+
+        smoothing_window (default 1 -- no change from raw per-window
+        behavior; a later audit session, RF-vs-HGB real-footage
+        confirmation round 2): rolling MAJORITY-VOTE smoothing over the
+        last N raw per-frame predicted classes, applied BEFORE the
+        fall_detected/posture_label derivation in predict() below, so both
+        are smoothed consistently from one source instead of risking them
+        disagreeing. This is deliberately separate from fall_confirm_frames
+        above, not a reuse of it: fall_confirm_frames only gates the
+        fall_detected BOOLEAN via a consecutive-Fall counter and never
+        touches posture_label at all, so it does not generalize to
+        smoothing the Standing/Sitting/Lying/Unknown decision -- checked
+        before writing this, see _smooth()'s docstring for the tie-break
+        rule and current evaluation results for whether this actually
+        helps (majority-vote smoothing suppresses brief flicker; it is NOT
+        expected to fix a sustained, high-confidence misclassification
+        spanning most of a window).
         """
         self.model_path = Path(model_path or self.DEFAULT_MODEL_PATH)
         self.encoder_path = Path(encoder_path or self.DEFAULT_ENCODER_PATH)
         self.fall_confirm_frames = max(1, int(fall_confirm_frames))
         self._consecutive_fall_count = 0
+        self.smoothing_window = max(1, int(smoothing_window))
+        self._raw_class_history: List[Tuple[str, float]] = []
 
         self._model = None
         self._classes: List[str] = ["Fall", "Lying", "Sitting", "Standing", "Unknown"]
         self._window_size: int = 30
         self._n_features: int = lf.FEATURE_DIM
         self._col_medians: Optional[np.ndarray] = None
+        self._n_features_out: Optional[int] = None
         self._available: bool = False
         # "flatten" (every frame value) or "summary" (mean/std/min/max/last
         # per feature across the window) -- read from the encoder so a
@@ -104,10 +125,13 @@ class RFPostureClassifier:
         self._load()
 
     def reset_state(self) -> None:
-        """Clear the consecutive-fall counter -- call this between clips/
-        sessions when reusing one classifier instance, so a streak from the
-        end of one clip can't bleed into the start of the next."""
+        """Clear the consecutive-fall counter AND the posture-smoothing
+        history -- call this between clips/sessions when reusing one
+        classifier instance, so neither a fall streak nor stale smoothing
+        history from the end of one clip can bleed into the start of the
+        next."""
         self._consecutive_fall_count = 0
+        self._raw_class_history = []
 
     def _load(self) -> None:
         if self.encoder_path.exists():
@@ -117,6 +141,13 @@ class RFPostureClassifier:
                 self._window_size = int(enc.get("window_size", self._window_size))
                 self._n_features = int(enc.get("n_features", self._n_features))
                 self._feature_representation = enc.get("feature_representation", "flatten")
+                # n_features_out: the flattened/summarized vector width this
+                # checkpoint was trained on (rf_trainer.py always writes it --
+                # see that module's own `encoder` dict). Absent only for a
+                # checkpoint saved before this field existed; None is a valid
+                # "unknown, don't check" sentinel, not an error, in that case.
+                n_features_out = enc.get("n_features_out")
+                self._n_features_out = int(n_features_out) if n_features_out is not None else None
                 col_medians = enc.get("col_medians")
                 if col_medians is not None:
                     self._col_medians = np.array(col_medians, dtype=np.float32)
@@ -162,6 +193,37 @@ class RFPostureClassifier:
         velocity for the oldest row of the window needs the frame before it."""
         return self._window_size + 1
 
+    def _smooth(self, pred_class: str, confidence: float) -> Tuple[str, float]:
+        """Rolling majority-vote smoothing over the last `smoothing_window`
+        raw per-frame predicted classes (the model's own 5-class output --
+        Fall/Lying/Sitting/Standing/Unknown -- BEFORE the fall_detected/
+        posture_label collapse in predict()). At smoothing_window<=1 (the
+        default) this always returns (pred_class, confidence) unchanged --
+        existing callers see byte-for-byte identical behavior.
+
+        Ties (classes equally common within the window) are broken toward
+        the MOST RECENT tied class, not insertion order, so once a genuine
+        new state is at least as common as anything else in the window it
+        wins immediately rather than waiting for stale votes to age out.
+
+        Smoothed confidence is the mean of only the votes that agree with
+        the smoothed class (not the whole window), so it reflects
+        confidence in the winning decision, not diluted by disagreeing
+        frames.
+        """
+        self._raw_class_history.append((pred_class, confidence))
+        if len(self._raw_class_history) > self.smoothing_window:
+            self._raw_class_history.pop(0)
+        if self.smoothing_window <= 1:
+            return pred_class, confidence
+
+        counts = Counter(c for c, _ in self._raw_class_history)
+        max_count = max(counts.values())
+        tied = {c for c, n in counts.items() if n == max_count}
+        smoothed_class = next(c for c, _ in reversed(self._raw_class_history) if c in tied)
+        matching_conf = [conf for c, conf in self._raw_class_history if c == smoothed_class]
+        return smoothed_class, float(np.mean(matching_conf))
+
     @property
     def is_available(self) -> bool:
         return self._available
@@ -175,6 +237,20 @@ class RFPostureClassifier:
         (per self._feature_representation -- "flatten" or "summary", see
         _load()) before calling predict_proba, since a Random Forest has no
         notion of a time axis.
+
+        ROBUSTNESS (a later audit session -- see docs/RF_GENERALIZATION_INVESTIGATION.md's
+        own follow-up section for the evidence): the ENTIRE feature-building
+        + prediction path is now inside one try/except, not just the
+        `predict_proba` call. Previously, an exception raised while building
+        `X` (a malformed row missing "keypoints", an unexpected keypoint
+        count, or any other feature-extraction failure) was NOT caught --
+        every OTHER failure mode in this class (missing model, missing
+        encoder, a predict_proba error) already falls back gracefully, but
+        this one path did not, so a single malformed frame could crash an
+        entire batch-evaluation run (compare_all_models.py/
+        compare_tcn_lstm.py call `.predict()` with no try/except of their
+        own) instead of degrading to one `_fallback()` result the way every
+        other input problem already does.
         """
         if not self._available or self._model is None:
             return self._fallback()
@@ -182,42 +258,76 @@ class RFPostureClassifier:
         if len(window) < self.raw_history_needed:
             return self._fallback()
 
-        recent = window[-self.raw_history_needed:]
-        raw = np.stack([extract_raw_keypoints(r) for r in recent], axis=0)
-        frames = lf.build_features_from_raw_window(raw)
-        frames = lf.impute_nan(frames, self._col_medians)
-
-        if self._feature_representation == "summary":
-            # Must exactly mirror rf_trainer.summarize_windows()'s
-            # mean/std/min/max/last order -- a mismatch here would silently
-            # feed the model nonsense features rather than erroring.
-            mean = frames.mean(axis=0)
-            std = frames.std(axis=0)
-            mn = frames.min(axis=0)
-            mx = frames.max(axis=0)
-            last = frames[-1, :]
-            X = np.concatenate([mean, std, mn, mx, last])[np.newaxis, :].astype(np.float32)
-        else:
-            X = frames.reshape(1, -1).astype(np.float32)  # (1, window_size * n_features)
-
         try:
-            probs = self._model.predict_proba(X)[0]  # (n_classes,)
+            recent = window[-self.raw_history_needed:]
+            raw = np.stack([extract_raw_keypoints(r) for r in recent], axis=0)
+            frames = lf.build_features_from_raw_window(raw)
+            frames = lf.impute_nan(frames, self._col_medians)
+
+            if self._feature_representation == "summary":
+                # Must exactly mirror rf_trainer.summarize_windows()'s
+                # mean/std/min/max/last order -- a mismatch here would silently
+                # feed the model nonsense features rather than erroring.
+                mean = frames.mean(axis=0)
+                std = frames.std(axis=0)
+                mn = frames.min(axis=0)
+                mx = frames.max(axis=0)
+                last = frames[-1, :]
+                X = np.concatenate([mean, std, mn, mx, last])[np.newaxis, :].astype(np.float32)
+            else:
+                X = frames.reshape(1, -1).astype(np.float32)  # (1, window_size * n_features)
+
+            # Proactive, LOUD schema check (a later audit session) -- without
+            # this, a checkpoint/feature-pipeline mismatch (e.g.
+            # lstm_features.py's own feature set changing without retraining
+            # this model) would only surface as sklearn's own internal
+            # "X has N features, but RandomForestClassifier is expecting M"
+            # ValueError, caught by the broad except below and silently
+            # degraded to a generic "Unknown" fallback -- indistinguishable
+            # from ordinary low-confidence uncertainty. Checking (and naming
+            # the mismatch explicitly) before calling predict_proba turns a
+            # silent integration bug into a clear, diagnosable log line.
+            if self._n_features_out is not None and X.shape[1] != self._n_features_out:
+                print(f"[RFClassifier] Feature schema mismatch: built {X.shape[1]}-dim input, "
+                      f"checkpoint expects {self._n_features_out} (feature_representation="
+                      f"{self._feature_representation!r}). Falling back to Unknown.")
+                return self._fallback()
+
+            probs = self._model.predict_proba(X)[0]  # (n_classes,), columns ordered per self._model.classes_
+
+            # Correctness fix (a later audit session): DO NOT assume probs[i]
+            # corresponds to self._classes[i] positionally. sklearn's
+            # predict_proba columns are ordered by `model.classes_`, which is
+            # only [0, 1, ..., n_classes-1] densely if EVERY class appeared in
+            # the training fold -- if a class were entirely absent from
+            # training (e.g. an unlucky StratifiedGroupKFold split), model.
+            # classes_ would be a SUBSET/non-contiguous, and the old
+            # `self._classes[pred_idx]` lookup would silently return the WRONG
+            # class name for every prediction. Confirmed currently latent
+            # (the production checkpoint's model.classes_ == [0,1,2,3,4],
+            # dense) but unguarded -- this makes the mapping explicit and
+            # correct regardless of whether every class was present in
+            # training, rather than relying on that always being true.
+            model_classes = getattr(self._model, "classes_", np.arange(len(self._classes)))
+            pred_pos = int(np.argmax(probs))
+            confidence = float(probs[pred_pos])
+            class_idx = int(model_classes[pred_pos])
+            pred_class = self._classes[class_idx] if 0 <= class_idx < len(self._classes) else "Unknown"
         except Exception as e:
             print(f"[RFClassifier] Prediction error: {e}")
             return self._fallback()
 
-        pred_idx = int(np.argmax(probs))
-        confidence = float(probs[pred_idx])
-        pred_class = self._classes[pred_idx] if pred_idx < len(self._classes) else "Unknown"
+        smoothed_class, smoothed_confidence = self._smooth(pred_class, confidence)
 
-        fall_detected = pred_class == "Fall"
-        posture_label = "Lying" if fall_detected else pred_class
+        fall_detected = smoothed_class == "Fall"
+        posture_label = "Lying" if fall_detected else smoothed_class
 
         result = {
             "posture_label": posture_label,
             "fall_detected": fall_detected,
-            "confidence": round(confidence, 3),
-            "other_labels": f"rf,pred={pred_class}",
+            "confidence": round(smoothed_confidence, 3),
+            "other_labels": (f"rf,pred={pred_class}" if self.smoothing_window <= 1
+                              else f"rf,pred={pred_class},smoothed={smoothed_class}"),
         }
 
         if self.fall_confirm_frames <= 1:
@@ -260,7 +370,19 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.demo:
-        run_classifier_demo(RFPostureClassifier)
+        # Bug fixed (a later audit session): --model was parsed but never
+        # actually used -- run_classifier_demo(RFPostureClassifier) always
+        # constructs its classifier as `classifier_cls()` internally (see
+        # sequence_window_classifier.run_classifier_demo, shared with the
+        # LSTM/TCN demo CLIs), with no way to pass constructor arguments
+        # through, so a caller passing --model expecting it to load a
+        # specific checkpoint got no error and no warning, just the wrong
+        # (default) model. Fixed here, locally, without touching that
+        # shared helper: a zero-arg lambda satisfies the same
+        # `classifier_cls()` call it already makes, while closing over the
+        # requested path.
+        classifier_cls = (lambda: RFPostureClassifier(model_path=args.model)) if args.model else RFPostureClassifier
+        run_classifier_demo(classifier_cls)
     else:
         parser.print_help()
 

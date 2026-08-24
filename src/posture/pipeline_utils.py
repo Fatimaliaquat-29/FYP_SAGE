@@ -76,7 +76,8 @@ def build_pose_row(timestamp: Optional[str] = None, frame: Optional[int] = None,
                    landmarks: Optional[Sequence[Tuple[float, float]]] = None,
                    keypoints: Optional[Sequence[float]] = None,
                    visibility: Optional[Sequence[float]] = None,
-                   min_visibility: float = MIN_LANDMARK_VISIBILITY):
+                   min_visibility: float = MIN_LANDMARK_VISIBILITY,
+                   world_landmarks: Optional[Sequence[Tuple[float, float, float]]] = None):
     """Build one pose row.
 
     visibility : per-landmark MediaPipe visibility scores (length LANDMARK_COUNT).
@@ -85,6 +86,30 @@ def build_pose_row(timestamp: Optional[str] = None, frame: Optional[int] = None,
         "not seen" rather than silently trusting MediaPipe's guess for an
         occluded joint. See MIN_LANDMARK_VISIBILITY. Pass min_visibility=0.0 to
         keep every landmark (e.g. to reproduce pre-fix behaviour).
+
+    world_landmarks : OPTIONAL per-landmark (x, y, z) MediaPipe WORLD-landmark
+        coordinates (length LANDMARK_COUNT), i.e. `pose_world_landmarks` --
+        real-world-metric meters, roughly hip-relative -- as opposed to
+        `landmarks`/`keypoints` above, which are `pose_landmarks` (2D,
+        normalized to the image frame). MediaPipe's PoseLandmarker computes
+        BOTH on every `detect`/`detect_for_video` call; this parameter is
+        purely additive plumbing for a caller that already has the second
+        one and wants it carried through. When supplied (non-empty), fills
+        `row["world_keypoints"]` (flat [x1,y1,z1,...,x33,y33,z33], padded/
+        truncated to LANDMARK_COUNT the same way `keypoints` is) and applies
+        the SAME per-landmark visibility drop as `keypoints` -- a joint
+        MediaPipe is guessing at is exactly as untrustworthy in 3D as in 2D,
+        so there is no reason for the two representations to disagree about
+        which joints are trusted this frame.
+
+        Every existing caller (posture/fall classification, LSTM/TCN/RF
+        training and inference, offline evaluation) does not pass this and
+        is completely unaffected -- `row["world_keypoints"]` is simply absent
+        from the returned dict, exactly as before this parameter existed.
+        The one current consumer is `src/gait/gait_features.py`'s optional
+        `"world_keypoints"` row field (see that module's
+        WORLD_LANDMARKS_ROOT_CAUSE_FIX docstring), which already treats a
+        missing/absent key the same as "no 3D data for this frame."
     """
     timestamp_value = timestamp or datetime.utcnow().isoformat()
     frame_value = frame if frame is not None else 0
@@ -108,6 +133,13 @@ def build_pose_row(timestamp: Optional[str] = None, frame: Optional[int] = None,
     if len(row["keypoints"]) < LANDMARK_COUNT * 2:
         row["keypoints"] = row["keypoints"] + [np.nan] * (LANDMARK_COUNT * 2 - len(row["keypoints"]))
 
+    if world_landmarks:
+        row["world_keypoints"] = [
+            float(c) if c is not None else np.nan for triple in world_landmarks for c in triple
+        ]
+        if len(row["world_keypoints"]) < LANDMARK_COUNT * 3:
+            row["world_keypoints"] = row["world_keypoints"] + [np.nan] * (LANDMARK_COUNT * 3 - len(row["world_keypoints"]))
+
     # Drop landmarks MediaPipe itself reports as unseen. Done here (rather than
     # at each call site) so every consumer -- realtime, offline evaluation and
     # LSTM dataset building -- inherits the same trust rule.
@@ -118,6 +150,10 @@ def build_pose_row(timestamp: Optional[str] = None, frame: Optional[int] = None,
             if v is None or (isinstance(v, float) and np.isnan(v)) or float(v) < min_visibility:
                 row["keypoints"][2 * i] = np.nan
                 row["keypoints"][2 * i + 1] = np.nan
+                if "world_keypoints" in row:
+                    row["world_keypoints"][3 * i] = np.nan
+                    row["world_keypoints"][3 * i + 1] = np.nan
+                    row["world_keypoints"][3 * i + 2] = np.nan
                 n_dropped += 1
         row["n_low_visibility"] = n_dropped
 

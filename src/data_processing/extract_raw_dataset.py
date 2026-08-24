@@ -2,7 +2,6 @@ import os
 import sys
 import csv
 import glob
-import time
 from pathlib import Path
 import cv2
 import mediapipe as mp
@@ -16,6 +15,7 @@ from src.posture.pipeline_utils import (
     classify_posture_and_fall,
     LANDMARK_COUNT
 )
+from src.data_processing.build_lstm_datasets import make_video_detector
 
 DATA_DIR = REPO_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
@@ -24,6 +24,16 @@ MODEL_PATH = MODELS_DIR / "pose_landmarker_full.task"
 
 OUT_POSE_CSV = DATA_DIR / "processed_keypoints" / "real_pose_keypoints.csv"
 OUT_POSTURE_CSV = DATA_DIR / "processed_keypoints" / "real_posture_output.csv"
+
+# Frame rate this project's own recording/extraction pipeline assumes
+# whenever a video's own real FPS isn't otherwise available (same fallback
+# used by evaluate_real_footage.py and src/detection/generate_bbox_dataset.py:
+# `cap.get(cv2.CAP_PROP_FPS) or 30.0`). If your recorded clips were captured
+# at a materially different frame rate, pass `fps=` through to
+# process_sequence() explicitly rather than relying on this default -- an
+# incorrect FPS here still corrupts the velocity features, just less
+# severely than the wall-clock bug this constant replaces.
+RAW_FPS = 30.0
 
 
 def get_image_files(directory):
@@ -36,8 +46,16 @@ def get_image_files(directory):
     return files
 
 
-def process_sequence(detector, sequence_dir, sequence_id, expected_fall=False):
-    """Extract keypoints and labels for a single image sequence."""
+def process_sequence(detector, sequence_dir, sequence_id, expected_fall=False, fps=RAW_FPS):
+    """Extract keypoints and labels for a single image sequence.
+
+    `detector` must be a fresh, VIDEO-mode PoseLandmarker for THIS sequence
+    only (see make_video_detector() in build_lstm_datasets.py) -- VIDEO mode
+    both carries tracking state and requires monotonically increasing
+    timestamps across every call on one instance, so a detector shared
+    across sequences either leaks tracking state or crashes outright the
+    moment a second sequence's own clock restarts at 0.
+    """
     image_files = get_image_files(sequence_dir)
     if not image_files:
         return [], []
@@ -52,18 +70,24 @@ def process_sequence(detector, sequence_dir, sequence_id, expected_fall=False):
     # or if the heuristic detects a fall.
     # Simple approach: If expected_fall is True, any 'Lying' frame towards the end is a 'Fall',
     # or any frame where heuristic says fall_detected=True.
-    
+
     for frame_idx, img_path in enumerate(image_files):
         frame_number = frame_idx + 1
-        current_time = time.time()
-        
+        # Video time, NOT wall-clock -- see build_lstm_datasets.py's own
+        # UR_FPS comment for the bug this fixes: using time.time() here
+        # made the inter-frame dt depend on how fast THIS MACHINE could
+        # read+process each image, not on the real motion recorded, which
+        # scaled every velocity feature by processing speed rather than
+        # real motion.
+        current_time = frame_idx / fps
+
         frame = cv2.imread(img_path)
         if frame is None:
             continue
-            
+
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-        detection_result = detector.detect(mp_image)
+        detection_result = detector.detect_for_video(mp_image, int(current_time * 1000))
 
         landmark_pairs = []
         landmark_vis = []
@@ -142,19 +166,13 @@ def main():
         print(f"Error: Model not found at {MODEL_PATH}")
         sys.exit(1)
 
-    BaseOptions = mp.tasks.BaseOptions
-    PoseLandmarker = mp.tasks.vision.PoseLandmarker
-    PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-    
-    options = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=str(MODEL_PATH)),
-        running_mode=mp.tasks.vision.RunningMode.IMAGE
-    )
-    detector = PoseLandmarker.create_from_options(options)
-
     all_pose_rows = []
     all_posture_rows = []
 
+    # A FRESH VIDEO-mode detector per sequence (see process_sequence()'s own
+    # docstring for why a shared detector is unsafe) -- exactly the pattern
+    # build_lstm_datasets.py::main() and build_ur_dataset_from_data_root.py
+    # already use for the UR dataset.
     # Process ADL activities
     adl_dir = RAW_DIR / "adl_activities"
     if adl_dir.exists():
@@ -165,7 +183,11 @@ def main():
                 img_dir = seq_path / seq_path.name
                 if not img_dir.exists():
                     img_dir = seq_path
-                p_rows, post_rows = process_sequence(detector, str(img_dir), seq_path.name, expected_fall=False)
+                detector = make_video_detector()
+                try:
+                    p_rows, post_rows = process_sequence(detector, str(img_dir), seq_path.name, expected_fall=False)
+                finally:
+                    detector.close()
                 all_pose_rows.extend(p_rows)
                 all_posture_rows.extend(post_rows)
 
@@ -177,11 +199,13 @@ def main():
                 img_dir = seq_path / seq_path.name
                 if not img_dir.exists():
                     img_dir = seq_path
-                p_rows, post_rows = process_sequence(detector, str(img_dir), seq_path.name, expected_fall=True)
+                detector = make_video_detector()
+                try:
+                    p_rows, post_rows = process_sequence(detector, str(img_dir), seq_path.name, expected_fall=True)
+                finally:
+                    detector.close()
                 all_pose_rows.extend(p_rows)
                 all_posture_rows.extend(post_rows)
-
-    detector.close()
 
     if not all_pose_rows:
         print("No image sequences found to process.")

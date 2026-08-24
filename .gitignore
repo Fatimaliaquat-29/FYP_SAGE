@@ -235,6 +235,10 @@ runs/
 # src/data_processing/build_lstm_datasets.py + src/posture/lstm/lstm_dataset.py)
 data/
 
+# Ignore cached MediaPipe extraction results from benchmarks/gait_risk_distribution_analysis.py
+# and benchmarks/gait_calibration_harness.py (large, fully regenerable per-clip)
+benchmarks/_gait_risk_cache/
+
 # All recorded footage (large video files, some containing identifiable
 # people). One rule now covers the whole tree:
 #

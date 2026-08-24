@@ -25,6 +25,24 @@ LSTM_DATASET_NPZ = DATA_DIR / "lstm_dataset.npz"
 LSTM_MODEL_PATH = MODELS_DIR / "lstm_posture.keras"
 LSTM_ENCODER_PATH = MODELS_DIR / "lstm_label_encoder.json"
 
+# Chosen via a 4-config sweep (baseline l1=0/l2=0, l2=1e-5, l2=1e-4, l1=1e-5)
+# on the post-leakage-fix data/lstm_dataset.npz (a later audit session --
+# LSTM previously shipped with NO regularization, unlike the TCN, since it
+# had never been separately validated here). l2=1e-5 -- the same value
+# already chosen for the TCN via its own independent sweep, see
+# tcn_model.py's L2_REG comment -- gave the largest validation-accuracy
+# gain (65.76% -> 69.02%) of the four candidates. Selection was made
+# PURELY from the group-aware validation split, then independently
+# confirmed (not re-tuned) on both real-footage test sets before being
+# adopted: Sanawar accuracy 50.8% -> 70.3% (fall recall 7/9 -> 8/9),
+# Hussain accuracy 56.5% -> 58.5% (fall recall unchanged at 3/4, false
+# positives 8 -> 6) -- a clean improvement with no trade-off found on
+# either independent set, unlike several other tuning attempts elsewhere
+# in this project's history that looked good on validation alone and did
+# not hold up on real footage.
+L1_REG = 0.0
+L2_REG = 1e-5
+
 
 def build_model(
     window_size: int,
@@ -34,8 +52,8 @@ def build_model(
     units2: int = 32,
     dropout_rate: float = 0.3,
     learning_rate: float = 1e-3,
-    l1: float = 0.0,
-    l2: float = 0.0,
+    l1: float = L1_REG,
+    l2: float = L2_REG,
 ):
     """
     Construct the LSTM classifier.
@@ -109,8 +127,8 @@ def train(
     units2: int = 32,
     dropout_rate: float = 0.3,
     learning_rate: float = 1e-3,
-    l1: float = 0.0,
-    l2: float = 0.0,
+    l1: float = L1_REG,
+    l2: float = L2_REG,
     use_class_weights: bool = False,
 ):
     """
@@ -162,6 +180,10 @@ def train(
 
     print(f"  Dataset shape : X={X.shape}, y={y.shape}, groups={groups.shape}")
     print(f"  Classes       : {list(classes)}")
+    # `col_medians` loaded above is a whole-REAL-dataset DIAGNOSTIC value only
+    # (see lstm_dataset.py's build_dataset() "LEAKAGE FIX" comment) -- it must
+    # NOT be used to impute this trainer's train/val folds, since it was
+    # computed over validation-fold windows too. Deliberately not reused below.
 
     window_size = X.shape[1]
     n_features = X.shape[2]
@@ -177,6 +199,26 @@ def train(
 
     X_val,   y_val,   g_val   = X[val_idx],   y[val_idx],   groups[val_idx]
     X_train, y_train, g_train = X[train_idx], y[train_idx], groups[train_idx]
+
+    # ── LEAKAGE FIX (this audit session): impute real train/val NaNs using
+    # medians computed from the TRAINING FOLD ONLY, after the split above.
+    # `X` loaded from the npz is raw (NaNs preserved) as of lstm_dataset.py's
+    # own leakage fix, but no trainer had actually been updated to impute it
+    # post-split -- confirmed by reading this file before this change: X_train/
+    # X_val were fed to model.fit()/evaluate() completely unimputed, which
+    # would have produced NaN losses/predictions the moment the npz was
+    # rebuilt with the new raw-X behavior. This closes that gap AND fixes the
+    # original leakage: train-fold statistics never see validation-fold data.
+    # The SAME train_col_medians (not the whole-dataset diagnostic `col_medians`
+    # above) is what gets saved into the encoder below, so live inference
+    # imputation matches what the model actually trained against -- using a
+    # different statistic at inference than at training would reintroduce the
+    # train/inference skew bug this project already fixed once (see the
+    # original col_medians comment on the encoder dict).
+    from src.posture.lstm import lstm_features as lf
+    train_col_medians = lf.compute_col_medians(X_train)
+    X_train = lf.impute_nan(X_train, train_col_medians)
+    X_val = lf.impute_nan(X_val, train_col_medians)
 
     # ── Post-split synthetic injection (train fold only) ──────────────────────
     from src.posture.lstm.lstm_dataset import generate_synthetic_windows, impute_nan
@@ -269,12 +311,15 @@ def train(
     # col_medians travels with the encoder so lstm_classifier.py imputes
     # missing landmarks at inference time with the SAME per-feature medians
     # used during training, instead of an arbitrary constant fill value.
+    # LEAKAGE FIX: this is train_col_medians (computed from the training fold
+    # only, above), NOT the whole-dataset diagnostic `col_medians` loaded from
+    # the npz -- see that variable's own comment.
     encoder = {
         "classes": list(classes),
         "class_to_idx": {c: int(i) for i, c in enumerate(classes)},
         "window_size": int(window_size),
         "n_features": int(n_features),
-        "col_medians": col_medians.tolist() if col_medians is not None else None,
+        "col_medians": train_col_medians.tolist(),
     }
     encoder_out.parent.mkdir(parents=True, exist_ok=True)
     encoder_out.write_text(json.dumps(encoder, indent=2), encoding="utf-8")
