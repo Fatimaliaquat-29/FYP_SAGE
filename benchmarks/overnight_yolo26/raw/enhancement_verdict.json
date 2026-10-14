@@ -1,0 +1,131 @@
+{
+  "models": [
+    "A_v7",
+    "B_yolo26n_30ep",
+    "stock_yolo26n"
+  ],
+  "rows": [
+    {
+      "model": "A_v7",
+      "variant": "none",
+      "d_dark": 0.0,
+      "d_bright": 0.0,
+      "d_prec": 0.0,
+      "helps": false
+    },
+    {
+      "model": "A_v7",
+      "variant": "gamma0.6",
+      "d_dark": -0.006134969325153367,
+      "d_bright": 0.0,
+      "d_prec": -0.03063271604938267,
+      "helps": false
+    },
+    {
+      "model": "A_v7",
+      "variant": "gamma0.5",
+      "d_dark": -0.006134969325153367,
+      "d_bright": 0.0,
+      "d_prec": -0.04915123456790116,
+      "helps": false
+    },
+    {
+      "model": "A_v7",
+      "variant": "clahe",
+      "d_dark": -0.018404907975460127,
+      "d_bright": 0.0,
+      "d_prec": -0.03612804878048781,
+      "helps": false
+    },
+    {
+      "model": "A_v7",
+      "variant": "gamma0.6+clahe",
+      "d_dark": -0.018404907975460127,
+      "d_bright": 0.0,
+      "d_prec": -0.05397727272727271,
+      "helps": false
+    },
+    {
+      "model": "B_yolo26n_30ep",
+      "variant": "none",
+      "d_dark": 0.0,
+      "d_bright": 0.0,
+      "d_prec": 0.0,
+      "helps": false
+    },
+    {
+      "model": "B_yolo26n_30ep",
+      "variant": "gamma0.6",
+      "d_dark": -0.04907975460122699,
+      "d_bright": 0.015503875968992276,
+      "d_prec": 0.000970026190707185,
+      "helps": false
+    },
+    {
+      "model": "B_yolo26n_30ep",
+      "variant": "gamma0.5",
+      "d_dark": -0.07361963190184051,
+      "d_bright": 0.023255813953488413,
+      "d_prec": 0.09114754098360656,
+      "helps": false
+    },
+    {
+      "model": "B_yolo26n_30ep",
+      "variant": "clahe",
+      "d_dark": -0.012269938650306761,
+      "d_bright": 0.007751937984496138,
+      "d_prec": 0.0004657228017883597,
+      "helps": false
+    },
+    {
+      "model": "B_yolo26n_30ep",
+      "variant": "gamma0.6+clahe",
+      "d_dark": -0.06134969325153375,
+      "d_bright": 0.0,
+      "d_prec": -0.0527605049934049,
+      "helps": false
+    },
+    {
+      "model": "stock_yolo26n",
+      "variant": "none",
+      "d_dark": 0.0,
+      "d_bright": 0.0,
+      "d_prec": 0.0,
+      "helps": false
+    },
+    {
+      "model": "stock_yolo26n",
+      "variant": "gamma0.6",
+      "d_dark": -0.03680981595092023,
+      "d_bright": -0.2093023255813954,
+      "d_prec": 0.020526676614106565,
+      "helps": false
+    },
+    {
+      "model": "stock_yolo26n",
+      "variant": "gamma0.5",
+      "d_dark": -0.055214723926380355,
+      "d_bright": -0.23255813953488375,
+      "d_prec": 0.004269211451531918,
+      "helps": false
+    },
+    {
+      "model": "stock_yolo26n",
+      "variant": "clahe",
+      "d_dark": 0.0,
+      "d_bright": -0.03875968992248069,
+      "d_prec": -0.012776243093922668,
+      "helps": false
+    },
+    {
+      "model": "stock_yolo26n",
+      "variant": "gamma0.6+clahe",
+      "d_dark": -0.024539877300613494,
+      "d_bright": -0.22480620155038766,
+      "d_prec": -0.006614271262936788,
+      "helps": false
+    }
+  ],
+  "helps": {},
+  "verdict": "VERDICT: enhancement is NOT worthwhile -- no single variant helps >= 2 of ['A_v7', 'B_yolo26n_30ep', 'stock_yolo26n'] under the pre-registered rule."
+}

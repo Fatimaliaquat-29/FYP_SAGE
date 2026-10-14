@@ -1,0 +1,2196 @@
+{
+  "model": "stock_yolov8n",
+  "path": "D:\\FYP\\PROJECT FILES\\fatima\\models\\yolov8n.pt",
+  "scores": {
+    "heldout_objects|c0.4": {
+      "model": "stock_yolov8n",
+      "set": "heldout_objects",
+      "conf": 0.4,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 200,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 63,
+            "fp": 5,
+            "fn": 30,
+            "n_gt": 93,
+            "recall": 0.6774193548387096,
+            "precision": 0.9264705882352942,
+            "recall_wilson95": [
+              0.5770106827427646,
+              0.7637519647145263
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 0,
+              "fp": 2,
+              "fn": 20,
+              "n_gt": 20,
+              "recall": 0.0,
+              "precision": 0.0,
+              "recall_wilson95": [
+                0.0,
+                0.16113012549493322
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 20,
+              "fp": 0,
+              "fn": 4,
+              "n_gt": 24,
+              "recall": 0.8333333333333334,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.6414652961213058,
+                0.9332143199927109
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 12,
+              "fp": 1,
+              "fn": 6,
+              "n_gt": 18,
+              "recall": 0.6666666666666666,
+              "precision": 0.9230769230769231,
+              "recall_wilson95": [
+                0.4374906934425036,
+                0.8372144563633714
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 2,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8888888888888888,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 63,
+            "fp": 5,
+            "fn": 30,
+            "n_gt": 93,
+            "recall": 0.6774193548387096,
+            "precision": 0.9264705882352942,
+            "recall_wilson95": [
+              0.5770106827427646,
+              0.7637519647145263
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 0,
+              "fp": 2,
+              "fn": 20,
+              "n_gt": 20,
+              "recall": 0.0,
+              "precision": 0.0,
+              "recall_wilson95": [
+                0.0,
+                0.16113012549493322
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 20,
+              "fp": 0,
+              "fn": 4,
+              "n_gt": 24,
+              "recall": 0.8333333333333334,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.6414652961213058,
+                0.9332143199927109
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 12,
+              "fp": 1,
+              "fn": 6,
+              "n_gt": 18,
+              "recall": 0.6666666666666666,
+              "precision": 0.9230769230769231,
+              "recall_wilson95": [
+                0.4374906934425036,
+                0.8372144563633714
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 2,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8888888888888888,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    },
+    "heldout_objects_rotfix|c0.4": {
+      "model": "stock_yolov8n",
+      "set": "heldout_objects_rotfix",
+      "conf": 0.4,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 200,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 70,
+            "fp": 4,
+            "fn": 23,
+            "n_gt": 93,
+            "recall": 0.7526881720430108,
+            "precision": 0.9459459459459459,
+            "recall_wilson95": [
+              0.6561496172464738,
+              0.829179001859365
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 7,
+              "fp": 1,
+              "fn": 13,
+              "n_gt": 20,
+              "recall": 0.35,
+              "precision": 0.875,
+              "recall_wilson95": [
+                0.18118954786794464,
+                0.5671494897805354
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 20,
+              "fp": 0,
+              "fn": 4,
+              "n_gt": 24,
+              "recall": 0.8333333333333334,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.6414652961213058,
+                0.9332143199927109
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 12,
+              "fp": 1,
+              "fn": 6,
+              "n_gt": 18,
+              "recall": 0.6666666666666666,
+              "precision": 0.9230769230769231,
+              "recall_wilson95": [
+                0.4374906934425036,
+                0.8372144563633714
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 2,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8888888888888888,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 70,
+            "fp": 4,
+            "fn": 23,
+            "n_gt": 93,
+            "recall": 0.7526881720430108,
+            "precision": 0.9459459459459459,
+            "recall_wilson95": [
+              0.6561496172464738,
+              0.829179001859365
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 7,
+              "fp": 1,
+              "fn": 13,
+              "n_gt": 20,
+              "recall": 0.35,
+              "precision": 0.875,
+              "recall_wilson95": [
+                0.18118954786794464,
+                0.5671494897805354
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 20,
+              "fp": 0,
+              "fn": 4,
+              "n_gt": 24,
+              "recall": 0.8333333333333334,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.6414652961213058,
+                0.9332143199927109
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 12,
+              "fp": 1,
+              "fn": 6,
+              "n_gt": 18,
+              "recall": 0.6666666666666666,
+              "precision": 0.9230769230769231,
+              "recall_wilson95": [
+                0.4374906934425036,
+                0.8372144563633714
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 2,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8888888888888888,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    },
+    "reserved388_partial|c0.4": {
+      "model": "stock_yolov8n",
+      "set": "reserved388_partial",
+      "conf": 0.4,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 319,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 118,
+            "fp": 7,
+            "fn": 131,
+            "n_gt": 249,
+            "recall": 0.4738955823293173,
+            "precision": 0.944,
+            "recall_wilson95": [
+              0.4127436122514322,
+              0.5358407979089211
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 20,
+              "fp": 2,
+              "fn": 42,
+              "n_gt": 62,
+              "recall": 0.3225806451612903,
+              "precision": 0.9090909090909091,
+              "recall_wilson95": [
+                0.2195432864054263,
+                0.44632145564215464
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 20,
+              "fp": 0,
+              "fn": 4,
+              "n_gt": 24,
+              "recall": 0.8333333333333334,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.6414652961213058,
+                0.9332143199927109
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 31,
+              "fp": 3,
+              "fn": 66,
+              "n_gt": 97,
+              "recall": 0.31958762886597936,
+              "precision": 0.9117647058823529,
+              "recall_wilson95": [
+                0.23518547734357256,
+                0.41773553937968455
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 2,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8888888888888888,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_2_Fall": {
+              "tp": 16,
+              "fp": 0,
+              "fn": 19,
+              "n_gt": 35,
+              "recall": 0.45714285714285713,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.3046577363376085,
+                0.6181054865986247
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 118,
+            "fp": 7,
+            "fn": 131,
+            "n_gt": 249,
+            "recall": 0.4738955823293173,
+            "precision": 0.944,
+            "recall_wilson95": [
+              0.4127436122514322,
+              0.5358407979089211
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 20,
+              "fp": 2,
+              "fn": 42,
+              "n_gt": 62,
+              "recall": 0.3225806451612903,
+              "precision": 0.9090909090909091,
+              "recall_wilson95": [
+                0.2195432864054263,
+                0.44632145564215464
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 20,
+              "fp": 0,
+              "fn": 4,
+              "n_gt": 24,
+              "recall": 0.8333333333333334,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.6414652961213058,
+                0.9332143199927109
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 31,
+              "fp": 3,
+              "fn": 66,
+              "n_gt": 97,
+              "recall": 0.31958762886597936,
+              "precision": 0.9117647058823529,
+              "recall_wilson95": [
+                0.23518547734357256,
+                0.41773553937968455
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 2,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8888888888888888,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_2_Fall": {
+              "tp": 16,
+              "fp": 0,
+              "fn": 19,
+              "n_gt": 35,
+              "recall": 0.45714285714285713,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.3046577363376085,
+                0.6181054865986247
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    },
+    "round6_heldout|c0.4": {
+      "model": "stock_yolov8n",
+      "set": "round6_heldout",
+      "conf": 0.4,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 298,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 47,
+            "fp": 2,
+            "fn": 179,
+            "n_gt": 226,
+            "recall": 0.2079646017699115,
+            "precision": 0.9591836734693877,
+            "recall_wilson95": [
+              0.16014944563755415,
+              0.265541987070885
+            ]
+          },
+          "per_clip_person": {
+            "Behind_Bed_HM": {
+              "tp": 44,
+              "fp": 2,
+              "fn": 29,
+              "n_gt": 73,
+              "recall": 0.6027397260273972,
+              "precision": 0.9565217391304348,
+              "recall_wilson95": [
+                0.48807204465405685,
+                0.7071347183493163
+              ]
+            },
+            "Laying_Dim_HM": {
+              "tp": 3,
+              "fp": 0,
+              "fn": 150,
+              "n_gt": 153,
+              "recall": 0.0196078431372549,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.0066903672665462426,
+                0.05605829125262214
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 48,
+            "fp": 1,
+            "fn": 178,
+            "n_gt": 226,
+            "recall": 0.21238938053097345,
+            "precision": 0.9795918367346939,
+            "recall_wilson95": [
+              0.16410182249668354,
+              0.2702912551707186
+            ]
+          },
+          "per_clip_person": {
+            "Behind_Bed_HM": {
+              "tp": 45,
+              "fp": 1,
+              "fn": 28,
+              "n_gt": 73,
+              "recall": 0.6164383561643836,
+              "precision": 0.9782608695652174,
+              "recall_wilson95": [
+                0.5017387254305414,
+                0.7194956059732815
+              ]
+            },
+            "Laying_Dim_HM": {
+              "tp": 3,
+              "fp": 0,
+              "fn": 150,
+              "n_gt": 153,
+              "recall": 0.0196078431372549,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.0066903672665462426,
+                0.05605829125262214
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    },
+    "heldout_objects|c0.25": {
+      "model": "stock_yolov8n",
+      "set": "heldout_objects",
+      "conf": 0.25,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 200,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 68,
+            "fp": 19,
+            "fn": 25,
+            "n_gt": 93,
+            "recall": 0.7311827956989247,
+            "precision": 0.7816091954022989,
+            "recall_wilson95": [
+              0.6332358773962905,
+              0.8107881783813919
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 0,
+              "fp": 12,
+              "fn": 20,
+              "n_gt": 20,
+              "recall": 0.0,
+              "precision": 0.0,
+              "recall_wilson95": [
+                0.0,
+                0.16113012549493322
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 21,
+              "fp": 1,
+              "fn": 3,
+              "n_gt": 24,
+              "recall": 0.875,
+              "precision": 0.9545454545454546,
+              "recall_wilson95": [
+                0.6899571185214243,
+                0.9565574496068442
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 1,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 0.9333333333333333,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 16,
+              "fp": 1,
+              "fn": 2,
+              "n_gt": 18,
+              "recall": 0.8888888888888888,
+              "precision": 0.9411764705882353,
+              "recall_wilson95": [
+                0.6719975513339578,
+                0.9689811315464172
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 4,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 68,
+            "fp": 19,
+            "fn": 25,
+            "n_gt": 93,
+            "recall": 0.7311827956989247,
+            "precision": 0.7816091954022989,
+            "recall_wilson95": [
+              0.6332358773962905,
+              0.8107881783813919
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 0,
+              "fp": 12,
+              "fn": 20,
+              "n_gt": 20,
+              "recall": 0.0,
+              "precision": 0.0,
+              "recall_wilson95": [
+                0.0,
+                0.16113012549493322
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 21,
+              "fp": 1,
+              "fn": 3,
+              "n_gt": 24,
+              "recall": 0.875,
+              "precision": 0.9545454545454546,
+              "recall_wilson95": [
+                0.6899571185214243,
+                0.9565574496068442
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 1,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 0.9333333333333333,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 16,
+              "fp": 1,
+              "fn": 2,
+              "n_gt": 18,
+              "recall": 0.8888888888888888,
+              "precision": 0.9411764705882353,
+              "recall_wilson95": [
+                0.6719975513339578,
+                0.9689811315464172
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 4,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    },
+    "heldout_objects_rotfix|c0.25": {
+      "model": "stock_yolov8n",
+      "set": "heldout_objects_rotfix",
+      "conf": 0.25,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 200,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 75,
+            "fp": 8,
+            "fn": 18,
+            "n_gt": 93,
+            "recall": 0.8064516129032258,
+            "precision": 0.9036144578313253,
+            "recall_wilson95": [
+              0.7146734140699786,
+              0.8739166133562513
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 7,
+              "fp": 1,
+              "fn": 13,
+              "n_gt": 20,
+              "recall": 0.35,
+              "precision": 0.875,
+              "recall_wilson95": [
+                0.18118954786794464,
+                0.5671494897805354
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 21,
+              "fp": 1,
+              "fn": 3,
+              "n_gt": 24,
+              "recall": 0.875,
+              "precision": 0.9545454545454546,
+              "recall_wilson95": [
+                0.6899571185214243,
+                0.9565574496068442
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 1,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 0.9333333333333333,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 16,
+              "fp": 1,
+              "fn": 2,
+              "n_gt": 18,
+              "recall": 0.8888888888888888,
+              "precision": 0.9411764705882353,
+              "recall_wilson95": [
+                0.6719975513339578,
+                0.9689811315464172
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 4,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 75,
+            "fp": 8,
+            "fn": 18,
+            "n_gt": 93,
+            "recall": 0.8064516129032258,
+            "precision": 0.9036144578313253,
+            "recall_wilson95": [
+              0.7146734140699786,
+              0.8739166133562513
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 7,
+              "fp": 1,
+              "fn": 13,
+              "n_gt": 20,
+              "recall": 0.35,
+              "precision": 0.875,
+              "recall_wilson95": [
+                0.18118954786794464,
+                0.5671494897805354
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 21,
+              "fp": 1,
+              "fn": 3,
+              "n_gt": 24,
+              "recall": 0.875,
+              "precision": 0.9545454545454546,
+              "recall_wilson95": [
+                0.6899571185214243,
+                0.9565574496068442
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 1,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 0.9333333333333333,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 16,
+              "fp": 1,
+              "fn": 2,
+              "n_gt": 18,
+              "recall": 0.8888888888888888,
+              "precision": 0.9411764705882353,
+              "recall_wilson95": [
+                0.6719975513339578,
+                0.9689811315464172
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 4,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    },
+    "reserved388_partial|c0.25": {
+      "model": "stock_yolov8n",
+      "set": "reserved388_partial",
+      "conf": 0.25,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 319,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 137,
+            "fp": 11,
+            "fn": 112,
+            "n_gt": 249,
+            "recall": 0.5502008032128514,
+            "precision": 0.9256756756756757,
+            "recall_wilson95": [
+              0.4881133789845812,
+              0.6107627553224314
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 21,
+              "fp": 2,
+              "fn": 41,
+              "n_gt": 62,
+              "recall": 0.3387096774193548,
+              "precision": 0.9130434782608695,
+              "recall_wilson95": [
+                0.2334153463018197,
+                0.46282532828689016
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 21,
+              "fp": 1,
+              "fn": 3,
+              "n_gt": 24,
+              "recall": 0.875,
+              "precision": 0.9545454545454546,
+              "recall_wilson95": [
+                0.6899571185214243,
+                0.9565574496068442
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 1,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 0.9333333333333333,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 48,
+              "fp": 3,
+              "fn": 49,
+              "n_gt": 97,
+              "recall": 0.4948453608247423,
+              "precision": 0.9411764705882353,
+              "recall_wilson95": [
+                0.3974565165320967,
+                0.5926269410885678
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 4,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_2_Fall": {
+              "tp": 16,
+              "fp": 0,
+              "fn": 19,
+              "n_gt": 35,
+              "recall": 0.45714285714285713,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.3046577363376085,
+                0.6181054865986247
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 137,
+            "fp": 11,
+            "fn": 112,
+            "n_gt": 249,
+            "recall": 0.5502008032128514,
+            "precision": 0.9256756756756757,
+            "recall_wilson95": [
+              0.4881133789845812,
+              0.6107627553224314
+            ]
+          },
+          "per_clip_person": {
+            "Empty_Bedroom_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_1_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_TV_Lounge_2_Empty": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_5.49.30_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "Empty_WhatsApp_Video_2026_07_31_at_7.44.22_PM": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 0,
+              "recall": null,
+              "precision": null,
+              "recall_wilson95": [
+                null,
+                null
+              ]
+            },
+            "With_people_Bedroom_Fall": {
+              "tp": 21,
+              "fp": 2,
+              "fn": 41,
+              "n_gt": 62,
+              "recall": 0.3387096774193548,
+              "precision": 0.9130434782608695,
+              "recall_wilson95": [
+                0.2334153463018197,
+                0.46282532828689016
+              ]
+            },
+            "With_people_Bedroom_Sit": {
+              "tp": 21,
+              "fp": 1,
+              "fn": 3,
+              "n_gt": 24,
+              "recall": 0.875,
+              "precision": 0.9545454545454546,
+              "recall_wilson95": [
+                0.6899571185214243,
+                0.9565574496068442
+              ]
+            },
+            "With_people_Bedroom_Walk": {
+              "tp": 14,
+              "fp": 1,
+              "fn": 0,
+              "n_gt": 14,
+              "recall": 1.0,
+              "precision": 0.9333333333333333,
+              "recall_wilson95": [
+                0.7846829880728186,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Fall": {
+              "tp": 48,
+              "fp": 3,
+              "fn": 49,
+              "n_gt": 97,
+              "recall": 0.4948453608247423,
+              "precision": 0.9411764705882353,
+              "recall_wilson95": [
+                0.3974565165320967,
+                0.5926269410885678
+              ]
+            },
+            "With_people_TV_Lounge_1_Sit": {
+              "tp": 16,
+              "fp": 4,
+              "fn": 0,
+              "n_gt": 16,
+              "recall": 1.0,
+              "precision": 0.8,
+              "recall_wilson95": [
+                0.8063865817272802,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_1_Walk": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0,
+              "n_gt": 1,
+              "recall": 1.0,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.20654329147389294,
+                1.0
+              ]
+            },
+            "With_people_TV_Lounge_2_Fall": {
+              "tp": 16,
+              "fp": 0,
+              "fn": 19,
+              "n_gt": 35,
+              "recall": 0.45714285714285713,
+              "precision": 1.0,
+              "recall_wilson95": [
+                0.3046577363376085,
+                0.6181054865986247
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    },
+    "round6_heldout|c0.25": {
+      "model": "stock_yolov8n",
+      "set": "round6_heldout",
+      "conf": 0.25,
+      "imgsz": 640,
+      "enhancement": "none",
+      "n_frames": 298,
+      "n_unlabelled_excluded": 0,
+      "by_iou": {
+        "0.5": {
+          "person": {
+            "tp": 50,
+            "fp": 4,
+            "fn": 176,
+            "n_gt": 226,
+            "recall": 0.22123893805309736,
+            "precision": 0.9259259259259259,
+            "recall_wilson95": [
+              0.17203333263792228,
+              0.279763034947406
+            ]
+          },
+          "per_clip_person": {
+            "Behind_Bed_HM": {
+              "tp": 46,
+              "fp": 2,
+              "fn": 27,
+              "n_gt": 73,
+              "recall": 0.6301369863013698,
+              "precision": 0.9583333333333334,
+              "recall_wilson95": [
+                0.5154917299781843,
+                0.7317701698260883
+              ]
+            },
+            "Laying_Dim_HM": {
+              "tp": 4,
+              "fp": 2,
+              "fn": 149,
+              "n_gt": 153,
+              "recall": 0.026143790849673203,
+              "precision": 0.6666666666666666,
+              "recall_wilson95": [
+                0.010212574388730519,
+                0.06528780306214987
+              ]
+            }
+          },
+          "per_class": {}
+        },
+        "0.3": {
+          "person": {
+            "tp": 50,
+            "fp": 4,
+            "fn": 176,
+            "n_gt": 226,
+            "recall": 0.22123893805309736,
+            "precision": 0.9259259259259259,
+            "recall_wilson95": [
+              0.17203333263792228,
+              0.279763034947406
+            ]
+          },
+          "per_clip_person": {
+            "Behind_Bed_HM": {
+              "tp": 46,
+              "fp": 2,
+              "fn": 27,
+              "n_gt": 73,
+              "recall": 0.6301369863013698,
+              "precision": 0.9583333333333334,
+              "recall_wilson95": [
+                0.5154917299781843,
+                0.7317701698260883
+              ]
+            },
+            "Laying_Dim_HM": {
+              "tp": 4,
+              "fp": 2,
+              "fn": 149,
+              "n_gt": 153,
+              "recall": 0.026143790849673203,
+              "precision": 0.6666666666666666,
+              "recall_wilson95": [
+                0.010212574388730519,
+                0.06528780306214987
+              ]
+            }
+          },
+          "per_class": {}
+        }
+      }
+    }
+  },
+  "empty_fp": {
+    "c0.4": {
+      "model": "stock_yolov8n",
+      "conf": 0.4,
+      "imgsz": 640,
+      "stride": 1,
+      "dir": "D:\\FYP\\PROJECT FILES\\fatima\\yolo_testing\\Reserved\\Empty",
+      "clips": {
+        "Bedroom_Empty.mov": {
+          "frames": 854,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "empty_ground_mahaRoom.MOV": {
+          "frames": 1012,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "TV_Lounge_1_Empty.mov": {
+          "frames": 826,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "TV_Lounge_2_Empty.mov": {
+          "frames": 497,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "WhatsApp Video 2026-07-31 at 5.49.30 PM.mp4": {
+          "frames": 569,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "WhatsApp Video 2026-07-31 at 7.44.22 PM.mp4": {
+          "frames": 343,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        }
+      },
+      "frames": 4101,
+      "fp_frames": 0,
+      "person_boxes": 0,
+      "fp_rate_pct": 0.0
+    },
+    "c0.25": {
+      "model": "stock_yolov8n",
+      "conf": 0.25,
+      "imgsz": 640,
+      "stride": 1,
+      "dir": "D:\\FYP\\PROJECT FILES\\fatima\\yolo_testing\\Reserved\\Empty",
+      "clips": {
+        "Bedroom_Empty.mov": {
+          "frames": 854,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "empty_ground_mahaRoom.MOV": {
+          "frames": 1012,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "TV_Lounge_1_Empty.mov": {
+          "frames": 826,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "TV_Lounge_2_Empty.mov": {
+          "frames": 497,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "WhatsApp Video 2026-07-31 at 5.49.30 PM.mp4": {
+          "frames": 569,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        },
+        "WhatsApp Video 2026-07-31 at 7.44.22 PM.mp4": {
+          "frames": 343,
+          "fp_frames": 0,
+          "person_boxes": 0,
+          "worst": []
+        }
+      },
+      "frames": 4101,
+      "fp_frames": 0,
+      "person_boxes": 0,
+      "fp_rate_pct": 0.0
+    }
+  },
+  "names0": "person",
+  "n_classes": 80
+}

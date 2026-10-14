@@ -1,0 +1,722 @@
+{
+ "own_Sitting_Dim_HM_001007.jpg": {
+  "provenance": "hand-drawn (round6_patch)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000940.jpg": {
+  "provenance": "hand-drawn (round6_patch)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_000821.jpg": {
+  "provenance": "hand-drawn (round6_patch)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_old_000004.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_Lying_legs_straight_000116.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_old_000182.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_normal_000038.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_TV_Lounge_Fallll_000360.jpg": {
+  "provenance": "hand-drawn (round5)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001464.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_25_26_Fall_and_lie_000212.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000264.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Behind_Chair_HM_000020.jpg": {
+  "provenance": "hand-drawn (round6)",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000226.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_000564.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_000856.jpg": {
+  "provenance": "hand-drawn (round6_patch)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Behind_Chair_HM_000080.jpg": {
+  "provenance": "hand-drawn (round6)",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Behind_Chair_HM_001370.jpg": {
+  "provenance": "hand-drawn (round6)",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_25_26_Fall_and_lie_000336.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001340.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_001016.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_old_000062.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_normal_000052.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_Normal_Fall_1_000002.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Hussain_Testing_7_23_26_old_000152.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000330.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_22_26_Standing_3_000106.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000082.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Hussain_Testing_7_23_26_normal_000130.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000732.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_001144.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_Fast_Sit_000038.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001438.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Hussain_Testing_7_23_26_normal_000266.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Hussain_Testing_7_23_26_old_000178.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001194.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "empty_empty_top_bedroom_000420.jpg": {
+  "provenance": "empty-room (no person by construction)",
+  "top": "empty",
+  "dark_bucket": "bright",
+  "lying_proxy": "no GT person"
+ },
+ "own_Sitting_Dim_HM_001480.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_22_26_Fall_Curled_000020.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_22_26_Off_axis_000062.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_000582.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001402.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001366.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001390.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001404.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_001238.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000962.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_001260.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000428.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000124.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000362.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001360.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_25_26_Slow_fall_000012.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_25_26_Slow_fall_000004.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_000966.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001446.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001416.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000324.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001242.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000232.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001300.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_001236.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001248.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000440.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001338.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000952.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001368.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000410.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000990.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000124.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000446.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001502.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000162.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000438.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_25_26_Slow_fall_000002.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001264.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001412.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_25_26_Slow_fall_000008.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001380.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_001228.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001482.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000986.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_25_26_Fall_and_lie_000218.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Behind_Chair_HM_001300.jpg": {
+  "provenance": "hand-drawn (round6)",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_000984.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001250.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000492.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000898.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001258.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001098.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_25_26_Fall_and_lie_000332.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sanawar_Testing_7_25_26_Far_fall_000070.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000452.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_000978.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001370.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Blanket_Cover_HM_001340.jpg": {
+  "provenance": "hand-drawn (round6)",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001202.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_TV_Lounge_Fallll_000350.jpg": {
+  "provenance": "hand-drawn (round5)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sanawar_Testing_7_25_26_Fall_and_lie_000298.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "mid",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001286.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Behind_Chair_HM_000810.jpg": {
+  "provenance": "hand-drawn (round6)",
+  "top": "own",
+  "dark_bucket": "bright",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001270.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_001324.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_001084.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000294.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000188.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000208.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_000861.jpg": {
+  "provenance": "hand-drawn (round6_patch)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_001008.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_000228.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_001316.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001252.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000270.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001284.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_000284.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_001284.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Sitting_Dim_HM_001298.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_TV_Lounge_Fallll_000340.jpg": {
+  "provenance": "hand-drawn (round5)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Sitting_Dim_HM_001130.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box wider than tall"
+ },
+ "own_Standing_Walking_Dim_HM_001163.jpg": {
+  "provenance": "hand-drawn (round6_patch)",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ },
+ "own_Standing_Walking_Dim_HM_001064.jpg": {
+  "provenance": "MediaPipe-derived",
+  "top": "own",
+  "dark_bucket": "dark",
+  "lying_proxy": "GT person box taller than wide"
+ }
+}

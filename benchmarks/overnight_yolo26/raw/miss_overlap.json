@@ -1,0 +1,127 @@
+{
+  "reserved388_partial": {
+    "n_person_boxes": 249,
+    "missed": {
+      "A_v7": 142,
+      "B_yolo26n_30ep": 140,
+      "stock_yolo26n": 121
+    },
+    "B_yolo26n_30ep_vs_A": {
+      "both_miss": 132,
+      "only_A_misses": 10,
+      "only_other_misses": 8,
+      "frac_of_A_misses_also_missed": 0.9295774647887324
+    },
+    "stock_yolo26n_vs_A": {
+      "both_miss": 108,
+      "only_A_misses": 34,
+      "only_other_misses": 13,
+      "frac_of_A_misses_also_missed": 0.7605633802816901
+    },
+    "A_misses_in_dark_tercile": 25,
+    "person_boxes_in_dark_tercile": 63,
+    "missed_by_clip": {
+      "With_people_TV_Lounge_1_Fall": {
+        "A_v7": 79,
+        "B_yolo26n_30ep": 82,
+        "stock_yolo26n": 47
+      },
+      "With_people_TV_Lounge_2_Fall": {
+        "A_v7": 19,
+        "B_yolo26n_30ep": 17,
+        "stock_yolo26n": 21
+      },
+      "With_people_Bedroom_Fall": {
+        "A_v7": 41,
+        "B_yolo26n_30ep": 34,
+        "stock_yolo26n": 41
+      },
+      "With_people_Bedroom_Sit": {
+        "A_v7": 3,
+        "B_yolo26n_30ep": 4,
+        "stock_yolo26n": 9
+      },
+      "With_people_TV_Lounge_1_Sit": {
+        "B_yolo26n_30ep": 3,
+        "stock_yolo26n": 3
+      }
+    }
+  },
+  "round6_heldout": {
+    "n_person_boxes": 226,
+    "missed": {
+      "A_v7": 176,
+      "B_yolo26n_30ep": 176,
+      "stock_yolo26n": 182
+    },
+    "B_yolo26n_30ep_vs_A": {
+      "both_miss": 174,
+      "only_A_misses": 2,
+      "only_other_misses": 2,
+      "frac_of_A_misses_also_missed": 0.9886363636363636
+    },
+    "stock_yolo26n_vs_A": {
+      "both_miss": 173,
+      "only_A_misses": 3,
+      "only_other_misses": 9,
+      "frac_of_A_misses_also_missed": 0.9829545454545454
+    },
+    "A_misses_in_dark_tercile": 98,
+    "person_boxes_in_dark_tercile": 100,
+    "missed_by_clip": {
+      "Behind_Bed_HM": {
+        "A_v7": 25,
+        "B_yolo26n_30ep": 23,
+        "stock_yolo26n": 31
+      },
+      "Laying_Dim_HM": {
+        "A_v7": 151,
+        "B_yolo26n_30ep": 153,
+        "stock_yolo26n": 151
+      }
+    }
+  },
+  "heldout_objects_rotfix": {
+    "n_person_boxes": 93,
+    "missed": {
+      "A_v7": 27,
+      "B_yolo26n_30ep": 30,
+      "stock_yolo26n": 27
+    },
+    "B_yolo26n_30ep_vs_A": {
+      "both_miss": 23,
+      "only_A_misses": 4,
+      "only_other_misses": 7,
+      "frac_of_A_misses_also_missed": 0.8518518518518519
+    },
+    "stock_yolo26n_vs_A": {
+      "both_miss": 16,
+      "only_A_misses": 11,
+      "only_other_misses": 11,
+      "frac_of_A_misses_also_missed": 0.5925925925925926
+    },
+    "A_misses_in_dark_tercile": 2,
+    "person_boxes_in_dark_tercile": 20,
+    "missed_by_clip": {
+      "With_people_Bedroom_Fall": {
+        "A_v7": 12,
+        "B_yolo26n_30ep": 9,
+        "stock_yolo26n": 13
+      },
+      "With_people_Bedroom_Sit": {
+        "A_v7": 3,
+        "B_yolo26n_30ep": 4,
+        "stock_yolo26n": 9
+      },
+      "With_people_TV_Lounge_1_Fall": {
+        "A_v7": 12,
+        "B_yolo26n_30ep": 14,
+        "stock_yolo26n": 2
+      },
+      "With_people_TV_Lounge_1_Sit": {
+        "B_yolo26n_30ep": 3,
+        "stock_yolo26n": 3
+      }
+    }
+  }
+}

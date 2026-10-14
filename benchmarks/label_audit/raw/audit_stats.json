@@ -1,0 +1,1217 @@
+{
+  "generated": "2026-10-10T14:58:46",
+  "class_check": {
+    "sage_classes": [
+      "person",
+      "bottle",
+      "cup",
+      "wine glass",
+      "bowl",
+      "chair",
+      "couch",
+      "bed",
+      "dining table",
+      "toilet",
+      "tv",
+      "sink",
+      "refrigerator"
+    ],
+    "data_yaml_names": [
+      "person",
+      "bottle",
+      "cup",
+      "wine glass",
+      "bowl",
+      "chair",
+      "couch",
+      "bed",
+      "dining table",
+      "toilet",
+      "tv",
+      "sink",
+      "refrigerator"
+    ],
+    "match": true
+  },
+  "inventory": {
+    "images": 15043,
+    "label_files": 15043,
+    "images_without_label_file": 0,
+    "images_with_empty_label_file": 539,
+    "label_files_without_image": 0,
+    "out_of_schema_class_boxes": {}
+  },
+  "by_top": {
+    "coco": {
+      "images": 5400,
+      "person_boxes": 11371,
+      "zero_person": 2870,
+      "repeat_copies": 0,
+      "mean_person_per_image": 2.1057407407407407,
+      "pct_zero_person": 53.148148148148145
+    },
+    "empty": {
+      "images": 539,
+      "person_boxes": 0,
+      "zero_person": 539,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "own": {
+      "images": 9104,
+      "person_boxes": 9076,
+      "zero_person": 28,
+      "repeat_copies": 4552,
+      "mean_person_per_image": 0.9969244288224957,
+      "pct_zero_person": 0.30755711775043937
+    }
+  },
+  "by_clip": {
+    "Bedroom_Emptyy": {
+      "images": 18,
+      "person_boxes": 0,
+      "zero_person": 18,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "Bedroom_Falll": {
+      "images": 124,
+      "person_boxes": 120,
+      "zero_person": 4,
+      "repeat_copies": 62,
+      "mean_person_per_image": 0.967741935483871,
+      "pct_zero_person": 3.225806451612903
+    },
+    "Behind_Chair_HM": {
+      "images": 338,
+      "person_boxes": 338,
+      "zero_person": 0,
+      "repeat_copies": 169,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Blanket_Cover_HM": {
+      "images": 304,
+      "person_boxes": 304,
+      "zero_person": 0,
+      "repeat_copies": 152,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Hussain_Testing_7_23_26_normal": {
+      "images": 384,
+      "person_boxes": 384,
+      "zero_person": 0,
+      "repeat_copies": 192,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Hussain_Testing_7_23_26_old": {
+      "images": 614,
+      "person_boxes": 614,
+      "zero_person": 0,
+      "repeat_copies": 307,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Fall_Curled": {
+      "images": 82,
+      "person_boxes": 82,
+      "zero_person": 0,
+      "repeat_copies": 41,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Fast_Sit": {
+      "images": 62,
+      "person_boxes": 62,
+      "zero_person": 0,
+      "repeat_copies": 31,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Legs_occluded": {
+      "images": 154,
+      "person_boxes": 154,
+      "zero_person": 0,
+      "repeat_copies": 77,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Lying_legs_straight": {
+      "images": 146,
+      "person_boxes": 146,
+      "zero_person": 0,
+      "repeat_copies": 73,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Lying_straight": {
+      "images": 146,
+      "person_boxes": 146,
+      "zero_person": 0,
+      "repeat_copies": 73,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Normal_Fall_1": {
+      "images": 154,
+      "person_boxes": 154,
+      "zero_person": 0,
+      "repeat_copies": 77,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Off_axis": {
+      "images": 190,
+      "person_boxes": 190,
+      "zero_person": 0,
+      "repeat_copies": 95,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Sit_1": {
+      "images": 156,
+      "person_boxes": 156,
+      "zero_person": 0,
+      "repeat_copies": 78,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Sit_3": {
+      "images": 176,
+      "person_boxes": 176,
+      "zero_person": 0,
+      "repeat_copies": 88,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Standing_1": {
+      "images": 168,
+      "person_boxes": 168,
+      "zero_person": 0,
+      "repeat_copies": 84,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Standing_2": {
+      "images": 180,
+      "person_boxes": 180,
+      "zero_person": 0,
+      "repeat_copies": 90,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Standing_3": {
+      "images": 126,
+      "person_boxes": 126,
+      "zero_person": 0,
+      "repeat_copies": 63,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_normal": {
+      "images": 384,
+      "person_boxes": 384,
+      "zero_person": 0,
+      "repeat_copies": 192,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_22_26_old": {
+      "images": 614,
+      "person_boxes": 614,
+      "zero_person": 0,
+      "repeat_copies": 307,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Backward_fall": {
+      "images": 106,
+      "person_boxes": 106,
+      "zero_person": 0,
+      "repeat_copies": 53,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Chair_fall": {
+      "images": 210,
+      "person_boxes": 210,
+      "zero_person": 0,
+      "repeat_copies": 105,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Fall_and_lie": {
+      "images": 274,
+      "person_boxes": 274,
+      "zero_person": 0,
+      "repeat_copies": 137,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Far_fall": {
+      "images": 124,
+      "person_boxes": 124,
+      "zero_person": 0,
+      "repeat_copies": 62,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Occluded_fall": {
+      "images": 166,
+      "person_boxes": 166,
+      "zero_person": 0,
+      "repeat_copies": 83,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Off_axis_fall": {
+      "images": 78,
+      "person_boxes": 78,
+      "zero_person": 0,
+      "repeat_copies": 39,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Side_fall": {
+      "images": 154,
+      "person_boxes": 154,
+      "zero_person": 0,
+      "repeat_copies": 77,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Slow_fall": {
+      "images": 160,
+      "person_boxes": 160,
+      "zero_person": 0,
+      "repeat_copies": 80,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Sitting_Dim_HM": {
+      "images": 1722,
+      "person_boxes": 1722,
+      "zero_person": 0,
+      "repeat_copies": 861,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "Standing_Walking_Dim_HM": {
+      "images": 1496,
+      "person_boxes": 1496,
+      "zero_person": 0,
+      "repeat_copies": 748,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "TV_Lounge_Emptyy": {
+      "images": 30,
+      "person_boxes": 0,
+      "zero_person": 30,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "TV_Lounge_Fallll": {
+      "images": 112,
+      "person_boxes": 88,
+      "zero_person": 24,
+      "repeat_copies": 56,
+      "mean_person_per_image": 0.7857142857142857,
+      "pct_zero_person": 21.428571428571427
+    },
+    "WhatsApp_Video_2026_07_29_at_7.31.43_PM": {
+      "images": 26,
+      "person_boxes": 0,
+      "zero_person": 26,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "WhatsApp_Video_2026_07_29_at_7.42.21_PM": {
+      "images": 33,
+      "person_boxes": 0,
+      "zero_person": 33,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "WhatsApp_Video_2026_07_29_at_7.42.52_PM": {
+      "images": 27,
+      "person_boxes": 0,
+      "zero_person": 27,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "WhatsApp_Video_2026_07_29_at_7.43.14_PM": {
+      "images": 17,
+      "person_boxes": 0,
+      "zero_person": 17,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "coco": {
+      "images": 5400,
+      "person_boxes": 11371,
+      "zero_person": 2870,
+      "repeat_copies": 0,
+      "mean_person_per_image": 2.1057407407407407,
+      "pct_zero_person": 53.148148148148145
+    },
+    "empty_Top_drawing": {
+      "images": 50,
+      "person_boxes": 0,
+      "zero_person": 50,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "empty_Top_lounge": {
+      "images": 53,
+      "person_boxes": 0,
+      "zero_person": 53,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "empty_ground_myRoom1": {
+      "images": 33,
+      "person_boxes": 0,
+      "zero_person": 33,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "empty_mid_bedroom": {
+      "images": 49,
+      "person_boxes": 0,
+      "zero_person": 49,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "empty_mid_bedroom1": {
+      "images": 59,
+      "person_boxes": 0,
+      "zero_person": 59,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "empty_mid_bedroom_1": {
+      "images": 45,
+      "person_boxes": 0,
+      "zero_person": 45,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "empty_top_bedroom": {
+      "images": 49,
+      "person_boxes": 0,
+      "zero_person": 49,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "empty_top_room": {
+      "images": 50,
+      "person_boxes": 0,
+      "zero_person": 50,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    }
+  },
+  "by_provenance": {
+    "MediaPipe-derived": {
+      "images": 7458,
+      "person_boxes": 7458,
+      "zero_person": 0,
+      "repeat_copies": 3729,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "coco (external, human-drawn)": {
+      "images": 5400,
+      "person_boxes": 11371,
+      "zero_person": 2870,
+      "repeat_copies": 0,
+      "mean_person_per_image": 2.1057407407407407,
+      "pct_zero_person": 53.148148148148145
+    },
+    "empty-room (no person by construction)": {
+      "images": 539,
+      "person_boxes": 0,
+      "zero_person": 539,
+      "repeat_copies": 0,
+      "mean_person_per_image": 0.0,
+      "pct_zero_person": 100.0
+    },
+    "hand-drawn (round5)": {
+      "images": 236,
+      "person_boxes": 208,
+      "zero_person": 28,
+      "repeat_copies": 118,
+      "mean_person_per_image": 0.8813559322033898,
+      "pct_zero_person": 11.864406779661017
+    },
+    "hand-drawn (round6)": {
+      "images": 642,
+      "person_boxes": 642,
+      "zero_person": 0,
+      "repeat_copies": 321,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    },
+    "hand-drawn (round6_patch)": {
+      "images": 768,
+      "person_boxes": 768,
+      "zero_person": 0,
+      "repeat_copies": 384,
+      "mean_person_per_image": 1.0,
+      "pct_zero_person": 0.0
+    }
+  },
+  "duplicates": {
+    "repeat_copies": 4552,
+    "repeat_copies_md5_identical_to_original": 4552,
+    "md5_groups_with_more_than_1_file": 4053,
+    "files_in_duplicate_groups_that_are_not_rN_copies": 499
+  },
+  "leakage": {
+    "eval/heldout_objects": {
+      "eval_images": 200,
+      "filename_overlap": 0,
+      "filename_overlap_after_stripping_source_prefix": 0,
+      "md5_overlap": 0,
+      "examples": []
+    },
+    "handlabels/round6_heldout": {
+      "eval_images": 298,
+      "filename_overlap": 0,
+      "filename_overlap_after_stripping_source_prefix": 0,
+      "md5_overlap": 0,
+      "examples": []
+    }
+  },
+  "darkness": {
+    "definition": "mean Y (YCrCb) per image; dark = <= 33.33rd percentile over ALL train images, bright = >= 66.67th",
+    "dark_max_luma": 93.3324609375,
+    "bright_min_luma": 120.99243243243247,
+    "by_top_bucket": {
+      "coco": {
+        "mid": 2254,
+        "bright": 1597,
+        "dark": 1549
+      },
+      "empty": {
+        "mid": 256,
+        "bright": 253,
+        "dark": 30
+      },
+      "own": {
+        "mid": 2504,
+        "dark": 3436,
+        "bright": 3164
+      }
+    }
+  },
+  "auto_flags_setup": {
+    "population": "own_ + empty_ images (own footage; empty_ names match yolo_testing/Training/Empty clips), excluding _rN repeat copies (md5-identical duplicates)",
+    "n_checked": 5091,
+    "stride": 1,
+    "conf_detect": 0.5,
+    "conf_phantom_support": 0.25,
+    "iou_threshold": 0.3,
+    "imgsz": 640,
+    "detector": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\weights\\yolo26s.pt",
+    "detector_md5": "372e5c34064f37eb45dd7ef5cbbe60aa"
+  },
+  "flags_by_top": {
+    "ALL": {
+      "checked": 5091,
+      "with_missing": 271,
+      "with_phantom": 1012,
+      "gt_person_boxes": 4538,
+      "phantom_boxes": 1012,
+      "pct_missing": 5.3231192300137495,
+      "pct_phantom": 19.87821646042035
+    },
+    "empty": {
+      "checked": 539,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "own": {
+      "checked": 4552,
+      "with_missing": 271,
+      "with_phantom": 1012,
+      "gt_person_boxes": 4538,
+      "phantom_boxes": 1012,
+      "pct_missing": 5.953427065026362,
+      "pct_phantom": 22.231985940246044
+    }
+  },
+  "flags_by_clip": {
+    "ALL": {
+      "checked": 5091,
+      "with_missing": 271,
+      "with_phantom": 1012,
+      "gt_person_boxes": 4538,
+      "phantom_boxes": 1012,
+      "pct_missing": 5.3231192300137495,
+      "pct_phantom": 19.87821646042035
+    },
+    "Bedroom_Emptyy": {
+      "checked": 18,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Bedroom_Falll": {
+      "checked": 62,
+      "with_missing": 0,
+      "with_phantom": 39,
+      "gt_person_boxes": 60,
+      "phantom_boxes": 39,
+      "pct_missing": 0.0,
+      "pct_phantom": 62.903225806451616
+    },
+    "Behind_Chair_HM": {
+      "checked": 169,
+      "with_missing": 0,
+      "with_phantom": 98,
+      "gt_person_boxes": 169,
+      "phantom_boxes": 98,
+      "pct_missing": 0.0,
+      "pct_phantom": 57.98816568047337
+    },
+    "Blanket_Cover_HM": {
+      "checked": 152,
+      "with_missing": 5,
+      "with_phantom": 106,
+      "gt_person_boxes": 152,
+      "phantom_boxes": 106,
+      "pct_missing": 3.289473684210526,
+      "pct_phantom": 69.73684210526316
+    },
+    "Hussain_Testing_7_23_26_normal": {
+      "checked": 192,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 192,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Hussain_Testing_7_23_26_old": {
+      "checked": 307,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 307,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Fall_Curled": {
+      "checked": 41,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 41,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Fast_Sit": {
+      "checked": 31,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 31,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Legs_occluded": {
+      "checked": 77,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 77,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Lying_legs_straight": {
+      "checked": 73,
+      "with_missing": 1,
+      "with_phantom": 5,
+      "gt_person_boxes": 73,
+      "phantom_boxes": 5,
+      "pct_missing": 1.36986301369863,
+      "pct_phantom": 6.8493150684931505
+    },
+    "Sanawar_Testing_7_22_26_Lying_straight": {
+      "checked": 73,
+      "with_missing": 1,
+      "with_phantom": 0,
+      "gt_person_boxes": 73,
+      "phantom_boxes": 0,
+      "pct_missing": 1.36986301369863,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Normal_Fall_1": {
+      "checked": 77,
+      "with_missing": 2,
+      "with_phantom": 2,
+      "gt_person_boxes": 77,
+      "phantom_boxes": 2,
+      "pct_missing": 2.5974025974025974,
+      "pct_phantom": 2.5974025974025974
+    },
+    "Sanawar_Testing_7_22_26_Off_axis": {
+      "checked": 95,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 95,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Sit_1": {
+      "checked": 78,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 78,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Sit_3": {
+      "checked": 88,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 88,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Standing_1": {
+      "checked": 84,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 84,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Standing_2": {
+      "checked": 90,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 90,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_Standing_3": {
+      "checked": 63,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 63,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_normal": {
+      "checked": 192,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 192,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_22_26_old": {
+      "checked": 307,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 307,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "Sanawar_Testing_7_25_26_Backward_fall": {
+      "checked": 53,
+      "with_missing": 1,
+      "with_phantom": 1,
+      "gt_person_boxes": 53,
+      "phantom_boxes": 1,
+      "pct_missing": 1.8867924528301887,
+      "pct_phantom": 1.8867924528301887
+    },
+    "Sanawar_Testing_7_25_26_Chair_fall": {
+      "checked": 105,
+      "with_missing": 1,
+      "with_phantom": 2,
+      "gt_person_boxes": 105,
+      "phantom_boxes": 2,
+      "pct_missing": 0.9523809523809523,
+      "pct_phantom": 1.9047619047619047
+    },
+    "Sanawar_Testing_7_25_26_Fall_and_lie": {
+      "checked": 137,
+      "with_missing": 2,
+      "with_phantom": 78,
+      "gt_person_boxes": 137,
+      "phantom_boxes": 78,
+      "pct_missing": 1.4598540145985401,
+      "pct_phantom": 56.934306569343065
+    },
+    "Sanawar_Testing_7_25_26_Far_fall": {
+      "checked": 62,
+      "with_missing": 0,
+      "with_phantom": 12,
+      "gt_person_boxes": 62,
+      "phantom_boxes": 12,
+      "pct_missing": 0.0,
+      "pct_phantom": 19.35483870967742
+    },
+    "Sanawar_Testing_7_25_26_Occluded_fall": {
+      "checked": 83,
+      "with_missing": 2,
+      "with_phantom": 31,
+      "gt_person_boxes": 83,
+      "phantom_boxes": 31,
+      "pct_missing": 2.4096385542168677,
+      "pct_phantom": 37.34939759036145
+    },
+    "Sanawar_Testing_7_25_26_Off_axis_fall": {
+      "checked": 39,
+      "with_missing": 0,
+      "with_phantom": 9,
+      "gt_person_boxes": 39,
+      "phantom_boxes": 9,
+      "pct_missing": 0.0,
+      "pct_phantom": 23.076923076923077
+    },
+    "Sanawar_Testing_7_25_26_Side_fall": {
+      "checked": 77,
+      "with_missing": 0,
+      "with_phantom": 6,
+      "gt_person_boxes": 77,
+      "phantom_boxes": 6,
+      "pct_missing": 0.0,
+      "pct_phantom": 7.792207792207792
+    },
+    "Sanawar_Testing_7_25_26_Slow_fall": {
+      "checked": 80,
+      "with_missing": 20,
+      "with_phantom": 18,
+      "gt_person_boxes": 80,
+      "phantom_boxes": 18,
+      "pct_missing": 25.0,
+      "pct_phantom": 22.5
+    },
+    "Sitting_Dim_HM": {
+      "checked": 861,
+      "with_missing": 166,
+      "with_phantom": 420,
+      "gt_person_boxes": 861,
+      "phantom_boxes": 420,
+      "pct_missing": 19.279907084785133,
+      "pct_phantom": 48.78048780487805
+    },
+    "Standing_Walking_Dim_HM": {
+      "checked": 748,
+      "with_missing": 70,
+      "with_phantom": 155,
+      "gt_person_boxes": 748,
+      "phantom_boxes": 155,
+      "pct_missing": 9.358288770053475,
+      "pct_phantom": 20.72192513368984
+    },
+    "TV_Lounge_Emptyy": {
+      "checked": 30,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "TV_Lounge_Fallll": {
+      "checked": 56,
+      "with_missing": 0,
+      "with_phantom": 30,
+      "gt_person_boxes": 44,
+      "phantom_boxes": 30,
+      "pct_missing": 0.0,
+      "pct_phantom": 53.57142857142857
+    },
+    "WhatsApp_Video_2026_07_29_at_7.31.43_PM": {
+      "checked": 26,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "WhatsApp_Video_2026_07_29_at_7.42.21_PM": {
+      "checked": 33,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "WhatsApp_Video_2026_07_29_at_7.42.52_PM": {
+      "checked": 27,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "WhatsApp_Video_2026_07_29_at_7.43.14_PM": {
+      "checked": 17,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_Top_drawing": {
+      "checked": 50,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_Top_lounge": {
+      "checked": 53,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_ground_myRoom1": {
+      "checked": 33,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_mid_bedroom": {
+      "checked": 49,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_mid_bedroom1": {
+      "checked": 59,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_mid_bedroom_1": {
+      "checked": 45,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_top_bedroom": {
+      "checked": 49,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty_top_room": {
+      "checked": 50,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    }
+  },
+  "flags_by_provenance": {
+    "ALL": {
+      "checked": 5091,
+      "with_missing": 271,
+      "with_phantom": 1012,
+      "gt_person_boxes": 4538,
+      "phantom_boxes": 1012,
+      "pct_missing": 5.3231192300137495,
+      "pct_phantom": 19.87821646042035
+    },
+    "MediaPipe-derived": {
+      "checked": 3729,
+      "with_missing": 264,
+      "with_phantom": 649,
+      "gt_person_boxes": 3729,
+      "phantom_boxes": 649,
+      "pct_missing": 7.079646017699115,
+      "pct_phantom": 17.404129793510325
+    },
+    "empty-room (no person by construction)": {
+      "checked": 539,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "hand-drawn (round5)": {
+      "checked": 118,
+      "with_missing": 0,
+      "with_phantom": 69,
+      "gt_person_boxes": 104,
+      "phantom_boxes": 69,
+      "pct_missing": 0.0,
+      "pct_phantom": 58.47457627118644
+    },
+    "hand-drawn (round6)": {
+      "checked": 321,
+      "with_missing": 5,
+      "with_phantom": 204,
+      "gt_person_boxes": 321,
+      "phantom_boxes": 204,
+      "pct_missing": 1.557632398753894,
+      "pct_phantom": 63.55140186915888
+    },
+    "hand-drawn (round6_patch)": {
+      "checked": 384,
+      "with_missing": 2,
+      "with_phantom": 90,
+      "gt_person_boxes": 384,
+      "phantom_boxes": 90,
+      "pct_missing": 0.5208333333333334,
+      "pct_phantom": 23.4375
+    }
+  },
+  "flags_by_dark_bucket": {
+    "ALL": {
+      "checked": 5091,
+      "with_missing": 271,
+      "with_phantom": 1012,
+      "gt_person_boxes": 4538,
+      "phantom_boxes": 1012,
+      "pct_missing": 5.3231192300137495,
+      "pct_phantom": 19.87821646042035
+    },
+    "bright": {
+      "checked": 1835,
+      "with_missing": 7,
+      "with_phantom": 231,
+      "gt_person_boxes": 1582,
+      "phantom_boxes": 231,
+      "pct_missing": 0.3814713896457766,
+      "pct_phantom": 12.588555858310627
+    },
+    "dark": {
+      "checked": 1748,
+      "with_missing": 236,
+      "with_phantom": 641,
+      "gt_person_boxes": 1706,
+      "phantom_boxes": 641,
+      "pct_missing": 13.501144164759726,
+      "pct_phantom": 36.670480549199084
+    },
+    "mid": {
+      "checked": 1508,
+      "with_missing": 28,
+      "with_phantom": 140,
+      "gt_person_boxes": 1250,
+      "phantom_boxes": 140,
+      "pct_missing": 1.856763925729443,
+      "pct_phantom": 9.283819628647215
+    }
+  },
+  "flags_by_lying_proxy": {
+    "ALL": {
+      "checked": 5091,
+      "with_missing": 271,
+      "with_phantom": 1012,
+      "gt_person_boxes": 4538,
+      "phantom_boxes": 1012,
+      "pct_missing": 5.3231192300137495,
+      "pct_phantom": 19.87821646042035
+    },
+    "GT person box taller than wide": {
+      "checked": 3061,
+      "with_missing": 49,
+      "with_phantom": 356,
+      "gt_person_boxes": 3061,
+      "phantom_boxes": 356,
+      "pct_missing": 1.6007840574975498,
+      "pct_phantom": 11.630186213655668
+    },
+    "GT person box wider than tall": {
+      "checked": 1477,
+      "with_missing": 222,
+      "with_phantom": 656,
+      "gt_person_boxes": 1477,
+      "phantom_boxes": 656,
+      "pct_missing": 15.030467163168584,
+      "pct_phantom": 44.414353419092755
+    },
+    "no GT person": {
+      "checked": 553,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    }
+  },
+  "flags_by_provenance_x_dark": {
+    "ALL": {
+      "checked": 5091,
+      "with_missing": 271,
+      "with_phantom": 1012,
+      "gt_person_boxes": 4538,
+      "phantom_boxes": 1012,
+      "pct_missing": 5.3231192300137495,
+      "pct_phantom": 19.87821646042035
+    },
+    "MediaPipe-derived | bright": {
+      "checked": 1261,
+      "with_missing": 2,
+      "with_phantom": 27,
+      "gt_person_boxes": 1261,
+      "phantom_boxes": 27,
+      "pct_missing": 0.1586042823156225,
+      "pct_phantom": 2.141157811260904
+    },
+    "MediaPipe-derived | dark": {
+      "checked": 1227,
+      "with_missing": 234,
+      "with_phantom": 485,
+      "gt_person_boxes": 1227,
+      "phantom_boxes": 485,
+      "pct_missing": 19.070904645476773,
+      "pct_phantom": 39.52730236348818
+    },
+    "MediaPipe-derived | mid": {
+      "checked": 1241,
+      "with_missing": 28,
+      "with_phantom": 137,
+      "gt_person_boxes": 1241,
+      "phantom_boxes": 137,
+      "pct_missing": 2.2562449637389204,
+      "pct_phantom": 11.03948428686543
+    },
+    "empty-room (no person by construction) | bright": {
+      "checked": 253,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty-room (no person by construction) | dark": {
+      "checked": 30,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "empty-room (no person by construction) | mid": {
+      "checked": 256,
+      "with_missing": 0,
+      "with_phantom": 0,
+      "gt_person_boxes": 0,
+      "phantom_boxes": 0,
+      "pct_missing": 0.0,
+      "pct_phantom": 0.0
+    },
+    "hand-drawn (round5) | dark": {
+      "checked": 107,
+      "with_missing": 0,
+      "with_phantom": 66,
+      "gt_person_boxes": 95,
+      "phantom_boxes": 66,
+      "pct_missing": 0.0,
+      "pct_phantom": 61.6822429906542
+    },
+    "hand-drawn (round5) | mid": {
+      "checked": 11,
+      "with_missing": 0,
+      "with_phantom": 3,
+      "gt_person_boxes": 9,
+      "phantom_boxes": 3,
+      "pct_missing": 0.0,
+      "pct_phantom": 27.272727272727273
+    },
+    "hand-drawn (round6) | bright": {
+      "checked": 321,
+      "with_missing": 5,
+      "with_phantom": 204,
+      "gt_person_boxes": 321,
+      "phantom_boxes": 204,
+      "pct_missing": 1.557632398753894,
+      "pct_phantom": 63.55140186915888
+    },
+    "hand-drawn (round6_patch) | dark": {
+      "checked": 384,
+      "with_missing": 2,
+      "with_phantom": 90,
+      "gt_person_boxes": 384,
+      "phantom_boxes": 90,
+      "pct_missing": 0.5208333333333334,
+      "pct_phantom": 23.4375
+    }
+  },
+  "sample": {
+    "n": 120,
+    "short_filled": {
+      "random": 0,
+      "suspected_missing": 0,
+      "suspected_phantom": 0,
+      "darkest_10pct_own": 0
+    },
+    "darkest_10pct_own_luma_cut": 66.8053069540895,
+    "seed": 0
+  }
+}

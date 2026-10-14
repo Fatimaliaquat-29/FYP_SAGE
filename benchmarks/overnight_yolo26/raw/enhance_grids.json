@@ -1,0 +1,19 @@
+{
+  "model": "A_v7",
+  "best_variant_by_pooled_dark_recall_gain": "gamma0.6",
+  "gains": {
+    "gamma0.6": -0.006134969325153367,
+    "gamma0.5": -0.006134969325153367,
+    "clahe": -0.018404907975460127,
+    "gamma0.6+clahe": -0.018404907975460127
+  },
+  "files": [
+    "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\enhance_grids\\grid_1_reserved388_partial_With_people_TV_Lounge_1_Fall_000070.jpg",
+    "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\enhance_grids\\grid_2_reserved388_partial_With_people_TV_Lounge_1_Fall_000080.jpg",
+    "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\enhance_grids\\grid_3_reserved388_partial_With_people_TV_Lounge_1_Sit_000090.jpg",
+    "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\enhance_grids\\grid_4_round6_heldout_Laying_Dim_HM_000010.jpg",
+    "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\enhance_grids\\grid_5_round6_heldout_Laying_Dim_HM_000020.jpg",
+    "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\enhance_grids\\grid_6_round6_heldout_Laying_Dim_HM_000030.jpg"
+  ],
+  "legend": "green = hand-drawn person GT, red = model person detections (conf>=0.4)"
+}
