@@ -36,6 +36,14 @@ def main():
                               "run's last.pt; Ultralytics reads the rest of the training "
                               "config (data/epochs/imgsz/batch) back out of its own "
                               "args.yaml, so those flags are ignored here.")
+    parser.add_argument("--workers", type=int, default=8,
+                         help="DataLoader worker processes (Ultralytics default 8). Each worker "
+                              "is a fresh subprocess that reloads torch's CUDA DLLs on Windows -- "
+                              "under low free memory that reload can fail (WinError 1455, paging "
+                              "file too small), and Ultralytics respawns a new worker on failure "
+                              "rather than aborting, which compounds the memory pressure instead "
+                              "of surfacing the error. Pass --workers 0 to run the loader in the "
+                              "main process and skip subprocess spawning entirely.")
     args = parser.parse_args()
 
     device = args.device
@@ -57,6 +65,7 @@ def main():
             name=args.name,
             device=device,
             patience=10,
+            workers=args.workers,
         )
 
 

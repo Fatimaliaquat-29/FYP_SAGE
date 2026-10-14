@@ -293,6 +293,14 @@ def main():
                              "Training/, because train/val is assigned by position in the sorted "
                              "clip listing and folding Empty/ in would shift every index. "
                              "Anything under yolo_testing/Reserved/ is refused.")
+    parser.add_argument("--exclude_dir", type=str, action="append", default=None,
+                        help="Path-component substring to exclude from --testing_dir's listing, "
+                             "repeatable (case-insensitive, same convention as "
+                             "sample_heldout_frames.py's --exclude). Use this to pin a run to an "
+                             "earlier snapshot of a SHARED tree like Testing/ -- e.g. excluding "
+                             "session folders added after the base this run means to reproduce "
+                             "was built, so the run doesn't silently absorb another track's new "
+                             "footage and shift the index-based train/val split.")
     parser.add_argument("--extra_clip", type=str, action="append", default=None,
                         help="Path to one additional clip, repeatable. Appended AFTER the "
                              "--testing_dir listing and always assigned to train, so it cannot "
@@ -341,8 +349,12 @@ def main():
     warn_if_shallow(testing_dir)
     out_dir = Path(args.out_dir)
     clips = find_clips(testing_dir)
-    if not clips:
-        print(f"No clips found under {testing_dir}")
+    if args.exclude_dir:
+        before = len(clips)
+        clips = [c for c in clips if not any(x.lower() in str(c).lower() for x in args.exclude_dir)]
+        print(f"--exclude_dir removed {before - len(clips)} clip(s) matching {args.exclude_dir}")
+    if not clips and not args.extra_clip:
+        print(f"No clips found under {testing_dir} (and no --extra_clip given)")
         sys.exit(1)
 
     train_clips, val_clips = split_clips(clips, val_every=args.val_every)

@@ -33,10 +33,12 @@ Actions taken:
 - **Auto-label + spot-check** (4 clips): `autolabel_hammad_staging.py` →
   `datasets/hammad_autolabel_staging/` + spot-check renders in
   `results/yolo_person_detection/hammad_autolabel_spotcheck/`.
-- **Full hand-label** (now 4 clips: Blanket_Cover_HM, Behind_Bed_HM,
+- **Full hand-label** (4 clips: Blanket_Cover_HM, Behind_Bed_HM,
   Laying_Dim_HM, Behind_Chair_HM): `sample_heldout_frames.py` →
   `handlabels/round6/images/` (619 frames total, stride 10), `labels/` empty
-  and ready, `classes.txt` matching SAGE_CLASSES.
+  and ready, `classes.txt` matching SAGE_CLASSES. Labeling is now complete
+  (verified against `handlabels.py`'s own loader) and the folder has since
+  been split by hold-back status — see below.
 - **Patch only** (2 clips: Standing_Walking_Dim_HM, Sitting_Dim_HM):
   `extract_hammad_patch_frames.py` extracted the exact 173 + 211 = 384 missed
   frames (not a stride sample — every gap, so the patch has no holes) into
@@ -59,26 +61,38 @@ warning each time), the same override any real promotion would need, but none
 of this project's `build_merged_dataset.py` / training runs reference this
 directory. Promoting any of it requires a deliberate future step.
 
-## Hold-back decision — CONFIRMED
+## Hold-back decision — CONFIRMED, and now structural
 
 **`Laying_Dim_HM.mp4` and `Behind_Bed_HM.mp4` are held back from ALL training,
-kept purely as evaluation.** Both are being fully hand-labeled (so they carry
-real ground truth for scoring) but must never be passed to
-`build_merged_dataset.py` / `generate_bbox_dataset.py --extra_clip` — the same
+kept purely as evaluation.** Both are fully hand-labeled (so they carry real
+ground truth for scoring) but must never reach a training merge — the same
 reasoning `laying_dim.MOV` (the *other* clip, in `held_out/` directly, from
 round 6's diagnostic — not to be confused with this batch's `Laying_Dim_HM.mp4`)
 was protected for: a clip no model has trained on is the only way to tell "v7
 actually got better at the hard case" from "v7 fit the new labels."
 
-Everything else in this batch (auto-label tier, patch tier, and
-`Behind_Chair_HM` / `Blanket_Cover_HM` from the full-hand-label tier) is
-available for training once labeled.
+Labeling is now done, and `handlabels.py`'s own guard turns "must never reach
+a training merge" into something enforceable rather than a rule to remember:
+`generate_bbox_dataset.py` hard-errors if a `--handlabels_dir` contains labels
+for a clip not also passed via `--extra_clip` ("Hand labels reference clip(s)
+not in this run"). Originally all four full-hand-label clips lived in one
+`handlabels/round6/`, which would have forced a future round-7 run to either
+include the held-back pair or crash. **Split after labeling finished:**
 
-**Enforcement note:** nothing in `footage_paths.py` currently distinguishes
-"triaged, approved for training" clips from "triaged, held back for eval"
-within the same folder — both look identical to `is_protected()`. Whoever
-runs round 7 must apply this by hand (never pass `Laying_Dim_HM.mp4` or
-`Behind_Bed_HM.mp4` via `--extra_clip`), not by moving files, since moving
-files back and forth is exactly the kind of manual bookkeeping this project's
-`held_out/` guard was built to replace with a hard refusal. Worth a
-`--extra_clip` allowlist check if this pattern repeats in round 8.
+- `handlabels/round6/` — **trainable**: `Blanket_Cover_HM` (152 frames),
+  `Behind_Chair_HM` (169 frames). 321 frames, 321 person boxes.
+- `handlabels/round6_heldout/` — **eval-only, never pass to `--extra_clip`**:
+  `Laying_Dim_HM` (153 frames), `Behind_Bed_HM` (145 frames). 298 frames,
+  226 person boxes (Behind_Bed_HM has only 73/145 — plausible for an occlusion
+  clip where the person is fully hidden behind the bed on some frames, not a
+  labeling gap).
+- `handlabels/round6_patch/` — **trainable, patch-only**: `Standing_Walking_Dim_HM`
+  (173 frames), `Sitting_Dim_HM` (211 frames). 384 frames, 384 person boxes.
+
+A round-7 run can now safely point `--handlabels_dir` at `round6/` and
+`round6_patch/` (with the matching clips in `--extra_clip`, patch clips
+**without** `--handlabels_only` per the note above) and the held-back pair is
+physically absent from both — no allowlist to remember, no way to include
+them by accident short of also pointing `--handlabels_dir` at
+`round6_heldout/` directly, which is a deliberate act with its own clip in
+`--extra_clip` to match.
