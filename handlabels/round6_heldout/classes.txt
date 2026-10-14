@@ -1,0 +1,13 @@
+person
+bottle
+cup
+wine glass
+bowl
+chair
+couch
+bed
+dining table
+toilet
+tv
+sink
+refrigerator
