@@ -1,0 +1,550 @@
+﻿### roboflow version (pip show): Version: 1.7.1
+
+### roboflow --help
+
+ Usage: roboflow [OPTIONS] COMMAND [ARGS]...
+
+ Build and deploy computer vision models with Roboflow. Manage datasets, train 
+models, run inference, and deploy workflows — from the command line or via 
+structured JSON for AI agents.
+
+┌─ Options ───────────────────────────────────────────────────────────────────┐
+│  --api-key    -k  TEXT  API key override (default: $ROBOFLOW_API_KEY or     │
+│                         config file)                                        │
+│  --json       -j        Output results as JSON (stable schema, for agents   │
+│                         and piping)                                         │
+│  --quiet      -q        Suppress non-essential output (progress bars,       │
+│                         status messages)                                    │
+│  --version    -v        Show package version and exit                       │
+│  --workspace  -w  TEXT  Workspace URL or ID override (default: configured   │
+│                         default)                                            │
+│  --help       -h        Show this message and exit.                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─ Commands ──────────────────────────────────────────────────────────────────┐
+│  annotation batch admin-get              Get an annotation-board batch.     │
+│  annotation batch admin-list             List annotation-board batches      │
+│                                          with cursor pagination.            │
+│  annotation batch create                 Move selected images into a new    │
+│                                          annotation batch.                  │
+│  annotation batch delete                 Delete an annotation batch.        │
+│  annotation batch get                    Get an established upload batch.   │
+│  annotation batch images                 List image IDs in an annotation    │
+│                                          batch.                             │
+│  annotation batch list                   List established upload batches.   │
+│  annotation batch merge                  Merge source batches into a        │
+│                                          target batch.                      │
+│  annotation job accept                   Accept job images into Dataset     │
+│                                          and assign their splits.           │
+│  annotation job add-images               Move selected images into an       │
+│                                          existing annotation job.           │
+│  annotation job admin-create             Create an annotation job through   │
+│                                          the administration endpoint.       │
+│  annotation job admin-get                Get an annotation job through the  │
+│                                          administration endpoint.           │
+│  annotation job admin-list               List annotation jobs with the      │
+│                                          full paginated response.           │
+│  annotation job create                   Create an annotation job from a    │
+│                                          batch.                             │
+│  annotation job delete-annotations       Delete project annotations from    │
+│                                          every image assigned to a job.     │
+│  annotation job get                      Get annotation job details.        │
+│  annotation job images                   List image IDs assigned to a job.  │
+│  annotation job list                     List annotation jobs with legacy   │
+│                                          list-only output.                  │
+│  annotation job move-to-unassigned       Remove a job and retain its        │
+│                                          images as unassigned.              │
+│  annotation job reassign-images          Create a job by explicitly         │
+│                                          reassigning images.                │
+│  annotation job return-edits             Move a review job back to          │
+│                                          labeling.                          │
+│  annotation job review-image             Set the review status for one      │
+│                                          image.                             │
+│  annotation job review-images            Set a status for every matching    │
+│                                          image in a job.                    │
+│  annotation job submit-review            Advance a labeling job into        │
+│                                          review.                            │
+│  annotation job update                   Update exactly one assignment      │
+│                                          field on a job.                    │
+│  api-key create                          Create a new API key.              │
+│  api-key disable                         Enable or disable an API key       │
+│                                          (default: --disable).              │
+│  api-key get                             Show details for a single API      │
+│                                          key.                               │
+│  api-key list                            List all API keys for the          │
+│                                          workspace.                         │
+│  api-key protect                         Mark an API key as protected.      │
+│  api-key publishable                     Print the workspace publishable    │
+│                                          key (rf_<workspaceId>).            │
+│  api-key revoke                          Permanently revoke an API key.     │
+│                                          This action cannot be undone.      │
+│  api-key update                          Update an API key's display name,  │
+│                                          scopes, or metadata.               │
+│  asynctasks get                          Show the current status of an      │
+│                                          async task.                        │
+│  asynctasks wait                         Block until an async task is       │
+│                                          completed or failed.               │
+│  auth login                              Log in to Roboflow.                │
+│  auth logout                             Remove stored credentials.         │
+│  auth set-region                         Set the Roboflow platform region.  │
+│  auth set-workspace                      Set the default workspace.         │
+│  auth status                             Show current auth status.          │
+│  autolabel job                           Get status and per-subjob          │
+│                                          progress for an auto-label job.    │
+│  autolabel models                        List the foundation models         │
+│                                          available for auto-labeling in     │
+│                                          this workspace.                    │
+│  autolabel preview                       Preview one image with a           │
+│                                          foundation model. Free: no job is  │
+│                                          created.                           │
+│  autolabel start                         Start a hosted auto-label job      │
+│                                          over a batch of images.            │
+│  batch abort                             Abort a Batch Processing job.      │
+│  batch create                            Queue a Workflow over one exact    │
+│                                          or reviewed Asset Library          │
+│                                          selection.                         │
+│  batch list                              List Batch Processing jobs.        │
+│  batch restart                           Restart a Batch Processing job     │
+│                                          with its existing configuration.   │
+│  batch status                            Show current durable job status    │
+│                                          and configuration.                 │
+│  completion bash                         Print bash completion script.      │
+│                                          Usage: eval "$(roboflow            │
+│                                          completion bash)".                 │
+│  completion fish                         Print fish completion script.      │
+│                                          Usage: roboflow completion fish |  │
+│                                          source.                            │
+│  completion install                      Install shell completion. Writes   │
+│                                          the script and updates your shell  │
+│                                          rc. Idempotent.                    │
+│  completion zsh                          Print zsh completion script.       │
+│                                          Usage: eval "$(roboflow            │
+│                                          completion zsh)".                  │
+│  deployment create                       Create a dedicated deployment.     │
+│  deployment delete                       Delete a deployment.               │
+│  deployment get                          Show details for a deployment.     │
+│  deployment list                         List deployments in workspace.     │
+│  deployment log                          Show deployment logs.              │
+│  deployment machine-type                 List available machine types.      │
+│  deployment pause                        Pause a deployment.                │
+│  deployment resume                       Resume a paused deployment.        │
+│  deployment usage                        Show usage statistics.             │
+│  device config                           Show the device's full runtime     │
+│                                          config (sensitive — may contain    │
+│                                          credentials).                      │
+│  device config-history                   List prior config revisions,       │
+│                                          newest first.                      │
+│  device create                           Create a v2 device. Requires the   │
+│                                          device:update scope.               │
+│  device events                           Query device/stream lifecycle      │
+│                                          events.                            │
+│  device get                              Show a single device.              │
+│  device list                             List devices in the workspace.     │
+│  device logs                             Fetch device logs (5 req/min/IP).  │
+│  device stream                           Show a single stream.              │
+│  device streams                          List streams configured on the     │
+│                                          device.                            │
+│  device telemetry                        Fetch aggregated hardware          │
+│                                          telemetry (60 req/min).            │
+│  eval compare                            Compare test-set accuracy and      │
+│                                          median latency without starting    │
+│                                          evaluations.                       │
+│  eval confidence-sweep                   Show the confidence-threshold      │
+│                                          sweep (precision/recall/F1) for    │
+│                                          the test split.                    │
+│  eval confusion-matrix                   Show the confusion matrix for      │
+│                                          *split* at *confidence*.           │
+│  eval get                                Show a single eval's metadata and  │
+│                                          summary metrics.                   │
+│  eval image-predictions                  Show paginated per-image stats     │
+│                                          (TP/FP/FN, augmentations, cluster  │
+│                                          id).                               │
+│  eval list                               List model evaluations in the      │
+│                                          workspace.                         │
+│  eval map-results                        Show per-split mAP results         │
+│                                          (mAP50, mAP50-95, mAP75, by        │
+│                                          object size, per class).           │
+│  eval performance-by-class               Show per-class precision / recall  │
+│                                          / F1 / mAP for the chosen split.   │
+│  eval recommendations                    Show server-generated suggestions  │
+│                                          for improving the model.           │
+│  eval vector-analysis                    Show embedding-cluster             │
+│                                          diagnostics (per-cluster sample    │
+│                                          images + metrics).                 │
+│  folder add-projects                     Add projects to a folder.          │
+│  folder create                           Create a folder.                   │
+│  folder delete                           Delete a folder.                   │
+│  folder get                              Show folder details.               │
+│  folder list                             List folders.                      │
+│  folder remove-projects                  Remove projects from a folder.     │
+│  folder update                           Update a folder.                   │
+│  image annotate                          Upload annotation for an image.    │
+│  image delete                            Delete images from workspace.      │
+│  image get                               Get image details.                 │
+│  image metadata                          Update metadata and/or tags on     │
+│                                          existing images.                   │
+│  image search                            Search media in workspace or       │
+│                                          project.                           │
+│  image upload                            Upload an image file or import a   │
+│                                          directory.                         │
+│  model get                               Show details for a trained model.  │
+│  model infer                             Run inference on an image using a  │
+│                                          trained model.                     │
+│  model list                              List trained models for a          │
+│                                          project.                           │
+│  model star                              Star or unstar a NAS-trained       │
+│                                          model.                             │
+│  model upload                            Upload a trained model.            │
+│  project create                          Create a new project.              │
+│  project delete                          Move a project to Trash (30-day    │
+│                                          retention; cancels in-flight       │
+│                                          trainings).                        │
+│  project fork                            Fork a public Universe project     │
+│                                          into a workspace.                  │
+│  project get                             Show detailed info for a project.  │
+│  project health                          Show dataset health check for a    │
+│                                          project (class balance,            │
+│                                          dimensions, splits).               │
+│  project list                            List projects in a workspace.      │
+│  project restore                         Restore a project from Trash.      │
+│  train cancel                            Cancel an in-flight training run.  │
+│  train delete                            Move a terminal training run to    │
+│                                          the workspace Trash (soft          │
+│                                          delete).                           │
+│  train list                              List a version's training runs     │
+│                                          with their ids.                    │
+│  train recipe                            Show the training recipe schema    │
+│                                          and template for a model type.     │
+│  train restore                           Restore a trashed training run     │
+│                                          (and its models) back into         │
+│                                          listings.                          │
+│  train results                           Run-level training results         │
+│                                          bundle.                            │
+│  train start                             Start training for a dataset       │
+│                                          version.                           │
+│  train stop                              Request a graceful early-stop on   │
+│                                          an in-flight training run.         │
+│  trash list                              List projects, versions, and       │
+│                                          workflows currently in Trash.      │
+│  universe search                         Search Roboflow Universe.          │
+│  version create                          Create a new dataset version.      │
+│  version delete                          Move a version to Trash (30-day    │
+│                                          retention; cancels its in-flight   │
+│                                          training).                         │
+│  version download                        Download a dataset version.        │
+│  version export                          Trigger an async export.           │
+│  version get                             Show detailed info for a version.  │
+│  version list                            List versions for a project.       │
+│  version restore                         Restore a version from Trash       │
+│                                          (parent project must be active).   │
+│  video annotate                          Annotate a native video Source's   │
+│                                          segments from a video-coco file.   │
+│  video infer                             Run video inference.               │
+│  video status                            Check a legacy video inference     │
+│                                          job's status (not native upload    │
+│                                          ingestion).                        │
+│  video upload                            Upload original video bytes as a   │
+│                                          native video Source.               │
+│  video upload-status                     Check a native video upload's      │
+│                                          ingestion status and canonical     │
+│                                          video ID.                          │
+│  vision-events archive-use-case          Archive a vision event use case.   │
+│  vision-events create-use-case           Create a new vision event use      │
+│                                          case.                              │
+│  vision-events metadata-schema           Get the custom metadata schema     │
+│                                          for a use case.                    │
+│  vision-events query                     Query vision events with filters   │
+│                                          and pagination.                    │
+│  vision-events rename-use-case           Rename an existing vision event    │
+│                                          use case.                          │
+│  vision-events unarchive-use-case        Unarchive a vision event use       │
+│                                          case.                              │
+│  vision-events upload-image              Upload an image for use in vision  │
+│                                          events.                            │
+│  vision-events use-cases                 List vision event use cases for    │
+│                                          the workspace.                     │
+│  vision-events write                     Create a single vision event.      │
+│  vision-events write-batch               Create multiple vision events in   │
+│                                          a single request.                  │
+│  workflow create                         Create a new workflow.             │
+│  workflow delete                         Move a workflow to Trash (30-day   │
+│                                          retention).                        │
+│  workflow fork                           Fork a workflow.                   │
+│  workflow get                            Show details for a workflow.       │
+│  workflow list                           List workflows in a workspace.     │
+│  workflow restore                        Restore a workflow from Trash.     │
+│  workflow update                         Update an existing workflow.       │
+│  workflow version list                   List versions of a workflow.       │
+│  workflow-eval agent asset               Print a registered bundle asset's  │
+│                                          original content.                  │
+│  workflow-eval agent bundle              Show a parsed agent bundle.        │
+│  workflow-eval agent bundles             List agent bundles.                │
+│  workflow-eval agent manifest            Show the engine's agent manifest   │
+│                                          (entry skill, skills, bundles,     │
+│                                          assets).                           │
+│  workflow-eval agent skill               Print an agent skill's Markdown.   │
+│  workflow-eval agent skills              List agent skills.                 │
+│  workflow-eval binding suggest           Suggest a BindingSet that maps a   │
+│                                          Workflow to the Spec and Dataset.  │
+│  workflow-eval binding validate          Validate a BindingSet against the  │
+│                                          Spec, Dataset and Workflow.        │
+│  workflow-eval capabilities              List the public operations and     │
+│                                          what this credential may do.       │
+│  workflow-eval case add                  Add one Case to an Eval Dataset.   │
+│  workflow-eval case delete               Remove a Case from the live        │
+│                                          Dataset (Runs that froze it are    │
+│                                          unaffected).                       │
+│  workflow-eval case get                  Show one Case with short-lived     │
+│                                          read URLs for its assets.          │
+│  workflow-eval case import               Import images as incomplete Cases  │
+│                                          in the background.                 │
+│  workflow-eval case import-status        Show a Case import's status and    │
+│                                          progress.                          │
+│  workflow-eval case list                 List Cases in an Eval Dataset.     │
+│  workflow-eval case replace              Replace one Case atomically.       │
+│  workflow-eval case upload               Upload an image as a Case asset    │
+│                                          and print its artifactId.          │
+│  workflow-eval compare                   Compare two or more completed      │
+│                                          Executions (per-check and          │
+│                                          per-Case deltas).                  │
+│  workflow-eval create                    Create an Eval (an empty draft     │
+│                                          when no options are given).        │
+│  workflow-eval dataset compatible-specs  List Specs this Eval Dataset       │
+│                                          satisfies.                         │
+│  workflow-eval dataset create            Create an empty Eval Dataset with  │
+│                                          declared input and ground-truth    │
+│                                          contracts.                         │
+│  workflow-eval dataset get               Show an Eval Dataset and its       │
+│                                          derived summary.                   │
+│  workflow-eval dataset list              List Eval Datasets in the          │
+│                                          workspace.                         │
+│  workflow-eval dataset update            Update an Eval Dataset's name or   │
+│                                          description.                       │
+│  workflow-eval dataset update-contract   Replace the declared input and/or  │
+│                                          ground-truth contracts (may        │
+│                                          rewrite Cases in the background).  │
+│  workflow-eval delete                    Delete an Eval with its Runs,      │
+│                                          results and exclusively owned      │
+│                                          artifacts.                         │
+│  workflow-eval embedding cancel          Cancel an embedding analysis job.  │
+│  workflow-eval embedding get             Show an embedding analysis job     │
+│                                          and its projection result.         │
+│  workflow-eval embedding start           Generate (or reuse) image          │
+│                                          embeddings for an Execution's      │
+│                                          Case inputs.                       │
+│  workflow-eval evaluator get             Show one evaluator and its         │
+│                                          configuration schema.              │
+│  workflow-eval evaluator list            List the installed engine's        │
+│                                          evaluators.                        │
+│  workflow-eval execution capture         Submit a locally captured          │
+│                                          Workflow output for server-side    │
+│                                          scoring.                           │
+│  workflow-eval execution config          Show an Execution's frozen         │
+│                                          Subject, BindingSet and linked     │
+│                                          plan.                              │
+│  workflow-eval execution get             Show one Execution's lifecycle     │
+│                                          and result availability.           │
+│  workflow-eval execution input-cases     List frozen Case inputs and        │
+│                                          checkpoints for a locally          │
+│                                          executed Run.                      │
+│  workflow-eval execution list            List the Executions of a Run.      │
+│  workflow-eval execution overview        Show aggregate Check performance   │
+│                                          and runtime for an Execution.      │
+│  workflow-eval execution result          Show one Case's detailed result    │
+│                                          in an Execution.                   │
+│  workflow-eval execution results         List per-Case results of an        │
+│                                          Execution.                         │
+│  workflow-eval export download-url       Mint a fresh short-lived download  │
+│                                          URL for a completed export.        │
+│  workflow-eval export start              Export a stable Run's results.     │
+│  workflow-eval export status             Show an export job's state and     │
+│                                          result.                            │
+│  workflow-eval get                       Show an Eval with its setup        │
+│                                          state, diagnostics and recent      │
+│                                          Runs.                              │
+│  workflow-eval list                      List Evals in the workspace        │
+│                                          (newest first).                    │
+│  workflow-eval openapi                   Print the Workflow Evals OpenAPI   │
+│                                          3.1 contract.                      │
+│  workflow-eval operation                 Show the status of a deletion      │
+│                                          operation.                         │
+│  workflow-eval preparation cases         List per-Case candidate outputs    │
+│                                          of a preparation.                  │
+│  workflow-eval preparation current       Show the latest preparation for    │
+│                                          the Eval's current setup.          │
+│  workflow-eval preparation get           Show a preparation's state and     │
+│                                          progress.                          │
+│  workflow-eval preparation resume        Resume a preparation, requeueing   │
+│                                          only failed Cases.                 │
+│  workflow-eval preparation start         Run the Eval's Workflow over       │
+│                                          Cases to produce candidate         │
+│                                          outputs for labeling.              │
+│  workflow-eval run cancel                Request cancellation of a queued   │
+│                                          or running Run.                    │
+│  workflow-eval run config                Show a Run's frozen shared         │
+│                                          configuration.                     │
+│  workflow-eval run delete                Delete a Run with its Executions,  │
+│                                          results and artifacts.             │
+│  workflow-eval run get                   Show a Run's lifecycle, frozen     │
+│                                          setup and result availability.     │
+│  workflow-eval run list                  List an Eval's Runs (newest        │
+│                                          first).                            │
+│  workflow-eval run replay                Create a new Run from a previous   │
+│                                          one, optionally replacing          │
+│                                          Subjects and bindings.             │
+│  workflow-eval run rescore               Rescore a Run's retained captures  │
+│                                          with the Eval's current saved      │
+│                                          Spec.                              │
+│  workflow-eval run retry                 Retry missing or operationally     │
+│                                          failed Cases in the same Run.      │
+│  workflow-eval run start                 Start a grouped Run of one or      │
+│                                          more Workflows over the Eval's     │
+│                                          Dataset (may consume credits).     │
+│  workflow-eval schema get                Print an authoring JSON Schema.    │
+│  workflow-eval spec ai-draft             Draft a Spec and bindings with AI  │
+│                                          for an Eval's Subject (consumes    │
+│                                          AI credits; not saved).            │
+│  workflow-eval spec compatible-datasets  List Eval Datasets that satisfy    │
+│                                          this Spec.                         │
+│  workflow-eval spec create               Validate, compile and save a       │
+│                                          Spec.                              │
+│  workflow-eval spec get                  Show the current live Spec.        │
+│  workflow-eval spec list                 List Specs in the workspace.       │
+│  workflow-eval spec update               Replace the live Spec's policy     │
+│                                          and/or metadata.                   │
+│  workflow-eval spec validate             Validate an unsaved Spec and show  │
+│                                          diagnostics and ground-truth       │
+│                                          requirements.                      │
+│  workflow-eval update                    Update an Eval's metadata,         │
+│                                          Spec/Dataset, subjects, bindings   │
+│                                          or server configuration.           │
+│  workspace get                           Get workspace details.             │
+│  workspace list                          List configured workspaces.        │
+│  workspace plan                          Show workspace plan info and       │
+│                                          limits.                            │
+│  workspace stats                         Show annotation/labeling           │
+│                                          statistics.                        │
+│  workspace usage                         Show billing usage report.         │
+└─────────────────────────────────────────────────────────────────────────────┘
+ Tip: enable shell completion with roboflow completion install
+### exit code: 0
+
+### roboflow import --help
+                                                                               
+ Usage: roboflow import [OPTIONS] folder                                       
+                                                                               
+ Import dataset from folder (alias for 'image upload').                        
+                                                                               
+┌─ Arguments ─────────────────────────────────────────────────────────────────┐
+│ *    path      folder  [required]                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─ Options ───────────────────────────────────────────────────────────────────┐
+│ *  --project      -p      TEXT     Project ID [required]                    │
+│    --concurrency  -c      INTEGER  Concurrency [default: 10]                │
+│    --batch-name   -n      TEXT     Batch name                               │
+│    --retries      -r      INTEGER  Retry count [default: 0]                 │
+│    --help         -h               Show this message and exit.              │
+└─────────────────────────────────────────────────────────────────────────────┘
+### exit code: 0
+
+### roboflow image upload --help
+                                                                               
+ Usage: roboflow image upload [OPTIONS] PATH                                   
+                                                                               
+ Upload an image file or import a directory.                                   
+                                                                               
+┌─ Arguments ─────────────────────────────────────────────────────────────────┐
+│ *    path      TEXT  [required]                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─ Options ───────────────────────────────────────────────────────────────────┐
+│ *  --project          -p                        TEXT     Project ID         │
+│                                                          [required]         │
+│    --annotation       -a                        TEXT     Path to annotation │
+│                                                          file (single       │
+│                                                          upload)            │
+│    --annotation-ove…      --no-annotation-o…             Zip flow:          │
+│                                                          overwrite existing │
+│                                                          annotations on     │
+│                                                          duplicate images   │
+│                                                          (default: off,     │
+│                                                          except             │
+│                                                          classification     │
+│                                                          projects where the │
+│                                                          API requires it    │
+│                                                          on)                │
+│    --batch            -b                        TEXT     Batch name         │
+│    --concurrency      -c                        INTEGER  Concurrency for    │
+│                                                          directory import   │
+│                                                          [default: 10]      │
+│    --is-prediction                                       Mark upload as     │
+│                                                          prediction         │
+│    --labelmap                                   TEXT     Path to labelmap   │
+│                                                          file               │
+│    --metadata                                   TEXT     JSON string of     │
+│                                                          key-value metadata │
+│    --no-wait                                             Zip flow: return   │
+│                                                          immediately with   │
+│                                                          task_id instead of │
+│                                                          polling            │
+│    --retries          -r                        INTEGER  Retry failed       │
+│                                                          uploads N times    │
+│                                                          [default: 0]       │
+│    --split            -s                        TEXT     Override split for │
+│                                                          all images         │
+│                                                          (default: infer    │
+│                                                          from folder for    │
+│                                                          dirs, 'train' for  │
+│                                                          files)             │
+│    --tag              -t                        TEXT     Comma-separated    │
+│                                                          tag names          │
+│    --zip-upload                                          Zip the directory  │
+│                                                          client-side and    │
+│                                                          use the async zip  │
+│                                                          upload flow        │
+│    --help             -h                                 Show this message  │
+│                                                          and exit.          │
+└─────────────────────────────────────────────────────────────────────────────┘
+### exit code: 0
+
+### roboflow upload --help
+                                                                               
+ Usage: roboflow upload [OPTIONS] PATH                                         
+                                                                               
+ Upload images to a project (alias for 'image upload').                        
+                                                                               
+┌─ Arguments ─────────────────────────────────────────────────────────────────┐
+│ *    path      TEXT  [required]                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─ Options ───────────────────────────────────────────────────────────────────┐
+│ *  --project        -p      TEXT     Project ID [required]                  │
+│    --metadata       -M      TEXT     JSON metadata                          │
+│    --annotation     -a      TEXT     Annotation file                        │
+│    --batch          -b      TEXT     Batch name                             │
+│    --concurrency    -c      INTEGER  Concurrency [default: 10]              │
+│    --is-prediction                   Mark as prediction                     │
+│    --labelmap       -m      TEXT     Labelmap file                          │
+│    --retries        -r      INTEGER  Retry count [default: 0]               │
+│    --split          -s      TEXT     Override split for all uploaded images │
+│                                      (default: infer from folder)           │
+│    --tag            -t      TEXT     Tag names                              │
+│    --help           -h               Show this message and exit.            │
+└─────────────────────────────────────────────────────────────────────────────┘
+### exit code: 0
+
+### roboflow image --help
+                                                                               
+ Usage: roboflow image [OPTIONS] COMMAND [ARGS]...                             
+                                                                               
+ Image management commands                                                     
+                                                                               
+┌─ Options ───────────────────────────────────────────────────────────────────┐
+│ --help  -h        Show this message and exit.                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─ Commands ──────────────────────────────────────────────────────────────────┐
+│ annotate  Upload annotation for an image.                                   │
+│ delete    Delete images from workspace.                                     │
+│ get       Get image details.                                                │
+│ metadata  Update metadata and/or tags on existing images.                   │
+│ search    Search media in workspace or project.                             │
+│ upload    Upload an image file or import a directory.                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+### exit code: 0
