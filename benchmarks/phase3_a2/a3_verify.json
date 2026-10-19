@@ -1,0 +1,33 @@
+{
+  "original_train": 15043,
+  "dropped": 2450,
+  "new_train": 12593,
+  "train_count_ok": true,
+  "dropped_present_in_copy": 0,
+  "dropped_hand_drawn": 0,
+  "hand_frames_total": 1646,
+  "hand_frames_in_copy": 1646,
+  "val_label_files_orig_new": [
+    2610,
+    2610
+  ],
+  "val_images_orig_new": [
+    2610,
+    2610
+  ],
+  "val_label_sha_mismatch": 0,
+  "train_label_sha_mismatch_vs_original": 0,
+  "train_images_without_label": 0,
+  "images_hardlinked": 15203,
+  "images_real_copies_bad_eoi": [],
+  "cache_files_in_copy": [],
+  "class_names_ok": true,
+  "stats": {
+    "train_labels": 12593,
+    "train_images": 12593,
+    "train_dropped": 2450,
+    "val_labels": 2610,
+    "val_images": 2610
+  },
+  "ALL_OK": true
+}

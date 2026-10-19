@@ -1,0 +1,82 @@
+{
+  "evaluated_at": "2026-10-10T06:31:59",
+  "conditions": {
+    "recall_within_0.02_on_each_set": {
+      "pass": false,
+      "rows": [
+        {
+          "set": "heldout_objects",
+          "iou": "0.5",
+          "A": "58/93=0.624",
+          "B": "52/93=0.559",
+          "pass": false
+        },
+        {
+          "set": "heldout_objects",
+          "iou": "0.3",
+          "A": "58/93=0.624",
+          "B": "52/93=0.559",
+          "pass": false
+        },
+        {
+          "set": "heldout_objects_rotfix",
+          "iou": "0.5",
+          "A": "66/93=0.710",
+          "B": "63/93=0.677",
+          "pass": false
+        },
+        {
+          "set": "heldout_objects_rotfix",
+          "iou": "0.3",
+          "A": "66/93=0.710",
+          "B": "63/93=0.677",
+          "pass": false
+        },
+        {
+          "set": "reserved388_partial",
+          "iou": "0.5",
+          "A": "107/249=0.430",
+          "B": "109/249=0.438",
+          "pass": true
+        },
+        {
+          "set": "reserved388_partial",
+          "iou": "0.3",
+          "A": "109/249=0.438",
+          "B": "109/249=0.438",
+          "pass": true
+        },
+        {
+          "set": "round6_heldout",
+          "iou": "0.5",
+          "A": "50/226=0.221",
+          "B": "50/226=0.221",
+          "pass": true
+        },
+        {
+          "set": "round6_heldout",
+          "iou": "0.3",
+          "A": "50/226=0.221",
+          "B": "50/226=0.221",
+          "pass": true
+        }
+      ]
+    },
+    "empty_fp_le_A_plus_2pp": {
+      "pass": true,
+      "A_pct": 0.0,
+      "B_pct": 0.0
+    },
+    "time": {
+      "pass": true,
+      "B_mean_s_per_epoch": 420.7732180198034,
+      "n_epochs_measured": 30,
+      "projected_C_finish": "2026-10-10T12:57:41",
+      "limit_run_start_plus_11.5h": "2026-10-10T13:17:00"
+    }
+  },
+  "run_C": false,
+  "failed_conditions": [
+    "recall_within_0.02_on_each_set"
+  ]
+}

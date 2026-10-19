@@ -1,0 +1,68 @@
+{
+ "definition": "EXPLORATORY, defined AFTER looking: a person box whose cx, cy, w, h each fall inside the min-max envelope of the GT person boxes in the AI-identified 'box on bedding' sample tiles",
+ "envelope_cx_cy_w_h": [
+  [
+   0.428566,
+   0.574728
+  ],
+  [
+   0.686617,
+   0.811331
+  ],
+  [
+   0.066514,
+   0.426101
+  ],
+  [
+   0.115494,
+   0.323048
+  ]
+ ],
+ "n_sample_boxes": 46,
+ "counts_by_clip_provenance": {
+  "Bedroom_Falll | hand-drawn (round5)": {
+   "frames": 62,
+   "signature": 32
+  },
+  "Hussain_Testing_7_23_26_old | MediaPipe-derived": {
+   "frames": 307,
+   "signature": 2
+  },
+  "Sanawar_Testing_7_22_26_Fall_Curled | MediaPipe-derived": {
+   "frames": 41,
+   "signature": 1
+  },
+  "Sanawar_Testing_7_22_26_Sit_1 | MediaPipe-derived": {
+   "frames": 78,
+   "signature": 28
+  },
+  "Sanawar_Testing_7_22_26_old | MediaPipe-derived": {
+   "frames": 307,
+   "signature": 2
+  },
+  "Sanawar_Testing_7_25_26_Far_fall | MediaPipe-derived": {
+   "frames": 62,
+   "signature": 2
+  },
+  "Sanawar_Testing_7_25_26_Occluded_fall | MediaPipe-derived": {
+   "frames": 83,
+   "signature": 2
+  },
+  "Sanawar_Testing_7_25_26_Off_axis_fall | MediaPipe-derived": {
+   "frames": 39,
+   "signature": 3
+  },
+  "Sanawar_Testing_7_25_26_Slow_fall | MediaPipe-derived": {
+   "frames": 80,
+   "signature": 38
+  },
+  "Sitting_Dim_HM | MediaPipe-derived": {
+   "frames": 650,
+   "signature": 258
+  },
+  "Standing_Walking_Dim_HM | MediaPipe-derived": {
+   "frames": 575,
+   "signature": 85
+  }
+ }
+}

@@ -1,0 +1,188 @@
+{
+  "run_start": "2026-10-10T01:47:00",
+  "driver_launches": [
+    "2026-10-10T02:09:43"
+  ],
+  "stages": {
+    "S0_preflight": {
+      "status": "done",
+      "pid": 43556,
+      "start": "2026-10-10T02:09:43",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S0_preflight.log",
+      "cmd": [
+        "stage0_preflight.py"
+      ],
+      "end": "2026-10-10T02:10:58",
+      "returncode": 0
+    },
+    "S1_control": {
+      "status": "done",
+      "pid": 43636,
+      "start": "2026-10-10T02:10:58",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S1_control.log",
+      "cmd": [
+        "stage1_control.py"
+      ],
+      "end": "2026-10-10T02:14:58",
+      "returncode": 0
+    },
+    "S2_stock": {
+      "status": "done",
+      "pid": 34952,
+      "start": "2026-10-10T02:14:58",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S2_stock.log",
+      "cmd": [
+        "score_models.py",
+        "--models",
+        "stock_yolo26n",
+        "stock_yolo26s",
+        "stock_yolov8n",
+        "--confs",
+        "0.4",
+        "0.25"
+      ],
+      "end": "2026-10-10T02:25:28",
+      "returncode": 0
+    },
+    "S3_enhance_A_stock": {
+      "status": "done",
+      "pid": 33672,
+      "start": "2026-10-10T02:25:28",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S3_enhance_A_stock.log",
+      "cmd": [
+        "stage3_enhance.py",
+        "--models",
+        "A_v7",
+        "stock_yolo26n",
+        "--grids"
+      ],
+      "end": "2026-10-10T02:31:28",
+      "returncode": 0
+    },
+    "S4a_pose_score": {
+      "status": "done",
+      "pid": 42804,
+      "start": "2026-10-10T02:31:28",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S4a_pose_score.log",
+      "cmd": [
+        "pose_v2.py",
+        "--part",
+        "score"
+      ],
+      "end": "2026-10-10T02:33:13",
+      "returncode": 0
+    },
+    "S4b_pose_speed": {
+      "status": "done",
+      "pid": 44600,
+      "start": "2026-10-10T02:33:13",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S4b_pose_speed.log",
+      "cmd": [
+        "pose_v2.py",
+        "--part",
+        "speed"
+      ],
+      "end": "2026-10-10T02:56:58",
+      "returncode": 0
+    },
+    "S5_train_B": {
+      "status": "done",
+      "attempts": [
+        {
+          "kind": "fresh",
+          "args": [
+            "stage5_train.py",
+            "--key",
+            "B_yolo26n_30ep",
+            "--name",
+            "B_yolo26n_30ep",
+            "--epochs",
+            "30",
+            "--patience",
+            "10"
+          ],
+          "sub_stage": "S5_train_B__attempt1_fresh"
+        }
+      ],
+      "start": "2026-10-10T02:56:58",
+      "pid": 28684,
+      "end": "2026-10-10T06:28:59",
+      "note": "succeeded on attempt fresh"
+    },
+    "S5_train_B__attempt1_fresh": {
+      "status": "done",
+      "pid": 28684,
+      "start": "2026-10-10T02:56:58",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S5_train_B_fresh.log",
+      "cmd": [
+        "stage5_train.py",
+        "--key",
+        "B_yolo26n_30ep",
+        "--name",
+        "B_yolo26n_30ep",
+        "--epochs",
+        "30",
+        "--patience",
+        "10"
+      ],
+      "end": "2026-10-10T06:28:59",
+      "returncode": 0
+    },
+    "S5_score_B": {
+      "status": "done",
+      "pid": 42028,
+      "start": "2026-10-10T06:28:59",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S5_score_B.log",
+      "cmd": [
+        "score_models.py",
+        "--models",
+        "B_yolo26n_30ep",
+        "--confs",
+        "0.4",
+        "--val"
+      ],
+      "end": "2026-10-10T06:31:59",
+      "returncode": 0
+    },
+    "S6_gate": {
+      "status": "done",
+      "pid": 16316,
+      "start": "2026-10-10T06:31:59",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S6_gate.log",
+      "cmd": [
+        "stage6_gate.py"
+      ],
+      "end": "2026-10-10T06:32:14",
+      "returncode": 0
+    },
+    "S6_train_C": {
+      "status": "skipped",
+      "note": "C SKIPPED: recall_within_0.02_on_each_set"
+    },
+    "S6_enhance_BC": {
+      "status": "done",
+      "pid": 21144,
+      "start": "2026-10-10T06:32:14",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S6_enhance_BC.log",
+      "cmd": [
+        "stage3_enhance.py",
+        "--models",
+        "B_yolo26n_30ep"
+      ],
+      "end": "2026-10-10T06:35:14",
+      "returncode": 0
+    },
+    "S7_report": {
+      "status": "done",
+      "pid": 1236,
+      "start": "2026-10-10T06:35:14",
+      "log": "D:\\FYP\\PROJECT FILES\\fatima\\benchmarks\\overnight_yolo26\\logs\\S7_report.log",
+      "cmd": [
+        "report.py"
+      ],
+      "end": "2026-10-10T06:35:29",
+      "returncode": 0
+    }
+  },
+  "finished": "2026-10-10T06:35:29"
+}

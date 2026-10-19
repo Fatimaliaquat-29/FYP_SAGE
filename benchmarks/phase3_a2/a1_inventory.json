@@ -1,0 +1,238 @@
+{
+  "train_images": 15043,
+  "pattern_counts": {
+    "coco/base": 5400,
+    "empty/base": 539,
+    "own/base": 4552,
+    "own/repeat": 4552
+  },
+  "max_repeat_index": 1,
+  "repeat_suffix_values": {
+    "0": 10491,
+    "1": 4552
+  },
+  "own_clips": {
+    "Bedroom_Falll": {
+      "base": 62,
+      "r1": 62
+    },
+    "Behind_Chair_HM": {
+      "base": 169,
+      "r1": 169
+    },
+    "Blanket_Cover_HM": {
+      "base": 152,
+      "r1": 152
+    },
+    "Hussain_Testing_7_23_26_normal": {
+      "base": 192,
+      "r1": 192
+    },
+    "Hussain_Testing_7_23_26_old": {
+      "base": 307,
+      "r1": 307
+    },
+    "Sanawar_Testing_7_22_26_Fall_Curled": {
+      "base": 41,
+      "r1": 41
+    },
+    "Sanawar_Testing_7_22_26_Fast_Sit": {
+      "base": 31,
+      "r1": 31
+    },
+    "Sanawar_Testing_7_22_26_Legs_occluded": {
+      "base": 77,
+      "r1": 77
+    },
+    "Sanawar_Testing_7_22_26_Lying_legs_straight": {
+      "base": 73,
+      "r1": 73
+    },
+    "Sanawar_Testing_7_22_26_Lying_straight": {
+      "base": 73,
+      "r1": 73
+    },
+    "Sanawar_Testing_7_22_26_Normal_Fall_1": {
+      "base": 77,
+      "r1": 77
+    },
+    "Sanawar_Testing_7_22_26_Off_axis": {
+      "base": 95,
+      "r1": 95
+    },
+    "Sanawar_Testing_7_22_26_Sit_1": {
+      "base": 78,
+      "r1": 78
+    },
+    "Sanawar_Testing_7_22_26_Sit_3": {
+      "base": 88,
+      "r1": 88
+    },
+    "Sanawar_Testing_7_22_26_Standing_1": {
+      "base": 84,
+      "r1": 84
+    },
+    "Sanawar_Testing_7_22_26_Standing_2": {
+      "base": 90,
+      "r1": 90
+    },
+    "Sanawar_Testing_7_22_26_Standing_3": {
+      "base": 63,
+      "r1": 63
+    },
+    "Sanawar_Testing_7_22_26_normal": {
+      "base": 192,
+      "r1": 192
+    },
+    "Sanawar_Testing_7_22_26_old": {
+      "base": 307,
+      "r1": 307
+    },
+    "Sanawar_Testing_7_25_26_Backward_fall": {
+      "base": 53,
+      "r1": 53
+    },
+    "Sanawar_Testing_7_25_26_Chair_fall": {
+      "base": 105,
+      "r1": 105
+    },
+    "Sanawar_Testing_7_25_26_Fall_and_lie": {
+      "base": 137,
+      "r1": 137
+    },
+    "Sanawar_Testing_7_25_26_Far_fall": {
+      "base": 62,
+      "r1": 62
+    },
+    "Sanawar_Testing_7_25_26_Occluded_fall": {
+      "base": 83,
+      "r1": 83
+    },
+    "Sanawar_Testing_7_25_26_Off_axis_fall": {
+      "base": 39,
+      "r1": 39
+    },
+    "Sanawar_Testing_7_25_26_Side_fall": {
+      "base": 77,
+      "r1": 77
+    },
+    "Sanawar_Testing_7_25_26_Slow_fall": {
+      "base": 80,
+      "r1": 80
+    },
+    "Sitting_Dim_HM": {
+      "base": 861,
+      "r1": 861
+    },
+    "Standing_Walking_Dim_HM": {
+      "base": 748,
+      "r1": 748
+    },
+    "TV_Lounge_Fallll": {
+      "base": 56,
+      "r1": 56
+    }
+  },
+  "own_provenance": {
+    "hand_byte": 236,
+    "hand_canon": 1410,
+    "no_hand": 7458
+  },
+  "per_round_provenance": {
+    "round5|hand_byte|base": 118,
+    "round5|hand_byte|repeat": 118,
+    "round6|hand_canon|base": 321,
+    "round6|hand_canon|repeat": 321,
+    "round6_patch|hand_canon|base": 384,
+    "round6_patch|hand_canon|repeat": 384
+  },
+  "round_coverage": {
+    "round5": {
+      "hand_label_files": 118,
+      "base_frames_in_train_matched": 118,
+      "stems_in_train_any_content": 118,
+      "stems_in_val": 0,
+      "stems_absent_from_train_and_val": 0
+    },
+    "round6": {
+      "hand_label_files": 321,
+      "base_frames_in_train_matched": 321,
+      "stems_in_train_any_content": 321,
+      "stems_in_val": 0,
+      "stems_absent_from_train_and_val": 0
+    },
+    "round6_patch": {
+      "hand_label_files": 384,
+      "base_frames_in_train_matched": 384,
+      "stems_in_train_any_content": 384,
+      "stems_in_val": 0,
+      "stems_absent_from_train_and_val": 0
+    },
+    "round6_heldout": {
+      "hand_label_files": 298,
+      "base_frames_in_train_matched": 0,
+      "stems_in_train_any_content": 0,
+      "stems_in_val": 0,
+      "stems_absent_from_train_and_val": 298
+    }
+  },
+  "target_clips_train": {
+    "Sitting_Dim_HM|hand_canon|base": 211,
+    "Sitting_Dim_HM|hand_canon|repeat": 211,
+    "Sitting_Dim_HM|no_hand|base": 650,
+    "Sitting_Dim_HM|no_hand|repeat": 650,
+    "Standing_Walking_Dim_HM|hand_canon|base": 173,
+    "Standing_Walking_Dim_HM|hand_canon|repeat": 173,
+    "Standing_Walking_Dim_HM|no_hand|base": 575,
+    "Standing_Walking_Dim_HM|no_hand|repeat": 575
+  },
+  "target_clips_val_images": {},
+  "content_match_other_stem_count": 644,
+  "content_match_other_stem_examples": [
+    [
+      "own_Bedroom_Falll_000010",
+      "round5/Bedroom_Falll_000020"
+    ],
+    [
+      "own_Bedroom_Falll_000010_r1",
+      "round5/Bedroom_Falll_000020"
+    ],
+    [
+      "own_Bedroom_Falll_000020",
+      "round5/Bedroom_Falll_000010"
+    ],
+    [
+      "own_Bedroom_Falll_000020_r1",
+      "round5/Bedroom_Falll_000010"
+    ],
+    [
+      "own_Bedroom_Falll_000180",
+      "round5/Bedroom_Falll_000190"
+    ],
+    [
+      "own_Bedroom_Falll_000180_r1",
+      "round5/Bedroom_Falll_000190"
+    ],
+    [
+      "own_Bedroom_Falll_000190",
+      "round5/Bedroom_Falll_000180"
+    ],
+    [
+      "own_Bedroom_Falll_000190_r1",
+      "round5/Bedroom_Falll_000180"
+    ],
+    [
+      "own_Bedroom_Falll_000200",
+      "round5/Bedroom_Falll_000210;round5/Bedroom_Falll_000220;round5/Bedroom_Falll_000230"
+    ],
+    [
+      "own_Bedroom_Falll_000200_r1",
+      "round5/Bedroom_Falll_000210;round5/Bedroom_Falll_000220;round5/Bedroom_Falll_000230"
+    ]
+  ],
+  "repeat_label_mismatch_groups": 0,
+  "repeat_without_base_groups": 0,
+  "missing_label_files": 0,
+  "hand_duplicate_stems_across_rounds": [],
+  "heldout_stems_in_train": []
+}

@@ -1,0 +1,248 @@
+{
+  "baseline_reproduction": [
+    {
+      "clip_id": "S0722_Fall_Curled",
+      "status": "MISMATCH",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "FN",
+      "fall_ref": "TP (latency 9 frames)",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Fast_Sit",
+      "status": "MISMATCH",
+      "accuracy_now": 0.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Lying_legs_straight",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Lying_straight",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_newTest",
+      "status": "MISMATCH",
+      "accuracy_now": 79.2,
+      "accuracy_ref": 74.0,
+      "fall_now": "TP (latency 71 frames)",
+      "fall_ref": "TP (latency 76 frames)",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Normal_Fall_1",
+      "status": "MISMATCH",
+      "accuracy_now": 77.8,
+      "accuracy_ref": 83.3,
+      "fall_now": "FP frames [151]",
+      "fall_ref": "TP (latency 18 frames)",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Normal_Fall_2",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "TP (latency 71 frames)",
+      "fall_ref": "TP (latency 8 frames)",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_normal",
+      "status": "MISMATCH",
+      "accuracy_now": 88.0,
+      "accuracy_ref": 89.4,
+      "fall_now": "TP (latency 75 frames)",
+      "fall_ref": "TP (latency 81 frames)",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Off_axis",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_old",
+      "status": "MISMATCH",
+      "accuracy_now": 97.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "TP (latency 106 frames)",
+      "fall_ref": "TP (latency 114 frames)",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Sit_1",
+      "status": "MISMATCH",
+      "accuracy_now": 65.6,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Sit_2",
+      "status": "MISMATCH",
+      "accuracy_now": 65.6,
+      "accuracy_ref": 54.4,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Sit_3",
+      "status": "MISMATCH",
+      "accuracy_now": 0.0,
+      "accuracy_ref": 94.5,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Standing_1",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Standing_2",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0722_Standing_3",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "-",
+      "fall_ref": "-",
+      "source": "results/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Backward_fall",
+      "status": "MISMATCH",
+      "accuracy_now": 38.5,
+      "accuracy_ref": 29.5,
+      "fall_now": "FN",
+      "fall_ref": "FN",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Chair_fall",
+      "status": "MISMATCH",
+      "accuracy_now": 0.0,
+      "accuracy_ref": 21.5,
+      "fall_now": "FN",
+      "fall_ref": "TP (latency 114 frames)",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Fall_and_lie",
+      "status": "MISMATCH",
+      "accuracy_now": 29.6,
+      "accuracy_ref": 54.4,
+      "fall_now": "TP (latency 16 frames)",
+      "fall_ref": "TP (latency 8 frames)",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Far_fall",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "TP (latency 53 frames)",
+      "fall_ref": "TP (latency 60 frames)",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Occluded_fall",
+      "status": "MISMATCH",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 63.8,
+      "fall_now": "TP (latency 52 frames)",
+      "fall_ref": "TP (latency 57 frames)",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Off_axis_fall",
+      "status": "OK",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 100.0,
+      "fall_now": "TP (latency 16 frames)",
+      "fall_ref": "TP (latency 66 frames)",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Side_fall",
+      "status": "MISMATCH",
+      "accuracy_now": 95.3,
+      "accuracy_ref": 77.2,
+      "fall_now": "TP (latency 67 frames)",
+      "fall_ref": "TP (latency 73 frames)",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    },
+    {
+      "clip_id": "S0725_Slow_fall",
+      "status": "MISMATCH",
+      "accuracy_now": 100.0,
+      "accuracy_ref": 71.7,
+      "fall_now": "TP (latency 27 frames)",
+      "fall_ref": "TP (latency 50 frames)",
+      "source": "results/new_test_heuristic_extended/real_footage_results.md"
+    }
+  ],
+  "overlays": [
+    "results\\overlays\\lying_S0807_Floor_long_lie_frame132.png",
+    "results\\overlays\\lying_S0807_Floor_long_lie_frame330.png",
+    "results\\overlays\\low_light_H0730_Bend_pickup_lowLight_frame23.png",
+    "results\\overlays\\low_light_H0730_Bend_pickup_lowLight_frame58.png",
+    "results\\overlays\\occluded_legs_H0730_Sit_Stand_AnklesInvisible_frame42.png",
+    "results\\overlays\\occluded_legs_H0730_Sit_Stand_AnklesInvisible_frame105.png"
+  ],
+  "coordinate_sanity": {
+    "n_coords_checked": 242819,
+    "n_out_of_range": 0,
+    "n_lr_frames_compared": 13450,
+    "n_lr_disagreements": 627
+  },
+  "historical_unreproducible": {
+    "H0723_normal": {
+      "accuracy": 89.4,
+      "fall": "TP (latency 43 frames)",
+      "source": "results/hussain_testing_heuristic/real_footage_results.md",
+      "reason": "GT file is now an xlsx/zip disguised as .csv; unparseable today"
+    },
+    "H0723_old": {
+      "accuracy": 100.0,
+      "fall": "FP frames [475, 476, 477, 478, 479]",
+      "source": "results/hussain_testing_heuristic/real_footage_results.md",
+      "reason": "GT file is now an xlsx/zip disguised as .csv; unparseable today"
+    }
+  }
+}

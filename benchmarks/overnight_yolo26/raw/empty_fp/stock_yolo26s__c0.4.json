@@ -1,0 +1,54 @@
+{
+  "model": "stock_yolo26s",
+  "conf": 0.4,
+  "imgsz": 640,
+  "stride": 1,
+  "dir": "D:\\FYP\\PROJECT FILES\\fatima\\yolo_testing\\Reserved\\Empty",
+  "clips": {
+    "Bedroom_Empty.mov": {
+      "frames": 854,
+      "fp_frames": 0,
+      "person_boxes": 0,
+      "worst": []
+    },
+    "empty_ground_mahaRoom.MOV": {
+      "frames": 1012,
+      "fp_frames": 0,
+      "person_boxes": 0,
+      "worst": []
+    },
+    "TV_Lounge_1_Empty.mov": {
+      "frames": 826,
+      "fp_frames": 0,
+      "person_boxes": 0,
+      "worst": []
+    },
+    "TV_Lounge_2_Empty.mov": {
+      "frames": 497,
+      "fp_frames": 1,
+      "person_boxes": 1,
+      "worst": [
+        [
+          0.4234158992767334,
+          365
+        ]
+      ]
+    },
+    "WhatsApp Video 2026-07-31 at 5.49.30 PM.mp4": {
+      "frames": 569,
+      "fp_frames": 0,
+      "person_boxes": 0,
+      "worst": []
+    },
+    "WhatsApp Video 2026-07-31 at 7.44.22 PM.mp4": {
+      "frames": 343,
+      "fp_frames": 0,
+      "person_boxes": 0,
+      "worst": []
+    }
+  },
+  "frames": 4101,
+  "fp_frames": 1,
+  "person_boxes": 1,
+  "fp_rate_pct": 0.0243842965130456
+}

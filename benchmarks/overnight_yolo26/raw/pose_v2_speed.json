@@ -1,0 +1,305 @@
+{
+  "host": {
+    "cpu": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "torch_threads": 8,
+    "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU"
+  },
+  "mediapipe_delegate": "default = CPU (TFLite XNNPACK); no GPU delegate requested",
+  "mediapipe_model": "D:\\FYP\\PROJECT FILES\\fatima\\models\\pose_landmarker_full.task",
+  "subset": [
+    "H0730_Bend_pickup_lowLight",
+    "H0730_LyingdownSlowly",
+    "H0802_Fall_backward_2",
+    "S0722_Off_axis",
+    "S0722_Sit_3",
+    "S0722_Standing_1",
+    "S0725_Occluded_fall",
+    "S0807_Floor_long_lie"
+  ],
+  "repeats": 3,
+  "warmup_frames_excluded_per_clip": 10,
+  "input": "identical decoded full-resolution frames (cv2.VideoCapture) fed to every backend; YOLO letterboxes internally to imgsz=640, MediaPipe resizes internally to its own input size",
+  "timed_region": {
+    "pose": "model call + result to numpy (CUDA synchronized), decode excluded",
+    "remap": "_apply_threshold_and_remap (YOLO only, thr 0.5)",
+    "heuristic": "classify_frames() total / frames (mean)"
+  },
+  "frame_sizes": {
+    "H0730_Bend_pickup_lowLight": [
+      1280,
+      720
+    ],
+    "H0730_LyingdownSlowly": [
+      1280,
+      720
+    ],
+    "H0802_Fall_backward_2": [
+      1920,
+      1080
+    ],
+    "S0722_Off_axis": [
+      1080,
+      1920
+    ],
+    "S0722_Sit_3": [
+      1080,
+      1920
+    ],
+    "S0722_Standing_1": [
+      1080,
+      1920
+    ],
+    "S0725_Occluded_fall": [
+      576,
+      1024
+    ],
+    "S0807_Floor_long_lie": [
+      1080,
+      1920
+    ]
+  },
+  "runs": [
+    {
+      "rep": 1,
+      "backend": "mediapipe",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 17.164850083645433,
+      "pose_p95_ms": 19.263895001495257,
+      "pose_mean_ms": 16.91707215587628,
+      "heuristic_mean_ms_per_frame": 0.3991979543721351,
+      "remap_mean_ms_per_frame": null
+    },
+    {
+      "rep": 1,
+      "backend": "yolo26n-pose",
+      "device": "cuda:0",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 15.077849966473877,
+      "pose_p95_ms": 20.252149971202012,
+      "pose_mean_ms": 15.563059643863928,
+      "heuristic_mean_ms_per_frame": 0.38364823970972045,
+      "remap_mean_ms_per_frame": 0.03660461463505574
+    },
+    {
+      "rep": 1,
+      "backend": "yolo26n-pose",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 44.38695003045723,
+      "pose_p95_ms": 50.306654954329126,
+      "pose_mean_ms": 44.78784065257664,
+      "heuristic_mean_ms_per_frame": 0.46038111320897923,
+      "remap_mean_ms_per_frame": 0.05321874404875482
+    },
+    {
+      "rep": 1,
+      "backend": "yolo26s-pose",
+      "device": "cuda:0",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 14.046800031792372,
+      "pose_p95_ms": 18.8843299227301,
+      "pose_mean_ms": 14.759516073105273,
+      "heuristic_mean_ms_per_frame": 0.3777447670120409,
+      "remap_mean_ms_per_frame": 0.038120694583428975
+    },
+    {
+      "rep": 1,
+      "backend": "yolo26s-pose",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 87.88464998360723,
+      "pose_p95_ms": 97.40923995850606,
+      "pose_mean_ms": 88.58968249415521,
+      "heuristic_mean_ms_per_frame": 0.4747230257749465,
+      "remap_mean_ms_per_frame": 0.055053282540635365
+    },
+    {
+      "rep": 2,
+      "backend": "mediapipe",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 18.193199997767806,
+      "pose_p95_ms": 19.547369953943416,
+      "pose_mean_ms": 17.58200430143606,
+      "heuristic_mean_ms_per_frame": 0.40227378679565257,
+      "remap_mean_ms_per_frame": null
+    },
+    {
+      "rep": 2,
+      "backend": "yolo26n-pose",
+      "device": "cuda:0",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 14.849699975457042,
+      "pose_p95_ms": 19.43612492759712,
+      "pose_mean_ms": 15.30656097875954,
+      "heuristic_mean_ms_per_frame": 0.38327792583859316,
+      "remap_mean_ms_per_frame": 0.03719110372826301
+    },
+    {
+      "rep": 2,
+      "backend": "yolo26n-pose",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 44.31944998214021,
+      "pose_p95_ms": 50.374264997662976,
+      "pose_mean_ms": 44.734005342386425,
+      "heuristic_mean_ms_per_frame": 0.4701953377755453,
+      "remap_mean_ms_per_frame": 0.052436203578421464
+    },
+    {
+      "rep": 2,
+      "backend": "yolo26s-pose",
+      "device": "cuda:0",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 13.991100015118718,
+      "pose_p95_ms": 19.121605076361448,
+      "pose_mean_ms": 14.724033876528557,
+      "heuristic_mean_ms_per_frame": 0.3770451950548229,
+      "remap_mean_ms_per_frame": 0.03799476693353335
+    },
+    {
+      "rep": 2,
+      "backend": "yolo26s-pose",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 87.74984994670376,
+      "pose_p95_ms": 96.88241999247111,
+      "pose_mean_ms": 88.49450064310389,
+      "heuristic_mean_ms_per_frame": 0.4637946241130285,
+      "remap_mean_ms_per_frame": 0.05526303514824041
+    },
+    {
+      "rep": 3,
+      "backend": "mediapipe",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 17.16205006232485,
+      "pose_p95_ms": 18.46787499380298,
+      "pose_mean_ms": 16.86968986126,
+      "heuristic_mean_ms_per_frame": 0.39669724072078927,
+      "remap_mean_ms_per_frame": null
+    },
+    {
+      "rep": 3,
+      "backend": "yolo26n-pose",
+      "device": "cuda:0",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 14.940050023142248,
+      "pose_p95_ms": 19.864029932068654,
+      "pose_mean_ms": 15.356993226416899,
+      "heuristic_mean_ms_per_frame": 0.3796701712625103,
+      "remap_mean_ms_per_frame": 0.03770180783153899
+    },
+    {
+      "rep": 3,
+      "backend": "yolo26n-pose",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 44.4638499757275,
+      "pose_p95_ms": 50.55336995865218,
+      "pose_mean_ms": 44.896512265553426,
+      "heuristic_mean_ms_per_frame": 0.48271993350824227,
+      "remap_mean_ms_per_frame": 0.054451046641348914
+    },
+    {
+      "rep": 3,
+      "backend": "yolo26s-pose",
+      "device": "cuda:0",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 13.97224998800084,
+      "pose_p95_ms": 18.6737350479234,
+      "pose_mean_ms": 14.743866021933751,
+      "heuristic_mean_ms_per_frame": 0.3747581827168935,
+      "remap_mean_ms_per_frame": 0.03870656521331615
+    },
+    {
+      "rep": 3,
+      "backend": "yolo26s-pose",
+      "device": "cpu",
+      "n_frames_timed": 2022,
+      "n_frames_total": 2102,
+      "pose_median_ms": 88.06539996294305,
+      "pose_p95_ms": 96.39534500893205,
+      "pose_mean_ms": 88.59999688262991,
+      "heuristic_mean_ms_per_frame": 0.4689096099099802,
+      "remap_mean_ms_per_frame": 0.0642621789466976
+    }
+  ],
+  "summary": {
+    "mediapipe|cpu": {
+      "pose_median_of_rep_medians_ms": 17.164850083645433,
+      "pose_p95_median_ms": 19.263895001495257,
+      "rep_medians_ms": [
+        17.164850083645433,
+        18.193199997767806,
+        17.16205006232485
+      ],
+      "heuristic_ms_per_frame": 0.3991979543721351,
+      "remap_ms_per_frame": null,
+      "n_frames_timed_per_rep": 2022
+    },
+    "yolo26n-pose|cuda:0": {
+      "pose_median_of_rep_medians_ms": 14.940050023142248,
+      "pose_p95_median_ms": 19.864029932068654,
+      "rep_medians_ms": [
+        15.077849966473877,
+        14.849699975457042,
+        14.940050023142248
+      ],
+      "heuristic_ms_per_frame": 0.38327792583859316,
+      "remap_ms_per_frame": 0.03719110372826301,
+      "n_frames_timed_per_rep": 2022
+    },
+    "yolo26n-pose|cpu": {
+      "pose_median_of_rep_medians_ms": 44.38695003045723,
+      "pose_p95_median_ms": 50.374264997662976,
+      "rep_medians_ms": [
+        44.38695003045723,
+        44.31944998214021,
+        44.4638499757275
+      ],
+      "heuristic_ms_per_frame": 0.4701953377755453,
+      "remap_ms_per_frame": 0.05321874404875482,
+      "n_frames_timed_per_rep": 2022
+    },
+    "yolo26s-pose|cuda:0": {
+      "pose_median_of_rep_medians_ms": 13.991100015118718,
+      "pose_p95_median_ms": 18.8843299227301,
+      "rep_medians_ms": [
+        14.046800031792372,
+        13.991100015118718,
+        13.97224998800084
+      ],
+      "heuristic_ms_per_frame": 0.3770451950548229,
+      "remap_ms_per_frame": 0.038120694583428975,
+      "n_frames_timed_per_rep": 2022
+    },
+    "yolo26s-pose|cpu": {
+      "pose_median_of_rep_medians_ms": 87.88464998360723,
+      "pose_p95_median_ms": 96.88241999247111,
+      "rep_medians_ms": [
+        87.88464998360723,
+        87.74984994670376,
+        88.06539996294305
+      ],
+      "heuristic_ms_per_frame": 0.4689096099099802,
+      "remap_ms_per_frame": 0.05526303514824041,
+      "n_frames_timed_per_rep": 2022
+    }
+  }
+}

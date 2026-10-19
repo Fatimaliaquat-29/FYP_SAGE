@@ -1,0 +1,41 @@
+rank,filename,source,why,audit_idx
+1,own_TV_Lounge_Fallll_000360.jpg,TV_Lounge_Fallll,AI UNCLEAR (unverified): hand-drawn box on the sofa; person not discernible even with display brightening,8
+2,own_Behind_Chair_HM_001370.jpg,Behind_Chair_HM,"AI UNCLEAR (unverified): hand-drawn person box on the green chair; no person visible (possibly a fully occluded person behind the chair, possibly a mislabel)",17
+3,own_Behind_Chair_HM_001300.jpg,Behind_Chair_HM,"AI UNCLEAR (unverified): hand-drawn person box on the green chair; no person visible (possibly a fully occluded person behind the chair, possibly a mislabel)",83
+4,own_Standing_Walking_Dim_HM_000492.jpg,Standing_Walking_Dim_HM,AI UNCLEAR (unverified): dark low shape near the red box may be a crouched person; GT box beside it; cannot judge,86
+5,own_TV_Lounge_Fallll_000350.jpg,TV_Lounge_Fallll,AI UNCLEAR (unverified): hand-drawn box on the sofa; person not discernible even with display brightening,97
+6,own_Behind_Chair_HM_000810.jpg,Behind_Chair_HM,"AI UNCLEAR (unverified): hand-drawn person box on the green chair; no person visible (possibly a fully occluded person behind the chair, possibly a mislabel)",100
+7,own_TV_Lounge_Fallll_000340.jpg,TV_Lounge_Fallll,AI UNCLEAR (unverified): hand-drawn box on the sofa; person not discernible even with display brightening,117
+8,own_Sitting_Dim_HM_001464.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT box starts below the head/upper torso of the seated person,9
+9,own_Standing_Walking_Dim_HM_000330.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,25
+10,own_Sitting_Dim_HM_001340.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,19
+11,own_Standing_Walking_Dim_HM_001238.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT box much larger than / offset from the person (includes desk/chair); IoU with the person likely < 0.5,45
+12,own_Sitting_Dim_HM_001438.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,32
+13,own_Standing_Walking_Dim_HM_001260.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT box much larger than / offset from the person (includes desk/chair); IoU with the person likely < 0.5,47
+14,own_Sitting_Dim_HM_001194.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,35
+15,own_Standing_Walking_Dim_HM_000428.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,48
+16,own_Sitting_Dim_HM_001480.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,37
+17,own_Standing_Walking_Dim_HM_000124.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,49
+18,own_Sitting_Dim_HM_001402.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,41
+19,own_Standing_Walking_Dim_HM_000362.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,50
+20,own_Sitting_Dim_HM_001366.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,42
+21,own_Standing_Walking_Dim_HM_000324.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,57
+22,own_Sitting_Dim_HM_001390.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,43
+23,own_Standing_Walking_Dim_HM_001236.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT box much larger than / offset from the person (includes desk/chair); IoU with the person likely < 0.5,61
+24,own_Sitting_Dim_HM_001404.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,44
+25,own_Standing_Walking_Dim_HM_000440.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT box much larger than / offset from the person (includes desk/chair); IoU with the person likely < 0.5,63
+26,own_Sitting_Dim_HM_000962.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,46
+27,own_Standing_Walking_Dim_HM_000410.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT box much larger than / offset from the person (includes desk/chair); IoU with the person likely < 0.5,67
+28,own_Sitting_Dim_HM_001360.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,51
+29,own_Standing_Walking_Dim_HM_000446.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT box much larger than / offset from the person (includes desk/chair); IoU with the person likely < 0.5,70
+30,own_Sitting_Dim_HM_000966.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,54
+31,own_Standing_Walking_Dim_HM_000438.jpg,Standing_Walking_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,73
+32,own_Sitting_Dim_HM_001446.jpg,Sitting_Dim_HM,AI BAD_BOX (unverified): GT person box sits low on the bedding/pillow/desk area while the visible person is elsewhere (standing/sitting above it); person itself not boxed,55
+33,own_Sanawar_Testing_7_25_26_Backward_fall_000092.jpg,Sanawar_Testing_7_25_26_Backward_fall,not in the sample; SUSPECTED_MISSING at conf 0.93 outside the Dim_HM clips,
+34,own_Sanawar_Testing_7_22_26_Normal_Fall_1_000124.jpg,Sanawar_Testing_7_22_26_Normal_Fall_1,not in the sample; SUSPECTED_MISSING at conf 0.90 outside the Dim_HM clips,
+35,own_Sanawar_Testing_7_25_26_Slow_fall_000094.jpg,Sanawar_Testing_7_25_26_Slow_fall,not in the sample; SUSPECTED_MISSING at conf 0.87 outside the Dim_HM clips,
+36,own_Sanawar_Testing_7_22_26_Normal_Fall_1_000126.jpg,Sanawar_Testing_7_22_26_Normal_Fall_1,not in the sample; SUSPECTED_MISSING at conf 0.87 outside the Dim_HM clips,
+37,own_Sanawar_Testing_7_25_26_Slow_fall_000006.jpg,Sanawar_Testing_7_25_26_Slow_fall,not in the sample; SUSPECTED_MISSING at conf 0.85 outside the Dim_HM clips,
+38,own_Sanawar_Testing_7_25_26_Slow_fall_000010.jpg,Sanawar_Testing_7_25_26_Slow_fall,not in the sample; SUSPECTED_MISSING at conf 0.85 outside the Dim_HM clips,
+39,own_Sanawar_Testing_7_25_26_Slow_fall_000038.jpg,Sanawar_Testing_7_25_26_Slow_fall,not in the sample; SUSPECTED_MISSING at conf 0.84 outside the Dim_HM clips,
+40,own_Sanawar_Testing_7_25_26_Slow_fall_000014.jpg,Sanawar_Testing_7_25_26_Slow_fall,not in the sample; SUSPECTED_MISSING at conf 0.84 outside the Dim_HM clips,

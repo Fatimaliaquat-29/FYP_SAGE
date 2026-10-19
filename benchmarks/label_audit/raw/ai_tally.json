@@ -1,0 +1,140 @@
+{
+ "sampling_reason": {
+  "random": {
+   "OK": 32,
+   "UNCLEAR": 2,
+   "BAD_BOX": 6
+  },
+  "ALL": {
+   "OK": 55,
+   "UNCLEAR": 7,
+   "BAD_BOX": 58
+  },
+  "suspected_missing": {
+   "BAD_BOX": 36,
+   "OK": 4
+  },
+  "suspected_phantom": {
+   "BAD_BOX": 11,
+   "OK": 5,
+   "UNCLEAR": 4
+  },
+  "darkest_10pct_own": {
+   "BAD_BOX": 5,
+   "OK": 14,
+   "UNCLEAR": 1
+  }
+ },
+ "source (clip)": {
+  "Sitting_Dim_HM": {
+   "OK": 7,
+   "BAD_BOX": 44
+  },
+  "ALL": {
+   "OK": 55,
+   "UNCLEAR": 7,
+   "BAD_BOX": 58
+  },
+  "Standing_Walking_Dim_HM": {
+   "OK": 19,
+   "BAD_BOX": 14,
+   "UNCLEAR": 1
+  },
+  "Sanawar_Testing_7_22_26_old": {
+   "OK": 3
+  },
+  "Sanawar_Testing_7_22_26_Lying_legs_straight": {
+   "OK": 1
+  },
+  "Sanawar_Testing_7_22_26_normal": {
+   "OK": 2
+  },
+  "TV_Lounge_Fallll": {
+   "UNCLEAR": 3
+  },
+  "Sanawar_Testing_7_25_26_Fall_and_lie": {
+   "OK": 5
+  },
+  "Behind_Chair_HM": {
+   "OK": 2,
+   "UNCLEAR": 3
+  },
+  "Sanawar_Testing_7_22_26_Normal_Fall_1": {
+   "OK": 1
+  },
+  "Hussain_Testing_7_23_26_old": {
+   "OK": 2
+  },
+  "Sanawar_Testing_7_22_26_Standing_3": {
+   "OK": 1
+  },
+  "Hussain_Testing_7_23_26_normal": {
+   "OK": 2
+  },
+  "Sanawar_Testing_7_22_26_Fast_Sit": {
+   "OK": 1
+  },
+  "empty_top_bedroom": {
+   "OK": 1
+  },
+  "Sanawar_Testing_7_22_26_Fall_Curled": {
+   "OK": 1
+  },
+  "Sanawar_Testing_7_22_26_Off_axis": {
+   "OK": 1
+  },
+  "Sanawar_Testing_7_25_26_Slow_fall": {
+   "OK": 4
+  },
+  "Sanawar_Testing_7_25_26_Far_fall": {
+   "OK": 1
+  },
+  "Blanket_Cover_HM": {
+   "OK": 1
+  }
+ },
+ "provenance": {
+  "hand-drawn (round6_patch)": {
+   "OK": 6
+  },
+  "ALL": {
+   "OK": 55,
+   "UNCLEAR": 7,
+   "BAD_BOX": 58
+  },
+  "MediaPipe-derived": {
+   "OK": 45,
+   "BAD_BOX": 58,
+   "UNCLEAR": 1
+  },
+  "hand-drawn (round5)": {
+   "UNCLEAR": 3
+  },
+  "hand-drawn (round6)": {
+   "OK": 3,
+   "UNCLEAR": 3
+  },
+  "empty-room (no person by construction)": {
+   "OK": 1
+  }
+ },
+ "darkness bucket": {
+  "dark": {
+   "OK": 26,
+   "UNCLEAR": 4,
+   "BAD_BOX": 58
+  },
+  "ALL": {
+   "OK": 55,
+   "UNCLEAR": 7,
+   "BAD_BOX": 58
+  },
+  "bright": {
+   "OK": 15,
+   "UNCLEAR": 3
+  },
+  "mid": {
+   "OK": 14
+  }
+ }
+}
