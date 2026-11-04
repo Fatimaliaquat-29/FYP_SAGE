@@ -261,6 +261,7 @@ def train(
         min_samples_leaf=min_samples_leaf,
         max_features=max_features,
         class_weight=class_weight_param,
+        oob_score=True,
         n_jobs=-1,
         random_state=42,
     )
@@ -271,6 +272,8 @@ def train(
     val_acc = model.score(X_val_flat, y_val)
     print(f"\nTrain accuracy      : {train_acc * 100:.2f}%")
     print(f"Validation accuracy : {val_acc * 100:.2f}%")
+    if hasattr(model, 'oob_score_'):
+        print(f"OOB score           : {model.oob_score_ * 100:.2f}%")
 
     y_pred = model.predict(X_val_flat)
     print("\nPer-class report:")

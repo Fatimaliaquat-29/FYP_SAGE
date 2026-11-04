@@ -18,7 +18,9 @@ import re
 import sys
 from pathlib import Path
 
-ORIGINAL_IMAGES = Path(r"D:\FYP\PROJECT FILES\main\handlabels\round6_heldout\images")
+# Repo root = three levels up from benchmarks/phase3_a2/roboflow/, so this works wherever the repo lives.
+REPO_ROOT = Path(__file__).resolve().parents[3]
+ORIGINAL_IMAGES = REPO_ROOT / "handlabels" / "round6_heldout" / "images"
 EXPECTED_CLASSES = ["person", "bottle", "cup", "wine glass", "bowl", "chair", "couch", "bed",
                     "dining table", "toilet", "tv", "sink", "refrigerator"]
 EXPECTED_COUNT = 298

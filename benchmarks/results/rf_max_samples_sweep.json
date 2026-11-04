@@ -1,0 +1,122 @@
+{
+  "baseline (None)": {
+    "max_samples": null,
+    "train_acc": 0.9209604374946595,
+    "val_acc": 0.8125,
+    "gap": 0.1084604374946595,
+    "per_corpus": {
+      "Sanawar": {
+        "accuracy": 0.5618508026440038,
+        "macro_f1": 0.310969993021633,
+        "fall_recall": 0.8888888888888888,
+        "fall_fp": 0
+      },
+      "Hussain": {
+        "accuracy": 0.6700819672131147,
+        "macro_f1": 0.530673099271086,
+        "fall_recall": 1.0,
+        "fall_fp": 7
+      }
+    }
+  },
+  "max_samples=0.60": {
+    "max_samples": 0.6,
+    "train_acc": 0.9080577629667607,
+    "val_acc": 0.8040413533834586,
+    "gap": 0.10401640958330205,
+    "per_corpus": {
+      "Sanawar": {
+        "accuracy": 0.559017941454202,
+        "macro_f1": 0.3088021477203535,
+        "fall_recall": 0.8888888888888888,
+        "fall_fp": 0
+      },
+      "Hussain": {
+        "accuracy": 0.6700819672131147,
+        "macro_f1": 0.5325676398101047,
+        "fall_recall": 1.0,
+        "fall_fp": 7
+      }
+    }
+  },
+  "max_samples=0.65": {
+    "max_samples": 0.65,
+    "train_acc": 0.909852174656071,
+    "val_acc": 0.8078007518796992,
+    "gap": 0.1020514227763718,
+    "per_corpus": {
+      "Sanawar": {
+        "accuracy": 0.5609065155807366,
+        "macro_f1": 0.312632115355579,
+        "fall_recall": 0.8888888888888888,
+        "fall_fp": 0
+      },
+      "Hussain": {
+        "accuracy": 0.6736680327868853,
+        "macro_f1": 0.5341167840918642,
+        "fall_recall": 1.0,
+        "fall_fp": 6
+      }
+    }
+  },
+  "max_samples=0.70": {
+    "max_samples": 0.7,
+    "train_acc": 0.9136973425617363,
+    "val_acc": 0.8087406015037594,
+    "gap": 0.10495674105797692,
+    "per_corpus": {
+      "Sanawar": {
+        "accuracy": 0.562795089707271,
+        "macro_f1": 0.31045673654965245,
+        "fall_recall": 0.8888888888888888,
+        "fall_fp": 0
+      },
+      "Hussain": {
+        "accuracy": 0.6695696721311475,
+        "macro_f1": 0.531321793129104,
+        "fall_recall": 1.0,
+        "fall_fp": 8
+      }
+    }
+  },
+  "max_samples=0.75": {
+    "max_samples": 0.75,
+    "train_acc": 0.9156626506024096,
+    "val_acc": 0.8078007518796992,
+    "gap": 0.10786189872271035,
+    "per_corpus": {
+      "Sanawar": {
+        "accuracy": 0.5656279508970727,
+        "macro_f1": 0.31004376808409334,
+        "fall_recall": 0.8888888888888888,
+        "fall_fp": 0
+      },
+      "Hussain": {
+        "accuracy": 0.6726434426229508,
+        "macro_f1": 0.5343643840635167,
+        "fall_recall": 1.0,
+        "fall_fp": 8
+      }
+    }
+  },
+  "max_samples=0.80": {
+    "max_samples": 0.8,
+    "train_acc": 0.9167734768862684,
+    "val_acc": 0.8073308270676691,
+    "gap": 0.1094426498185993,
+    "per_corpus": {
+      "Sanawar": {
+        "accuracy": 0.5599622285174694,
+        "macro_f1": 0.31051013277428374,
+        "fall_recall": 0.8888888888888888,
+        "fall_fp": 0
+      },
+      "Hussain": {
+        "accuracy": 0.670594262295082,
+        "macro_f1": 0.5314075172817987,
+        "fall_recall": 1.0,
+        "fall_fp": 8
+      }
+    }
+  }
+}

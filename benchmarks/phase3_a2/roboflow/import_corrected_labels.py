@@ -19,7 +19,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_export as ce  # noqa: E402  (same folder; reuses its name mapping and checks)
 
-ROOT = Path(r"D:\FYP\PROJECT FILES\main")
+ROOT = ce.REPO_ROOT
 SRC = ROOT / "handlabels" / "round6_heldout"
 DST = ROOT / "handlabels" / "round6_heldout_v2"
 

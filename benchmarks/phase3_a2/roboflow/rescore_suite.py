@@ -13,7 +13,8 @@ import sys
 from pathlib import Path
 
 sys.dont_write_bytecode = True
-REPO = Path(r"D:\FYP\PROJECT FILES\main")
+# Repo root = three levels up from benchmarks/phase3_a2/roboflow/, so this works wherever the repo lives.
+REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
 
 import src.detection.score_v7_suite as suite  # noqa: E402

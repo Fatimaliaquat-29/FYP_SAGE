@@ -25,60 +25,19 @@ LSTM_DATASET_NPZ = DATA_DIR / "lstm_dataset.npz"
 LSTM_MODEL_PATH = MODELS_DIR / "lstm_posture.keras"
 LSTM_ENCODER_PATH = MODELS_DIR / "lstm_label_encoder.json"
 
-# Chosen via a 4-config sweep (baseline l1=0/l2=0, l2=1e-5, l2=1e-4, l1=1e-5)
-# on the post-leakage-fix data/lstm_dataset.npz (a later audit session --
-# LSTM previously shipped with NO regularization, unlike the TCN, since it
-# had never been separately validated here). l2=1e-5 -- the same value
-# already chosen for the TCN via its own independent sweep, see
-# tcn_model.py's L2_REG comment -- gave the largest validation-accuracy
-# gain (65.76% -> 69.02%) of the four candidates. Selection was made
-# PURELY from the group-aware validation split, then independently
-# confirmed (not re-tuned) on both real-footage test sets before being
-# adopted: Sanawar accuracy 50.8% -> 70.3% (fall recall 7/9 -> 8/9),
-# Hussain accuracy 56.5% -> 58.5% (fall recall unchanged at 3/4, false
-# positives 8 -> 6) -- a clean improvement with no trade-off found on
-# either independent set, unlike several other tuning attempts elsewhere
-# in this project's history that looked good on validation alone and did
-# not hold up on real footage.
-L1_REG = 0.0
-L2_REG = 1e-5
 
-
-def build_model(
-    window_size: int,
-    n_features: int,
-    n_classes: int,
-    units1: int = 64,
-    units2: int = 32,
-    dropout_rate: float = 0.3,
-    learning_rate: float = 1e-3,
-    l1: float = L1_REG,
-    l2: float = L2_REG,
-):
+def build_model(window_size: int, n_features: int, n_classes: int):
     """
     Construct the LSTM classifier.
 
     Architecture
     ────────────
     Input  (window_size, n_features)
-    LSTM(units1, return_sequences=True)  – captures short-term motion patterns
-    Dropout(dropout_rate)
-    LSTM(units2)                         – summarises the sequence
-    Dropout(dropout_rate)
-    Dense(n_classes, softmax)            – class probabilities
-
-    units1/units2/dropout_rate/learning_rate default to the original fixed
-    values (64, 32, 0.3, 1e-3) so existing callers see no behavior change;
-    they're exposed as parameters purely for hyperparameter sweeps (see
-    compare_tcn_lstm.py's optimization pass).
-
-    l1/l2 add an L1/L2 weight-magnitude penalty (kernel_regularizer, plus
-    recurrent_regularizer on the LSTM layers since their recurrent weights
-    can overfit the same way) on top of the existing Dropout. Both default
-    to 0.0, which produces no regularizer object at all (not just a
-    zero-coefficient one) so existing callers see byte-identical model
-    graphs. Motivated by a visible train/val accuracy gap (~90%+ train vs
-    ~65-70% val) suggestive of some overfitting -- see docs/TCN_IMPLEMENTATION_NOTES.md.
+    LSTM(64, return_sequences=True)  – captures short-term motion patterns
+    Dropout(0.3)
+    LSTM(32)                         – summarises the sequence
+    Dropout(0.3)
+    Dense(n_classes, softmax)        – class probabilities
     """
     try:
         import tensorflow as tf
@@ -89,27 +48,19 @@ def build_model(
             "    pip install tensorflow-cpu\n"
         )
 
-    reg = keras.regularizers.l1_l2(l1=l1, l2=l2) if (l1 > 0 or l2 > 0) else None
-
     model = keras.Sequential(
         [
             keras.layers.Input(shape=(window_size, n_features)),
-            keras.layers.LSTM(
-                units1, return_sequences=True,
-                kernel_regularizer=reg, recurrent_regularizer=reg,
-            ),
-            keras.layers.Dropout(dropout_rate),
-            keras.layers.LSTM(
-                units2,
-                kernel_regularizer=reg, recurrent_regularizer=reg,
-            ),
-            keras.layers.Dropout(dropout_rate),
-            keras.layers.Dense(n_classes, activation="softmax", kernel_regularizer=reg),
+            keras.layers.LSTM(64, return_sequences=True),
+            keras.layers.Dropout(0.3),
+            keras.layers.LSTM(32),
+            keras.layers.Dropout(0.3),
+            keras.layers.Dense(n_classes, activation="softmax"),
         ],
         name="lstm_posture_classifier",
     )
     model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        optimizer=keras.optimizers.Adam(learning_rate=1e-3),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
     )
@@ -123,45 +74,18 @@ def train(
     epochs: int = 100,
     batch_size: int = 64,
     val_split: float = 0.20,
-    units1: int = 64,
-    units2: int = 32,
-    dropout_rate: float = 0.3,
-    learning_rate: float = 1e-3,
-    l1: float = L1_REG,
-    l2: float = L2_REG,
-    use_class_weights: bool = False,
 ):
-    """
-    Full training loop.
-
-    use_class_weights (default False): weight each class's loss contribution
-    by inverse frequency ("balanced" scheme). Exposed for parity with
-    tcn_trainer.train()/rf_trainer.train(), which have the same parameter --
-    kept off by default here too, since the TCN ablation (see
-    docs/TCN_IMPLEMENTATION_NOTES.md Phase 2.5) measured "balanced" weighting
-    trading a large amount of majority-class (Lying-heavy real footage)
-    accuracy for minority-class recall on that architecture; it has not
-    been separately validated for the LSTM, so it isn't turned on by
-    default here either without the same kind of before/after check.
-    """
+    """Full training loop."""
     try:
         import tensorflow as tf
         from tensorflow import keras
         from sklearn.model_selection import StratifiedGroupKFold
         from sklearn.metrics import classification_report
-        from sklearn.utils.class_weight import compute_class_weight
     except ImportError as e:
         raise ImportError(
             f"Missing dependency: {e}\n"
             "Install with: pip install tensorflow-cpu scikit-learn\n"
         )
-
-    # Fix the model's weight-initialization/dropout randomness so repeated
-    # runs with the same hyperparameters are reproducible instead of landing
-    # on a different local optimum each time -- otherwise architecture
-    # comparisons (e.g. against the TCN) are confounded by training noise
-    # rather than reflecting the hyperparameters actually being compared.
-    keras.utils.set_random_seed(42)
 
     # ── Load dataset ──────────────────────────────────────────────────────────
     if not dataset_path.exists():
@@ -180,45 +104,17 @@ def train(
 
     print(f"  Dataset shape : X={X.shape}, y={y.shape}, groups={groups.shape}")
     print(f"  Classes       : {list(classes)}")
-    # `col_medians` loaded above is a whole-REAL-dataset DIAGNOSTIC value only
-    # (see lstm_dataset.py's build_dataset() "LEAKAGE FIX" comment) -- it must
-    # NOT be used to impute this trainer's train/val folds, since it was
-    # computed over validation-fold windows too. Deliberately not reused below.
 
     window_size = X.shape[1]
     n_features = X.shape[2]
     n_classes = len(classes)
 
     # ── Strict grouped split on REAL data only ────────────────────────────────
-    # n_splits derived from val_split (e.g. 0.20 -> 5 folds -> ~20% held out
-    # as the validation fold) so the val_split parameter actually controls
-    # the split instead of being silently ignored in favor of a hardcoded 5.
-    n_splits = max(2, round(1.0 / val_split))
-    sgkf = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=42)
+    sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
     train_idx, val_idx = next(sgkf.split(X, y, groups))
 
     X_val,   y_val,   g_val   = X[val_idx],   y[val_idx],   groups[val_idx]
     X_train, y_train, g_train = X[train_idx], y[train_idx], groups[train_idx]
-
-    # ── LEAKAGE FIX (this audit session): impute real train/val NaNs using
-    # medians computed from the TRAINING FOLD ONLY, after the split above.
-    # `X` loaded from the npz is raw (NaNs preserved) as of lstm_dataset.py's
-    # own leakage fix, but no trainer had actually been updated to impute it
-    # post-split -- confirmed by reading this file before this change: X_train/
-    # X_val were fed to model.fit()/evaluate() completely unimputed, which
-    # would have produced NaN losses/predictions the moment the npz was
-    # rebuilt with the new raw-X behavior. This closes that gap AND fixes the
-    # original leakage: train-fold statistics never see validation-fold data.
-    # The SAME train_col_medians (not the whole-dataset diagnostic `col_medians`
-    # above) is what gets saved into the encoder below, so live inference
-    # imputation matches what the model actually trained against -- using a
-    # different statistic at inference than at training would reintroduce the
-    # train/inference skew bug this project already fixed once (see the
-    # original col_medians comment on the encoder dict).
-    from src.posture.lstm import lstm_features as lf
-    train_col_medians = lf.compute_col_medians(X_train)
-    X_train = lf.impute_nan(X_train, train_col_medians)
-    X_val = lf.impute_nan(X_val, train_col_medians)
 
     # ── Post-split synthetic injection (train fold only) ──────────────────────
     from src.posture.lstm.lstm_dataset import generate_synthetic_windows, impute_nan
@@ -241,15 +137,6 @@ def train(
         mask = (y_train == i)
         print(f"    {cls:<10}: {mask.sum():>6} windows")
 
-    # ── Class weights (balanced, computed from the actual train fold) ─────────
-    class_weight_dict = None
-    if use_class_weights:
-        weights = compute_class_weight(class_weight="balanced", classes=np.arange(n_classes), y=y_train)
-        class_weight_dict = {i: float(w) for i, w in enumerate(weights)}
-        print("\n  Class weights (balanced):")
-        for i, cls in enumerate(classes):
-            print(f"    {cls:<10}: {class_weight_dict[i]:.3f}")
-
     print("\n  Val Balance (Windows / Unique Real Sequences):")
     for i, cls in enumerate(classes):
         mask = (y_val == i)
@@ -258,11 +145,7 @@ def train(
 
 
     # ── Build model ───────────────────────────────────────────────────────────
-    model = build_model(
-        window_size, n_features, n_classes,
-        units1=units1, units2=units2, dropout_rate=dropout_rate, learning_rate=learning_rate,
-        l1=l1, l2=l2,
-    )
+    model = build_model(window_size, n_features, n_classes)
     model.summary()
 
     # ── Callbacks ─────────────────────────────────────────────────────────────
@@ -289,7 +172,6 @@ def train(
         batch_size=batch_size,
         validation_data=(X_val, y_val),
         callbacks=callbacks,
-        class_weight=class_weight_dict,
         verbose=2,
     )
 
@@ -311,15 +193,12 @@ def train(
     # col_medians travels with the encoder so lstm_classifier.py imputes
     # missing landmarks at inference time with the SAME per-feature medians
     # used during training, instead of an arbitrary constant fill value.
-    # LEAKAGE FIX: this is train_col_medians (computed from the training fold
-    # only, above), NOT the whole-dataset diagnostic `col_medians` loaded from
-    # the npz -- see that variable's own comment.
     encoder = {
         "classes": list(classes),
         "class_to_idx": {c: int(i) for i, c in enumerate(classes)},
         "window_size": int(window_size),
         "n_features": int(n_features),
-        "col_medians": train_col_medians.tolist(),
+        "col_medians": col_medians.tolist() if col_medians is not None else None,
     }
     encoder_out.parent.mkdir(parents=True, exist_ok=True)
     encoder_out.write_text(json.dumps(encoder, indent=2), encoding="utf-8")
