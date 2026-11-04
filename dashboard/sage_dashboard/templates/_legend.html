@@ -1,0 +1,14 @@
+{% from "_macros.html" import icon %}
+<section class="card section legend" aria-labelledby="legend-heading">
+  <h2 id="legend-heading">What the labels mean</h2>
+  <ul class="legend-list">
+    {% for level in levels %}
+    <li>
+      <span class="badge badge-{{ level.severity }}">{{ icon(level.severity) }}<span>{{ level.label }}</span></span>
+      <p>{{ level.means }} <strong>{{ level.do }}</strong></p>
+    </li>
+    {% endfor %}
+  </ul>
+  <p class="muted"><strong>How sure</strong> tells you how certain the camera was about what it saw. Even when it is very sure it can be wrong, so if in doubt, check.</p>
+  <p><a class="action-link" href="{{ url_for('views.help_page') }}">How to use this page</a></p>
+</section>

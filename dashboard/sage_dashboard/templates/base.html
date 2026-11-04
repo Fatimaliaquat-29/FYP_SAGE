@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}S.A.G.E.{% endblock %} · S.A.G.E.</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="{{ url_for('views.home') if current_user else url_for('auth.login') }}">
+        <span class="brand-name">S.A.G.E.</span>
+        <span class="brand-sub">Keeping an eye, kindly</span>
+      </a>
+      {% if current_user %}
+      {% set ep = request.endpoint or "" %}
+      <nav aria-label="Main">
+        <ul class="nav-list">
+          <li><a href="{{ url_for('views.home') }}" {% if ep.startswith('views.home') or ep.startswith('views.patient') %}aria-current="page"{% endif %}>Home</a></li>
+          <li><a href="{{ url_for('views.help_page') }}" {% if ep == 'views.help_page' %}aria-current="page"{% endif %}>Help</a></li>
+          <li><a href="{{ url_for('demo.page') }}" {% if ep == 'demo.page' %}aria-current="page"{% endif %}>Live demo</a></li>
+          {% if current_user.role == "admin" %}
+          <li><a href="{{ url_for('views.import_page') }}" {% if ep.startswith('views.import') %}aria-current="page"{% endif %}>Add results</a></li>
+          <li><a href="{{ url_for('views.users') }}" {% if ep in ('views.users', 'views.add_user') %}aria-current="page"{% endif %}>Who can sign in</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      <div class="user-box">
+        <span class="user-name">Signed in as <strong>{{ current_user.display_name }}</strong></span>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="button button-quiet">Sign out</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <main id="main" class="wrap" tabindex="-1"
+    {% if live %}data-live data-stream-url="{{ url_for('live.stream') }}" data-revision-url="{{ url_for('live.revision') }}"
+    data-revision="{{ revision }}" data-poll-ms="{{ config.LIVE_POLL_MS }}"{% endif %}>
+    {% if live %}
+    <div class="live-bar">
+      <p id="live-indicator" class="live-indicator" data-state="connecting" role="status" hidden>
+        <span class="live-dot" aria-hidden="true"></span><span class="live-label">Connecting…</span>
+      </p>
+      <p class="live-updated"><span id="live-updated">Updated {{ updated_at }}</span><noscript> · Reload the page to see the latest.</noscript></p>
+    </div>
+    <div id="live-announcer" class="visually-hidden" aria-live="assertive"></div>
+    <div id="signed-out-notice" class="notice notice-error" role="alert" hidden>
+      <p>For your privacy you have been signed out, so this page has stopped updating.</p>
+      <p><a class="button" href="{{ url_for('auth.login', next=request.full_path.rstrip('?')) }}">Sign in again</a></p>
+    </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="notice notice-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">
+          {% if message is mapping %}
+            <p>{{ message.text }}</p>
+            {% if message.undo_event %}
+            <form method="post" action="{{ url_for('views.uncheck', event_id=message.undo_event) }}" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+              <button type="submit" class="button button-secondary">Undo</button>
+            </form>
+            {% endif %}
+          {% else %}
+            <p>{{ message }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>S.A.G.E. works only on this device and your home network. No video or pictures are kept, only short notes about what was seen.</p>
+    </div>
+  </footer>
+</body>
+</html>

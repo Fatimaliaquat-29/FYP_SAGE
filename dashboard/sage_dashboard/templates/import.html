@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Add results{% endblock %}
+{% block content %}
+<h1>Add results</h1>
+<p class="lead">If videos were looked at on a computer, you can add what was found here.
+   Choose the results file you were given. Adding the same file twice is safe: anything already here is skipped.</p>
+
+{% if result %}
+{% set refused = result.error and not result.added %}
+<section class="card section result {{ 'result-error' if refused else 'result-ok' }}" aria-labelledby="result-heading" role="status" tabindex="-1" id="result">
+  <h2 id="result-heading">{% if refused %}Nothing was added{% else %}Done, the results have been added{% endif %}</h2>
+  {% if result.error_plain %}<p>{{ result.error_plain }}</p>{% endif %}
+  {% if refused and result.error_kind != "empty" %}<p>Please check you chose the right file, or ask the person who gave it to you for a new copy.</p>{% endif %}
+  {% if not (refused and not result.duplicates and not result.problems) %}
+  <ul class="result-counts">
+    <li><strong>{{ result.added }}</strong> new {{ "thing" if result.added == 1 else "things" }} added</li>
+    <li><strong>{{ result.duplicates }}</strong> already here, skipped</li>
+    <li><strong>{{ result.rejected }}</strong> could not be read</li>
+    {% if result.patients_added %}<li><strong>{{ result.patients_added }}</strong> {{ "person" if result.patients_added == 1 else "people" }} added</li>{% endif %}
+  </ul>
+  {% endif %}
+  {% if result.problems %}
+  <h3>What could not be read</h3>
+  <p class="muted">Everything else in the file was added. These entries were left out:</p>
+  <ul class="problem-list">
+    {% for pr in result.problems[:50] %}<li><strong>{{ pr.plain_where }}:</strong> {{ pr.plain }}</li>{% endfor %}
+    {% if result.problems|length > 50 %}<li>and {{ result.problems|length - 50 }} more</li>{% endif %}
+  </ul>
+  {% endif %}
+  {% if result.added %}
+  <p><a class="action-link" href="{{ url_for('views.home') }}">See how everyone is doing</a></p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card section" aria-labelledby="upload-heading">
+  <h2 id="upload-heading">Choose the file</h2>
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('views.import_upload') }}" class="upload-form" data-busy>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="file">Results file</label>
+      <p class="hint" id="file-hint">The file you were given after the videos were looked at. It can be up to 5 MB.</p>
+      <input id="file" name="file" type="file" accept=".json,application/json" aria-describedby="file-hint" required>
+    </div>
+    <button type="submit" class="button" data-busy-label="Adding… please wait">Add these results</button>
+  </form>
+</section>
+
+{% if imports %}
+<section class="section" aria-labelledby="history-heading">
+  <h2 id="history-heading">Added recently</h2>
+  <ul class="history-list">
+    {% for imp in imports %}
+    <li class="card">
+      <p class="event-title">{{ imp.source }}</p>
+      <p class="muted">{{ imp.when|capitalize }}{% if imp.by %} by {{ imp.by }}{% endif %} ·
+        {% if imp.failed %}nothing could be added{% else %}{{ imp.added }} added, {{ imp.duplicates }} already here, {{ imp.rejected }} could not be read{% endif %}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

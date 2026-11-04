@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Who can sign in{% endblock %}
+{% block content %}
+<h1>Who can sign in</h1>
+<p class="lead">These people can sign in to this dashboard.</p>
+
+<ul class="user-list">
+  {% for u in users %}
+  <li class="card user-card">
+    <div>
+      <p class="event-title">{{ u.display_name }}{% if u.is_me %} (you){% endif %}</p>
+      <p class="muted">Username: {{ u.username }} · {{ u.role_label }} · {% if u.last_login %}Last signed in {{ u.last_login }}{% else %}Has not signed in yet{% endif %}</p>
+    </div>
+    {% if not u.is_me %}
+    <details class="remove-user">
+      <summary>Remove {{ u.display_name }}</summary>
+      <p>{{ u.display_name }} will no longer be able to sign in. This cannot be undone, but you can add them again later.</p>
+      <form method="post" action="{{ url_for('views.remove_user', user_id=u.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="button button-danger">Yes, remove {{ u.display_name }}</button>
+      </form>
+    </details>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+<section class="card section" aria-labelledby="add-heading">
+  <h2 id="add-heading">Add someone</h2>
+  {% if problems %}
+  <div class="notice notice-error" role="alert">
+    <p>Please fix these and try again:</p>
+    <ul>{% for pr in problems %}<li>{{ pr }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+  <form method="post" action="{{ url_for('views.add_user') }}" class="stack-form" data-busy>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="display_name">Their name</label>
+      <p class="hint" id="display-hint">Shown on screen, for example “Sara”.</p>
+      <input id="display_name" name="display_name" type="text" maxlength="60" value="{{ form.display_name or '' }}" aria-describedby="display-hint" required>
+    </div>
+    <div class="field">
+      <label for="new-username">Username</label>
+      <p class="hint" id="username-hint">What they type to sign in. Letters and numbers, no spaces.</p>
+      <input id="new-username" name="username" type="text" maxlength="32" autocapitalize="none" spellcheck="false" value="{{ form.username or '' }}" aria-describedby="username-hint" required>
+    </div>
+    <fieldset class="field">
+      <legend>What they can do</legend>
+      {% for role, label in role_labels.items() %}
+      <label class="radio">
+        <input type="radio" name="role" value="{{ role }}" {% if form.role == role or (not form.role and role == 'caregiver') %}checked{% endif %}>
+        <span><strong>{{ label }}</strong>: {{ role_help[role] }}</span>
+      </label>
+      {% endfor %}
+    </fieldset>
+    <div class="field">
+      <label for="new-password">Password</label>
+      <p class="hint" id="password-hint">At least 8 characters. Tell them in person.</p>
+      <input id="new-password" name="password" type="password" autocomplete="new-password" aria-describedby="password-hint" required>
+    </div>
+    <div class="field">
+      <label for="new-password-again">Type the password again</label>
+      <input id="new-password-again" name="password_again" type="password" autocomplete="new-password" required>
+    </div>
+    <button type="submit" class="button" data-busy-label="Adding…">Add this person</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Live demo{% endblock %}
+{% block content %}
+<div class="demo" id="demo"
+     data-status-url="{{ url_for('demo.status') }}"
+     data-events-url="{{ url_for('demo.events') }}"
+     data-video-url="{{ url_for('demo.video') }}">
+  <div class="demo-head">
+    <h1>Live demo</h1>
+    <p class="demo-state" id="demo-state" data-state="unknown" role="status">
+      <span class="live-dot" aria-hidden="true"></span><span data-field="state_label">Checking…</span>
+    </p>
+  </div>
+  <p class="lead">A video is processed continuously in the background by the S.A.G.E. pipeline (pose, heuristic fall detection with the LSTM, the gait risk score, and object detection). Switching tabs only changes what you see; processing carries on.</p>
+
+  <div id="demo-signed-out" class="notice notice-error" role="alert" hidden>
+    <p>You have been signed out, so this page has stopped updating. Processing is still running.</p>
+    <p><a class="button" href="{{ url_for('auth.login', next=url_for('demo.page')) }}">Sign in again</a></p>
+  </div>
+  <div id="demo-not-running" class="notice notice-info" role="status" hidden>
+    <p>Video processing is not running in this server. Start the demo with:</p>
+    <pre><code>python dashboard/manage.py demo --video "path/to/clip.mp4"</code></pre>
+  </div>
+  <div id="demo-error" class="notice notice-error" role="alert" hidden>
+    <p>Video processing stopped because of a problem:</p>
+    <p data-field="error"></p>
+  </div>
+
+  <div class="demo-tabs" role="tablist" aria-label="Live demo views">
+    <button type="button" role="tab" id="tab-live" aria-controls="panel-live" aria-selected="true">Live monitoring</button>
+    <button type="button" role="tab" id="tab-events" aria-controls="panel-events" aria-selected="false" tabindex="-1">Event log <span class="tab-count" data-field="total_events">0</span></button>
+    <button type="button" role="tab" id="tab-status" aria-controls="panel-status" aria-selected="false" tabindex="-1">System status</button>
+  </div>
+
+  <section id="panel-live" role="tabpanel" aria-labelledby="tab-live" class="demo-panel">
+    <div class="demo-live">
+      <figure class="video-box card">
+        <img id="demo-video" alt="The video being processed, with the pose skeleton, object boxes and fall overlay drawn by the pipeline" width="960" height="540">
+        <figcaption class="muted"><span data-field="video">No video</span> · clip time <span data-field="video_clock">0:00.0</span> · frame <span data-field="frame_in_clip">0</span>/<span data-field="frames_in_clip">?</span> · pass <span data-field="loop_number">0</span></figcaption>
+      </figure>
+      <div class="card demo-facts">
+        <h2>Right now</h2>
+        <dl class="kv">
+          <div><dt>Posture (heuristic)</dt><dd data-field="posture">–</dd></div>
+          <div><dt>Fall signal this frame</dt><dd data-field="fall_signal_label">–</dd></div>
+          <div><dt>Fall frames in window</dt><dd><span data-field="fall_frames_in_window">0</span> of the last <span data-field="alert_window">–</span> (alert at <span data-field="alert_min_hits">–</span>)</dd></div>
+          <div><dt>Fall alert</dt><dd data-field="alarm_label">–</dd></div>
+          <div><dt>Walking (gait) risk</dt><dd data-field="gait_label">–</dd></div>
+          <div><dt>People in view (object detection)</dt><dd data-field="people_in_view">0</dd></div>
+          <div><dt>Processing speed</dt><dd><span data-field="processing_fps">–</span> fps (clip is <span data-field="video_fps">–</span> fps)</dd></div>
+          <div><dt>Time per frame</dt><dd><span data-field="last_frame_ms">–</span> ms</dd></div>
+        </dl>
+        <h3>Objects in this frame</h3>
+        <ul class="object-list" id="demo-objects"><li class="muted">None yet</li></ul>
+        <h3>Latest event</h3>
+        <p data-field="latest_event_text" class="muted">None yet</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-events" role="tabpanel" aria-labelledby="tab-events" class="demo-panel">
+    <div class="card">
+      <h2>Event log</h2>
+      <p class="muted">Newest first. New events appear here by themselves. Confirmed fall alerts also appear on the caregiver pages.</p>
+      <table class="events-table demo-log">
+        <caption class="visually-hidden">Events noticed by the video processing, newest first</caption>
+        <thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Confidence</th><th scope="col">Clip position</th><th scope="col">Details</th></tr></thead>
+        <tbody id="demo-log-body"></tbody>
+      </table>
+      <p id="demo-log-empty" class="empty-inline">No events yet. They will appear here as the video is processed.</p>
+    </div>
+  </section>
+
+  <section id="panel-status" role="tabpanel" aria-labelledby="tab-status" class="demo-panel">
+    <div class="grid-2 grid-even">
+      <div class="card">
+        <h2>Processing</h2>
+        <dl class="kv">
+          <div><dt>Video processing</dt><dd data-field="state_label">–</dd></div>
+          <div><dt>Pose (MediaPipe)</dt><dd data-field="pose_label">–</dd></div>
+          <div><dt>Heuristic fall detection</dt><dd data-field="heuristic_label">–</dd></div>
+          <div><dt>LSTM (OR-ed with the heuristic)</dt><dd data-field="lstm_label">–</dd></div>
+          <div><dt>Object detection (YOLO)</dt><dd data-field="objects_label">–</dd></div>
+          <div><dt>Gait risk (never affects fall alerts)</dt><dd data-field="gait_component_label">–</dd></div>
+          <div><dt>Gait frames in window</dt><dd data-field="gait_window_label">–</dd></div>
+          <div><dt>Gait torso baseline</dt><dd data-field="gait_baseline_label">–</dd></div>
+          <div><dt>Video</dt><dd data-field="video">–</dd></div>
+          <div><dt>Started</dt><dd data-field="started_label">–</dd></div>
+          <div><dt>Frames processed</dt><dd data-field="frames_processed">0</dd></div>
+          <div><dt>Passes through the clip</dt><dd data-field="loop_number">0</dd></div>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>Events</h2>
+        <dl class="kv">
+          <div><dt>Total events logged</dt><dd data-field="total_events">0</dd></div>
+          <div><dt>Fall alerts</dt><dd data-field="count_fall_alert">0</dd></div>
+          <div><dt>Possible falls (signal only)</dt><dd data-field="count_possible_fall">0</dd></div>
+          <div><dt>Person detected</dt><dd data-field="count_person_detected">0</dd></div>
+          <div><dt>Person left view</dt><dd data-field="count_person_left">0</dd></div>
+          <div><dt>Gait risk changes</dt><dd data-field="count_gait_risk">0</dd></div>
+          <div><dt>Latest event</dt><dd data-field="latest_event_text">None yet</dd></div>
+          <div><dt>Last updated</dt><dd data-field="server_time">–</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="{{ url_for('static', filename='demo.js') }}" defer></script>
+{% endblock %}

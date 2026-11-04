@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, severity_badge, check_form with context %}
+{% block title %}{{ patient.name }}{% endblock %}
+{% block content %}
+{% set here = request.full_path.rstrip('?') %}
+
+<section id="live-summary" data-live-region class="card glance glance-{{ glance.state }}"
+         aria-labelledby="patient-name" data-open-alerts="{{ status.open_alerts }}"
+         data-announce="{{ glance.headline }}">
+  <div class="glance-top">
+    <h1 id="patient-name" class="glance-person">{{ patient.name }}</h1>
+    <p class="status-chip status-{{ status.state }}">{{ icon(status.state) }}<span><strong>{{ status.label }}</strong> · {{ status.detail }}</span></p>
+  </div>
+  <p class="glance-headline">{{ glance.headline }}</p>
+  <p class="glance-intro">{{ glance.intro }}</p>
+  {% if glance.steps %}
+  <ol class="steps">
+    {% for step in glance.steps %}<li>{{ step }}</li>{% endfor %}
+  </ol>
+  {% endif %}
+  <dl class="facts">
+    {% if patient.age is not none %}<div><dt>Age</dt><dd>{{ patient.age }}</dd></div>{% endif %}
+    {% if patient.room %}<div><dt>Camera in</dt><dd>{{ patient.room }}</dd></div>{% endif %}
+    <div><dt>Last seen something</dt><dd>{{ status.last_event_label or "Not yet" }}</dd></div>
+  </dl>
+</section>
+
+{% include "_patient_tabs.html" %}
+
+<div id="live-alerts" data-live-region>
+{% if to_check %}
+<section class="section" aria-labelledby="check-heading">
+  <h2 id="check-heading">Please check on {{ patient.call_name }}</h2>
+  <ul class="alert-list">
+    {% for ev in to_check %}
+    <li class="card alert-card alert-{{ ev.severity }}" data-event-id="{{ ev.id }}">
+      <div class="alert-top">
+        {{ severity_badge(ev) }}
+        <time datetime="{{ ev.occurred_at_local }}" class="muted">{{ ev.day_label }}</time>
+      </div>
+      <h3 class="alert-title">{{ ev.headline }}</h3>
+      <p>{{ ev.description }}</p>
+      <p class="muted">How sure: {{ ev.confidence_label }}</p>
+      {{ check_form(ev, here) }}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+</div>
+
+<div class="grid-2">
+  <section id="live-trend" data-live-region class="card section" aria-labelledby="trend-heading">
+    <div class="section-head">
+      <h2 id="trend-heading">How steady walking has been</h2>
+      <nav aria-label="Time period for the walking chart" class="segmented">
+        {% for key, label in range_labels.items() %}
+        <a href="{{ url_for('views.patient_overview', patient_id=patient.id, range=key) }}" {% if key == range_key %}aria-current="true"{% endif %}>{{ label }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+    <p class="muted">Each dot is one time {{ patient.call_name }} was seen walking. Lower on the chart is steadier.</p>
+    {% if chart.points %}
+    <figure class="trend">
+      <div class="trend-plot">
+        <div class="trend-y" aria-hidden="true" style="grid-template-rows: {{ band_high_y }}fr {{ band_medium_y - band_high_y }}fr {{ chart_h - band_medium_y }}fr">
+          <span>Unsteady</span><span>A little unsteady</span><span>Steady</span>
+        </div>
+        <svg class="trend-svg" viewBox="0 0 {{ chart_w }} {{ chart_h }}" preserveAspectRatio="none" role="img" aria-labelledby="trend-summary">
+          <rect class="band band-high" x="0" y="0" width="{{ chart_w }}" height="{{ band_high_y }}"/>
+          <rect class="band band-medium" x="0" y="{{ band_high_y }}" width="{{ chart_w }}" height="{{ band_medium_y - band_high_y }}"/>
+          <rect class="band band-low" x="0" y="{{ band_medium_y }}" width="{{ chart_w }}" height="{{ chart_h - band_medium_y }}"/>
+          <line class="threshold" x1="0" x2="{{ chart_w }}" y1="{{ band_high_y }}" y2="{{ band_high_y }}" vector-effect="non-scaling-stroke"/>
+          <line class="threshold" x1="0" x2="{{ chart_w }}" y1="{{ band_medium_y }}" y2="{{ band_medium_y }}" vector-effect="non-scaling-stroke"/>
+          {% if chart.points|length > 1 %}<path class="trend-line" d="{{ chart.path }}" vector-effect="non-scaling-stroke"/>{% endif %}
+          {% for pt in chart.points %}<path class="trend-dot" d="M{{ pt.x }} {{ pt.y }} h0" vector-effect="non-scaling-stroke"/>{% endfor %}
+        </svg>
+        <div class="trend-x" aria-hidden="true">{% for label in chart.x_labels %}<span>{{ label }}</span>{% endfor %}</div>
+      </div>
+      <figcaption id="trend-summary">{{ chart.summary }}</figcaption>
+      <details class="trend-numbers">
+        <summary>Show this as a list</summary>
+        <table class="simple-table">
+          <thead><tr><th scope="col">When</th><th scope="col">How walking looked</th></tr></thead>
+          <tbody>
+            {% for r in chart.rows %}<tr><td>{{ r.date }}</td><td>{{ r.level }}</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </details>
+    </figure>
+    {% else %}
+    <div class="empty-inline">
+      <p>{{ patient.call_name }} has not been seen walking in this time.</p>
+      {% if range_key != "all" %}<p><a class="action-link" href="{{ url_for('views.patient_overview', patient_id=patient.id, range='all') }}">Show all time</a></p>{% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  <section id="live-recent" data-live-region class="card section" aria-labelledby="recent-heading">
+    <div class="section-head">
+      <h2 id="recent-heading">Latest news</h2>
+      {% if total_events %}<a class="action-link" href="{{ url_for('views.patient_events', patient_id=patient.id) }}">See all {{ total_events }}</a>{% endif %}
+    </div>
+    {% if recent %}
+    <ul class="recent-list">
+      {% for ev in recent %}
+      <li>
+        {{ severity_badge(ev) }}
+        <div>
+          <p class="event-title">{{ ev.title }}</p>
+          <p class="muted"><time datetime="{{ ev.occurred_at_local }}">{{ ev.day_label }} at {{ ev.time_label }}</time>{% if ev.checked %} · Checked{% endif %}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-inline"><p>Nothing has been seen yet. When something happens, it will appear here by itself.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+{% include "_legend.html" %}
+
+<div class="grid-2 grid-even">
+  <section class="card section not-available" aria-labelledby="sleep-heading" data-feature="sleep">
+    <h2 id="sleep-heading">Sleep</h2>
+    <p class="na-label">{{ icon("later") }}<span>Not available yet</span></p>
+    <p class="muted">Keeping an eye on sleep is planned for later. Nothing about sleep is being recorded at the moment.</p>
+  </section>
+  <section class="card section not-available" aria-labelledby="meds-heading" data-feature="medication">
+    <h2 id="meds-heading">Medicines</h2>
+    <p class="na-label">{{ icon("later") }}<span>Not available yet</span></p>
+    <p class="muted">Medicine reminders are planned for later. Nothing about medicines is being recorded at the moment.</p>
+  </section>
+</div>
+{% endblock %}

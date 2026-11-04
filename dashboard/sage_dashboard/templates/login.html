@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<section class="card login-card" aria-labelledby="login-heading">
+  <h1 id="login-heading">Sign in</h1>
+  <p class="lead">Please sign in to see how the people you look after are doing.</p>
+
+  {% if no_users %}
+  <div class="notice notice-info" role="status">
+    <p>Nobody has been given a sign-in yet. Please ask the person who set up this dashboard to make one for you.</p>
+    <details class="setup-details">
+      <summary>For the person setting this up</summary>
+      <p>On this computer, run:</p>
+      <pre><code>python dashboard/manage.py create-user</code></pre>
+    </details>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="notice notice-error" role="alert" id="login-error"><p>{{ error }}</p></div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('auth.login') }}" class="login-form" data-busy>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none"
+             spellcheck="false" value="{{ username }}" required {% if not username %}autofocus{% endif %}
+             {% if error %}aria-describedby="login-error"{% endif %}>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required
+             {% if username %}autofocus{% endif %} {% if error %}aria-describedby="login-error"{% endif %}>
+      <label class="checkbox" id="show-password-row" hidden>
+        <input type="checkbox" id="show-password"> Show the password as I type
+      </label>
+    </div>
+    <button type="submit" class="button button-wide" data-busy-label="Signing in…">Sign in</button>
+  </form>
+  <p class="muted">Forgotten your password? Ask the person who manages this dashboard to set a new one for you.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,4 @@
+# Local database, secret key and API key (instance/secrets.json)
+instance/
+*.sqlite3
+__pycache__/

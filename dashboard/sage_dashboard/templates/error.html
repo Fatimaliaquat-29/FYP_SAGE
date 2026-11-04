@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% set titles = {
+  400: "Something was not quite right",
+  403: "Only the manager can do this",
+  404: "We could not find that page",
+  405: "That did not work from here",
+  413: "That file is too large",
+  500: "Something went wrong on our side",
+} %}
+{% set defaults = {
+  400: "Please go back and try again.",
+  404: "The link may be out of date, or the page may have moved.",
+  405: "Please go back and use the buttons on the page.",
+  413: "Files can be up to 5 MB. Ask for the results to be split into smaller files.",
+  500: "It is not your fault. Please wait a moment and try again. If it keeps happening, tell the person who manages this dashboard.",
+} %}
+{% block title %}{{ titles.get(error.code, "Something went wrong") }}{% endblock %}
+{% block content %}
+<section class="empty-state" aria-labelledby="error-heading">
+  <h1 id="error-heading">{{ titles.get(error.code, "Something went wrong") }}</h1>
+  <p>{% if error.description != error.__class__.description %}{{ error.description }}{% else %}{{ defaults.get(error.code, "Please go back and try again.") }}{% endif %}</p>
+  <p><a class="button" href="{{ url_for('views.home') }}">Go to the home page</a></p>
+</section>
+{% endblock %}

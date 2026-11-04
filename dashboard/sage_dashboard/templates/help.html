@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}How to use this page{% endblock %}
+{% block content %}
+<h1>How to use this page</h1>
+<p class="lead">S.A.G.E. uses a camera at home to notice if someone may have fallen, and how steady their walking looks. This page tells you what it has noticed.</p>
+
+<section class="card section" aria-labelledby="glance-help">
+  <h2 id="glance-help">The box at the top</h2>
+  <p>The box at the top of the page answers two questions:</p>
+  <ul class="plain-list">
+    <li><strong>Is everything all right?</strong> It says “All is well” or “Needs your attention”.</li>
+    <li><strong>Do I need to do anything?</strong> If you do, it lists what to do, step by step.</li>
+  </ul>
+  <p>The page updates by itself. You do not need to reload it. In the top corner you will see <strong>Live</strong> while it is up to date. If you see <strong>Reconnecting…</strong>, the page has lost touch for a moment and will catch up by itself.</p>
+</section>
+
+<section class="card section" aria-labelledby="levels-help">
+  <h2 id="levels-help">The three labels</h2>
+  <ul class="legend-list">
+    {% for level in levels %}
+    <li>
+      <span class="badge badge-{{ level.severity }}">{{ icon(level.severity) }}<span>{{ level.label }}</span></span>
+      <p>{{ level.means }} <strong>{{ level.do }}</strong></p>
+    </li>
+    {% endfor %}
+  </ul>
+  <p><strong>How sure</strong> tells you how certain the camera was about what it saw: “Very sure”, “Fairly sure” or “Not very sure”. Even when it is very sure it can be wrong, so if in doubt, check.</p>
+  <p><strong>Walking chart:</strong> each dot is one time the person was seen walking. Lower on the chart means steadier walking.</p>
+</section>
+
+<section class="card section" aria-labelledby="what-if">
+  <h2 id="what-if">What happens if…</h2>
+  <div class="faq">
+    <details>
+      <summary>…I see an Urgent alert?</summary>
+      <p>Check on the person straight away. Go and see them, or give them a call. If they are hurt or unwell, call for help. Once you have checked, press “I’ve checked on…” so that everyone else knows it has been seen.</p>
+    </details>
+    <details>
+      <summary>…I press “I’ve checked on…”?</summary>
+      <p>The alert is marked as checked, with your name and the time. It stops asking for attention, and others who look at the page will see that someone has dealt with it. Nothing else happens: no one is called and nothing is sent anywhere.</p>
+    </details>
+    <details>
+      <summary>…I press it by mistake?</summary>
+      <p>Press “Undo”. The alert goes back on the list of things to check.</p>
+    </details>
+    <details>
+      <summary>…the page says “Reconnecting…”?</summary>
+      <p>The page has lost touch with S.A.G.E. for a moment, for example if the Wi-Fi dropped. You do not need to do anything; it will reconnect by itself. If it stays like that for a long time, reload the page.</p>
+    </details>
+    <details>
+      <summary>…I am signed out?</summary>
+      <p>For privacy, you are signed out after a while without using the page. Just sign in again.</p>
+    </details>
+    <details>
+      <summary>…the camera got it wrong?</summary>
+      <p>That can happen. Check on the person, then press “I’ve checked on…”. If it keeps happening, tell the person who manages this dashboard.</p>
+    </details>
+  </div>
+</section>
+
+<section class="card section" aria-labelledby="privacy-help">
+  <h2 id="privacy-help">Your privacy</h2>
+  <p>S.A.G.E. works only on this computer and your home network. No video or pictures are kept, only short notes such as “possible fall at 3:42 pm”.</p>
+</section>
+{% endblock %}

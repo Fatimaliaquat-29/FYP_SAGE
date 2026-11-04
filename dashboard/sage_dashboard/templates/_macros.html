@@ -1,0 +1,76 @@
+{# Icons are decorative: every icon sits next to words that say the same thing. #}
+{% macro icon(name) -%}
+<svg class="icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+  {%- if name in ("high", "attention", "urgent") %}
+  <path d="M12 3 2.5 20h19L12 3Z" fill="currentColor"/><path d="M12 9.5v5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.25" fill="#fff"/>
+  {%- elif name == "medium" %}
+  <circle cx="12" cy="12" r="9.5" fill="currentColor"/><path d="M12 7v6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1.25" fill="#fff"/>
+  {%- elif name == "low" %}
+  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.25" fill="currentColor"/>
+  {%- elif name == "ok" %}
+  <circle cx="12" cy="12" r="9.5" fill="currentColor"/><path d="m7.5 12.3 3 3 6-6.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  {%- elif name == "none" %}
+  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+  {%- elif name == "check" %}
+  <path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  {%- elif name == "later" %}
+  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  {%- endif %}
+</svg>
+{%- endmacro %}
+
+{% macro severity_badge(ev) -%}
+<span class="badge badge-{{ ev.severity }}">{{ icon(ev.severity) }}<span>{{ ev.severity_label }}</span></span>
+{%- endmacro %}
+
+{% macro check_form(ev, next_url) -%}
+{% if ev.needs_check %}
+<form method="post" action="{{ url_for('views.check', event_id=ev.id) }}" class="check-form" data-busy>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="next" value="{{ next_url }}">
+  <button type="submit" class="button button-secondary" id="check-{{ ev.id }}" data-busy-label="Saving…">{{ icon("check") }}<span>I’ve checked on {{ ev.call_name }}</span></button>
+</form>
+{% elif ev.checked %}
+<div class="checked-box">
+  <p class="checked">{{ icon("check") }}<span>{{ ev.checked_label }}</span></p>
+  <form method="post" action="{{ url_for('views.uncheck', event_id=ev.id) }}" class="inline-form" data-busy>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <button type="submit" class="button button-quiet" id="uncheck-{{ ev.id }}" data-busy-label="Saving…">Undo<span class="visually-hidden">: mark as not checked</span></button>
+  </form>
+</div>
+{% else %}
+<p class="muted">Nothing to do</p>
+{% endif %}
+{%- endmacro %}
+
+{% macro event_table(events, next_url, caption) -%}
+<table class="events-table">
+  <caption class="visually-hidden">{{ caption }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">When</th>
+      <th scope="col">What happened</th>
+      <th scope="col">How important</th>
+      <th scope="col">How sure</th>
+      <th scope="col"><span class="visually-hidden">What you can do</span></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for ev in events %}
+    <tr class="event-row" data-type="{{ ev.type }}" data-severity="{{ ev.severity }}" data-event-id="{{ ev.id }}">
+      <td data-label="When" class="cell-when">
+        <time datetime="{{ ev.occurred_at_local }}"><span class="when-day">{{ ev.day_label }}</span> <span class="when-time">{{ ev.time_label }}</span></time>
+      </td>
+      <td data-label="What happened" class="cell-what">
+        <p class="event-title">{{ ev.title }}</p>
+        <p class="event-desc">{{ ev.description }}</p>
+      </td>
+      <td data-label="How important" class="cell-severity">{{ severity_badge(ev) }}</td>
+      <td data-label="How sure" class="cell-confidence">{{ ev.confidence_label }}</td>
+      <td class="cell-action">{{ check_form(ev, next_url) }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{%- endmacro %}

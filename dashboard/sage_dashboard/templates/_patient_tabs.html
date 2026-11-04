@@ -1,0 +1,6 @@
+<nav class="tabs" aria-label="Pages about {{ patient.name }}">
+  <ul>
+    <li><a href="{{ url_for('views.patient_overview', patient_id=patient.id) }}" {% if request.endpoint == 'views.patient_overview' %}aria-current="page"{% endif %}>Overview</a></li>
+    <li><a href="{{ url_for('views.patient_events', patient_id=patient.id) }}" {% if request.endpoint == 'views.patient_events' %}aria-current="page"{% endif %}>Everything so far</a></li>
+  </ul>
+</nav>

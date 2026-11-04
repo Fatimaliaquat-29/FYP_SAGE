@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon with context %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div id="live-home" data-live-region>
+{% if not people %}
+  <section class="empty-state" aria-labelledby="welcome-heading">
+    <h1 id="welcome-heading">Welcome to S.A.G.E.</h1>
+    <p>Nobody has been added yet. Once someone is added, you will see here how they are doing, and the page will update by itself.</p>
+    {% if current_user.role == "admin" %}
+    <p><a class="button" href="{{ url_for('views.import_page') }}">Add results</a></p>
+    {% else %}
+    <p>The person who manages this dashboard will add them for you.</p>
+    {% endif %}
+    <p><a class="action-link" href="{{ url_for('views.help_page') }}">How to use this page</a></p>
+  </section>
+{% else %}
+  <section class="card glance glance-{{ summary.state }}" aria-labelledby="home-heading">
+    <h1 id="home-heading" class="glance-headline">{{ summary.headline }}</h1>
+    <p class="glance-intro">{{ summary.intro }}</p>
+  </section>
+  <h2>The people you look after</h2>
+  <ul class="people-list">
+    {% for person in people %}
+    <li class="card person-card">
+      <h3 class="person-name"><a href="{{ url_for('views.patient_overview', patient_id=person.id) }}">{{ person.name }}</a></h3>
+      <p class="muted">{% if person.age is not none %}{{ person.age }} years{% endif %}{% if person.age is not none and person.room %} · {% endif %}{{ person.room or "" }}</p>
+      <p class="status-chip status-{{ person.status.state }}">{{ icon(person.status.state) }}<span><strong>{{ person.status.label }}</strong> · {{ person.status.detail }}</span></p>
+      {% if person.status.last_event_label %}<p class="muted">Last seen something: {{ person.status.last_event_label }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+</div>
+{% endblock %}

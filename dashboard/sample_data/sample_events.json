@@ -1,0 +1,31 @@
+{
+  "format_version": 1,
+  "patients": [
+    {"id": "P001", "name": "Amina Rahman", "age": 81, "room": "Ground-floor bedroom"}
+  ],
+  "events": [
+    {"event_id": "walk_2026-10-05", "patient": "P001", "timestamp": "2026-10-05T10:12:00+05:00",
+     "type": "gait_risk", "confidence": 0.82, "risk_score": 0.28, "source": "video:walk_2026-10-05.mp4",
+     "details": {"walking_speed": 0.31, "stride_regularity": 0.22, "postural_sway": 0.30, "sit_to_stand": null}},
+    {"event_id": "walk_2026-10-09", "patient": "P001", "timestamp": "2026-10-09T09:48:00+05:00",
+     "type": "gait_risk", "confidence": 0.79, "risk_score": 0.31, "source": "video:walk_2026-10-09.mp4"},
+    {"event_id": "walk_2026-10-13", "patient": "P001", "timestamp": "2026-10-13T11:02:00+05:00",
+     "type": "gait_risk", "confidence": 0.84, "risk_score": 0.35, "source": "video:walk_2026-10-13.mp4"},
+    {"event_id": "Normal_Fall_1:f412", "patient": "P001", "timestamp": "2026-10-18T19:20:00+05:00",
+     "type": "fall", "confidence": 0.88, "source": "video:Normal_Fall_1.mp4",
+     "details": {"method": "hybrid", "posture_before": "Standing", "posture_after": "Lying", "frame": 412}},
+    {"event_id": "walk_2026-10-19", "patient": "P001", "timestamp": "2026-10-19T10:30:00+05:00",
+     "type": "gait_risk", "confidence": 0.81, "risk_score": 0.47, "source": "video:walk_2026-10-19.mp4"},
+    {"event_id": "walk_2026-10-23", "patient": "P001", "timestamp": "2026-10-23T10:05:00+05:00",
+     "type": "gait_risk", "confidence": 0.77, "risk_score": 0.42, "source": "video:walk_2026-10-23.mp4"},
+    {"event_id": "walk_2026-10-27", "patient": "P001", "timestamp": "2026-10-27T09:55:00+05:00",
+     "type": "gait_risk", "confidence": 0.83, "risk_score": 0.52, "source": "video:walk_2026-10-27.mp4"},
+    {"event_id": "walk_2026-10-31", "patient": "P001", "timestamp": "2026-10-31T10:40:00+05:00",
+     "type": "gait_risk", "confidence": 0.86, "risk_score": 0.58, "source": "video:walk_2026-10-31.mp4"},
+    {"event_id": "Normal_Fall_2:f287", "patient": "P001", "timestamp": "2026-11-01T15:42:00+05:00",
+     "type": "fall", "confidence": 0.91, "source": "video:Normal_Fall_2.mp4",
+     "details": {"method": "hybrid", "posture_before": "Standing", "posture_after": "Lying", "frame": 287}},
+    {"event_id": "walk_2026-11-02", "patient": "P001", "timestamp": "2026-11-02T10:05:00+05:00",
+     "type": "gait_risk", "confidence": 0.8, "risk_score": 0.46, "source": "video:walk_2026-11-02.mp4"}
+  ]
+}

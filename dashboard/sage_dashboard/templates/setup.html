@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Not ready yet{% endblock %}
+{% block content %}
+<section class="empty-state" aria-labelledby="setup-heading">
+  <h1 id="setup-heading">This dashboard is not ready yet</h1>
+  <p>It still needs to be set up on this computer. Please ask the person who is installing it to finish the setup, then come back to this page.</p>
+  <details class="setup-details">
+    <summary>For the person setting this up</summary>
+    <p>From the project folder, run these, then reload this page:</p>
+    <pre><code>python dashboard/manage.py init-db
+python dashboard/manage.py create-user</code></pre>
+    <p>See dashboard/README.md for details.</p>
+  </details>
+</section>
+{% endblock %}
