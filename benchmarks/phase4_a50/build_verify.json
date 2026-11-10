@@ -1,0 +1,27 @@
+{
+  "baseline_label_files": 17655,
+  "train_images_src_dst": [
+    15043,
+    15043
+  ],
+  "train_labels_src_dst": [
+    15043,
+    15043
+  ],
+  "train_names_identical": true,
+  "train_label_sha_mismatch": 0,
+  "val_images_src_dst": [
+    2610,
+    2610
+  ],
+  "val_labels_src_dst": [
+    2610,
+    2610
+  ],
+  "val_names_identical": true,
+  "val_label_sha_mismatch": 0,
+  "images_hardlinked": 17653,
+  "images_real_copies_bad_eoi": [],
+  "cache_files_in_copy": [],
+  "ALL_OK": true
+}

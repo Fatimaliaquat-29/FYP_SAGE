@@ -1,0 +1,174 @@
+{
+  "images": {
+    "train/v7_coco": 5400,
+    "train/v7_empty": 539,
+    "train/v7_own": 5458,
+    "val/v7_coco": 600,
+    "val/v7_empty": 134,
+    "val/v7_own": 1876,
+    "train/cauca": 2599,
+    "val/cauca": 361,
+    "heldout/cauca": 419,
+    "train/exdark": 1556,
+    "heldout/exdark": 293,
+    "val/exdark": 297
+  },
+  "boxes": {
+    "train/v7_coco": {
+      "chair": 6206,
+      "table": 2443,
+      "person": 11371,
+      "cup": 3240,
+      "bed": 645,
+      "bottle": 3752,
+      "sofa": 846
+    },
+    "train/v7_own": {
+      "chair": 3592,
+      "bed": 1874,
+      "person": 5434,
+      "table": 116,
+      "sofa": 336
+    },
+    "val/v7_coco": {
+      "person": 1177,
+      "sofa": 97,
+      "chair": 648,
+      "table": 245,
+      "bed": 78,
+      "cup": 301,
+      "bottle": 408
+    },
+    "val/v7_own": {
+      "person": 1876,
+      "chair": 1839,
+      "bed": 335,
+      "table": 181
+    },
+    "train/cauca": {
+      "person": 2599,
+      "bed": 8,
+      "chair": 1168,
+      "sofa": 2
+    },
+    "val/cauca": {
+      "person": 361,
+      "chair": 160
+    },
+    "heldout/cauca": {
+      "person": 419
+    },
+    "train/exdark": {
+      "person": 1610,
+      "table": 826,
+      "chair": 1174,
+      "bottle": 916,
+      "sofa": 62,
+      "cup": 1126,
+      "bed": 26
+    },
+    "heldout/exdark": {
+      "person": 346,
+      "bottle": 211,
+      "cup": 199,
+      "table": 183,
+      "chair": 225
+    },
+    "val/exdark": {
+      "bottle": 212,
+      "person": 316,
+      "cup": 202,
+      "bed": 18,
+      "table": 168,
+      "chair": 202,
+      "sofa": 28
+    }
+  },
+  "v7_removed_boxes_dropped_classes": {
+    "coco": 6816,
+    "empty": 0,
+    "own": 111
+  },
+  "v7_images_now_empty": {
+    "train/coco": 707,
+    "val/coco": 81
+  },
+  "cauca_unlabelled_skipped": 6,
+  "exdark_skipped": {
+    "no_kept_class": 676,
+    "outdoor_or_unlisted": 4541
+  },
+  "exdark_skipped_boxes_degenerate": 0,
+  "exdark_pseudo_dropped_overlap": {
+    "sofa": 76,
+    "bed": 7
+  },
+  "exdark_chair_relabelled_sofa": 71,
+  "dropped_problem_clip_images": {
+    "Bedroom_Falll": 124,
+    "Blanket_Cover_HM": 304,
+    "Sitting_Dim_HM": 1722,
+    "Standing_Walking_Dim_HM": 1496
+  },
+  "dropped_problem_clip_images_by_split": {
+    "train": 3646
+  },
+  "dropped_problem_clip_boxes_v7names": {
+    "bed": 1260,
+    "person": 3642,
+    "chair": 1938,
+    "cup": 78
+  },
+  "pseudo_boxes": {
+    "cauca": {
+      "bed": 8,
+      "chair": 1328,
+      "sofa": 2
+    },
+    "exdark": {
+      "sofa": 95,
+      "bed": 51
+    }
+  },
+  "verify": {
+    "sage_v8_clean/train": {
+      "images": 11397,
+      "labels": 11397,
+      "names_match": true
+    },
+    "sage_v8_clean/val": {
+      "images": 2610,
+      "labels": 2610,
+      "names_match": true
+    },
+    "sage_v8_full/train": {
+      "images": 15552,
+      "labels": 15552,
+      "names_match": true
+    },
+    "sage_v8_full/val": {
+      "images": 3268,
+      "labels": 3268,
+      "names_match": true
+    },
+    "heldout/cauca_s10": {
+      "images": 419,
+      "labels": 419,
+      "names_match": true
+    },
+    "heldout/exdark_test": {
+      "images": 293,
+      "labels": 293,
+      "names_match": true
+    },
+    "invalid_label_lines": 0,
+    "drop_clip_frames_left": 0,
+    "real_copies_bad_eoi": [
+      "D:\\FYP\\PROJECT FILES\\main\\new datasets\\ExDark\\extracted\\ExDark\\Cup\\2015_04507.jpg",
+      "D:\\FYP\\PROJECT FILES\\main\\new datasets\\ExDark\\extracted\\ExDark\\Cup\\2015_04722.jpg",
+      "D:\\FYP\\PROJECT FILES\\main\\new datasets\\ExDark\\extracted\\ExDark\\People\\2015_06678.jpg"
+    ],
+    "cache_files": [],
+    "ALL_OK": true
+  }
+}

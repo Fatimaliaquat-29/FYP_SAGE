@@ -1,0 +1,50 @@
+{
+  "base_copy": {
+    "train": 15552,
+    "val": 3268
+  },
+  "decisions": {
+    "keep: vetted: model C agrees": 541,
+    "drop: vetted: a labelled person box not confirmed by C": 735,
+    "drop: vetted: C sees an unlabelled person": 11,
+    "keep: hand-labelled": 464,
+    "drop: blanket span 710-1420 (teammate)": 72
+  },
+  "decisions_by_clip": {
+    "Bedroom_Falll": {
+      "keep": 52,
+      "drop": 10
+    },
+    "Blanket_Cover_HM": {
+      "keep": 80,
+      "drop": 72
+    },
+    "Sitting_Dim_HM": {
+      "keep": 379,
+      "drop": 482
+    },
+    "Standing_Walking_Dim_HM": {
+      "keep": 494,
+      "drop": 254
+    }
+  },
+  "added_images": 2010,
+  "added_boxes": {
+    "bed": 1066,
+    "person": 2006,
+    "chair": 1446,
+    "cup": 52
+  },
+  "verify": {
+    "train": {
+      "images": 17562,
+      "labels": 17562
+    },
+    "val": {
+      "images": 3268,
+      "labels": 3268
+    }
+  },
+  "ALL_OK": true,
+  "real_copies": []
+}

@@ -1,0 +1,154 @@
+# Phase 6 STATUS
+
+- 2026-11-08 03:20 DECISION_RULE.md written before any training.
+
+## Supervisor started 2026-11-08 03:12:20
+- 2026-11-08 03:12:20 START train LR2 pid=14620
+- 2026-11-08 03:22:20 PROGRESS LR2: 10 min; epoch=1; train/box_loss=1.14878; val/box_loss=1.09977; metrics/mAP50(B)=0.44119; metrics/mAP50-95(B)=0.28745
+- 03:20 Amendment before any result: B32 replaced by B8 in the parallel plan (GPU memory), see DECISION_RULE.md.
+- 03:20 score_p6 first run: control reproduced (58/93, 107/249, 50/226); C's numbers identical to phase 5.
+- 03:27 build_D.py ALL_OK (first attempt failed on my base-stem bug, fixed and rebuilt). Of the 4 clips' 1,823 base frames: kept 464 hand-labelled + 541 vetted by C; dropped 735 (person box not confirmed by C), 11 (C sees unlabelled person), 72 (blanket span 710-1420). Added 2,010 images (with _r1 copies): bed 1,066, person 2,006, chair 1,446, cup 52. D train 17,562 / val 3,268 (same val as C). spotcheck_D.jpg checked: dropped frames include the MediaPipe boxes on bedding; some valid dim frames are also dropped (C cannot see them) - known bias of the filter.
+- 2026-11-08 03:25:50 START train D pid=4300
+- 2026-11-08 03:32:20 PROGRESS LR2: 20 min; epoch=2; train/box_loss=1.18536; val/box_loss=1.11125; metrics/mAP50(B)=0.41108; metrics/mAP50-95(B)=0.27411
+- 2026-11-08 03:35:50 PROGRESS D: 10 min; no results.csv yet
+- 2026-11-08 03:42:20 PROGRESS LR2: 30 min; epoch=3; train/box_loss=1.17597; val/box_loss=1.09825; metrics/mAP50(B)=0.3631; metrics/mAP50-95(B)=0.24958
+- 2026-11-08 03:45:50 PROGRESS D: 20 min; epoch=2; train/box_loss=1.0986; val/box_loss=0.98616; metrics/mAP50(B)=0.47265; metrics/mAP50-95(B)=0.32147
+- 2026-11-08 03:52:20 PROGRESS LR2: 40 min; epoch=4; train/box_loss=1.14971; val/box_loss=1.06256; metrics/mAP50(B)=0.41236; metrics/mAP50-95(B)=0.28174
+- 2026-11-08 03:55:50 PROGRESS D: 30 min; epoch=3; train/box_loss=1.08915; val/box_loss=1.0698; metrics/mAP50(B)=0.44755; metrics/mAP50-95(B)=0.30873
+- 2026-11-08 04:02:20 PROGRESS LR2: 50 min; epoch=6; train/box_loss=1.06459; val/box_loss=1.06006; metrics/mAP50(B)=0.43909; metrics/mAP50-95(B)=0.29981
+- 2026-11-08 04:05:50 PROGRESS D: 40 min; epoch=4; train/box_loss=1.06007; val/box_loss=0.98939; metrics/mAP50(B)=0.45517; metrics/mAP50-95(B)=0.31442
+- 2026-11-08 04:12:20 PROGRESS LR2: 60 min; epoch=7; train/box_loss=1.04531; val/box_loss=1.03529; metrics/mAP50(B)=0.49466; metrics/mAP50-95(B)=0.34382
+- 2026-11-08 04:15:50 PROGRESS D: 50 min; epoch=5; train/box_loss=1.01795; val/box_loss=0.971; metrics/mAP50(B)=0.45091; metrics/mAP50-95(B)=0.31743
+- 2026-11-08 04:22:20 PROGRESS LR2: 70 min; epoch=8; train/box_loss=1.02162; val/box_loss=0.98442; metrics/mAP50(B)=0.46962; metrics/mAP50-95(B)=0.32671
+- 2026-11-08 04:25:50 PROGRESS D: 60 min; epoch=6; train/box_loss=0.99487; val/box_loss=0.95024; metrics/mAP50(B)=0.47483; metrics/mAP50-95(B)=0.33146
+- 2026-11-08 04:32:20 PROGRESS LR2: 80 min; epoch=10; train/box_loss=0.98791; val/box_loss=0.95882; metrics/mAP50(B)=0.46584; metrics/mAP50-95(B)=0.32621
+- 2026-11-08 04:35:50 PROGRESS D: 70 min; epoch=7; train/box_loss=0.96826; val/box_loss=0.96356; metrics/mAP50(B)=0.48144; metrics/mAP50-95(B)=0.34201
+- 2026-11-08 04:42:20 PROGRESS LR2: 90 min; epoch=11; train/box_loss=0.97866; val/box_loss=0.97605; metrics/mAP50(B)=0.4803; metrics/mAP50-95(B)=0.33461
+- 2026-11-08 04:45:50 PROGRESS D: 80 min; epoch=9; train/box_loss=0.9366; val/box_loss=0.91255; metrics/mAP50(B)=0.48771; metrics/mAP50-95(B)=0.35079
+- 2026-11-08 04:52:20 PROGRESS LR2: 100 min; epoch=12; train/box_loss=0.96113; val/box_loss=0.93234; metrics/mAP50(B)=0.49787; metrics/mAP50-95(B)=0.35282
+- 2026-11-08 04:55:50 PROGRESS D: 90 min; epoch=10; train/box_loss=0.92107; val/box_loss=0.90112; metrics/mAP50(B)=0.49579; metrics/mAP50-95(B)=0.34814
+- 2026-11-08 05:02:20 PROGRESS LR2: 110 min; epoch=14; train/box_loss=0.93636; val/box_loss=0.95568; metrics/mAP50(B)=0.51034; metrics/mAP50-95(B)=0.35998
+- 2026-11-08 05:05:50 PROGRESS D: 100 min; epoch=11; train/box_loss=0.91408; val/box_loss=0.93213; metrics/mAP50(B)=0.5232; metrics/mAP50-95(B)=0.36964
+- 2026-11-08 05:12:20 PROGRESS LR2: 120 min; epoch=15; train/box_loss=0.93011; val/box_loss=0.934; metrics/mAP50(B)=0.50152; metrics/mAP50-95(B)=0.35295
+- 2026-11-08 05:15:50 PROGRESS D: 110 min; epoch=12; train/box_loss=0.89989; val/box_loss=0.90904; metrics/mAP50(B)=0.52067; metrics/mAP50-95(B)=0.37023
+- 2026-11-08 05:22:20 PROGRESS LR2: 130 min; epoch=16; train/box_loss=0.91521; val/box_loss=0.92377; metrics/mAP50(B)=0.51084; metrics/mAP50-95(B)=0.36066
+- 2026-11-08 05:25:50 PROGRESS D: 120 min; epoch=13; train/box_loss=0.88779; val/box_loss=0.91478; metrics/mAP50(B)=0.50458; metrics/mAP50-95(B)=0.35828
+- 2026-11-08 05:32:20 PROGRESS LR2: 140 min; epoch=18; train/box_loss=0.89934; val/box_loss=0.91837; metrics/mAP50(B)=0.523; metrics/mAP50-95(B)=0.36662
+- 2026-11-08 05:35:50 PROGRESS D: 130 min; epoch=14; train/box_loss=0.87322; val/box_loss=0.91951; metrics/mAP50(B)=0.51215; metrics/mAP50-95(B)=0.36162
+- 2026-11-08 05:42:20 PROGRESS LR2: 150 min; epoch=19; train/box_loss=0.89102; val/box_loss=0.92273; metrics/mAP50(B)=0.52935; metrics/mAP50-95(B)=0.37563
+- 2026-11-08 05:45:50 PROGRESS D: 140 min; epoch=15; train/box_loss=0.87258; val/box_loss=0.88343; metrics/mAP50(B)=0.54588; metrics/mAP50-95(B)=0.39315
+- 2026-11-08 05:52:20 PROGRESS LR2: 160 min; epoch=20; train/box_loss=0.88357; val/box_loss=0.91337; metrics/mAP50(B)=0.53874; metrics/mAP50-95(B)=0.38381
+- 2026-11-08 05:55:50 PROGRESS D: 150 min; epoch=17; train/box_loss=0.84312; val/box_loss=0.90487; metrics/mAP50(B)=0.54523; metrics/mAP50-95(B)=0.39085
+- 2026-11-08 06:02:20 PROGRESS LR2: 170 min; epoch=22; train/box_loss=0.85092; val/box_loss=0.89956; metrics/mAP50(B)=0.55218; metrics/mAP50-95(B)=0.39671
+- 2026-11-08 06:05:50 PROGRESS D: 160 min; epoch=18; train/box_loss=0.84409; val/box_loss=0.86726; metrics/mAP50(B)=0.54836; metrics/mAP50-95(B)=0.39774
+- 2026-11-08 06:12:20 PROGRESS LR2: 180 min; epoch=23; train/box_loss=0.83205; val/box_loss=0.89901; metrics/mAP50(B)=0.55232; metrics/mAP50-95(B)=0.39691
+- 2026-11-08 06:15:50 PROGRESS D: 170 min; epoch=19; train/box_loss=0.83273; val/box_loss=0.8771; metrics/mAP50(B)=0.53807; metrics/mAP50-95(B)=0.38604
+- 2026-11-08 06:22:20 PROGRESS LR2: 190 min; epoch=25; train/box_loss=0.80993; val/box_loss=0.89432; metrics/mAP50(B)=0.56655; metrics/mAP50-95(B)=0.40784
+- 2026-11-08 06:25:50 PROGRESS D: 180 min; epoch=20; train/box_loss=0.82472; val/box_loss=0.9052; metrics/mAP50(B)=0.53968; metrics/mAP50-95(B)=0.38536
+- 2026-11-08 06:32:20 PROGRESS LR2: 200 min; epoch=26; train/box_loss=0.80156; val/box_loss=0.8926; metrics/mAP50(B)=0.5648; metrics/mAP50-95(B)=0.40799
+- 2026-11-08 06:35:50 PROGRESS D: 190 min; epoch=21; train/box_loss=0.80397; val/box_loss=0.89543; metrics/mAP50(B)=0.55358; metrics/mAP50-95(B)=0.40234
+- 2026-11-08 06:42:20 PROGRESS LR2: 210 min; epoch=28; train/box_loss=0.78212; val/box_loss=0.88476; metrics/mAP50(B)=0.56739; metrics/mAP50-95(B)=0.41181
+- 2026-11-08 06:45:50 PROGRESS D: 200 min; epoch=22; train/box_loss=0.7884; val/box_loss=0.88133; metrics/mAP50(B)=0.56337; metrics/mAP50-95(B)=0.40939
+- 2026-11-08 06:52:20 PROGRESS LR2: 220 min; epoch=29; train/box_loss=0.77288; val/box_loss=0.89056; metrics/mAP50(B)=0.57248; metrics/mAP50-95(B)=0.41501
+- 2026-11-08 06:55:50 PROGRESS D: 210 min; epoch=24; train/box_loss=0.76686; val/box_loss=0.89793; metrics/mAP50(B)=0.57461; metrics/mAP50-95(B)=0.4118
+- 2026-11-08 06:56:50 DONE train LR2 exit 0 after 224 min; epoch=30; train/box_loss=0.76473; val/box_loss=0.89142; metrics/mAP50(B)=0.57039; metrics/mAP50-95(B)=0.41201
+- 2026-11-08 06:59:30 DONE score_p6.py exit 0 (after LR2)
+- 2026-11-08 06:59:33 DONE plot_p6.py exit 0 (after LR2)
+- 2026-11-08 06:59:33 START train COS pid=24476
+- 07:05 LR2 scored + plotted OK (verdict vs C: no clear difference). COS started 06:59. plot_p6.py edited: LR2 added as a 4th column on bed_sheet/lying_on_bed_sheet (smoke-tested in scratchpad). Interim REPORT.md written.
+- 2026-11-08 07:05:50 PROGRESS D: 220 min; epoch=25; train/box_loss=0.75548; val/box_loss=0.89028; metrics/mAP50(B)=0.57192; metrics/mAP50-95(B)=0.41114
+- 2026-11-08 07:09:33 PROGRESS COS: 10 min; epoch=1; train/box_loss=1.10838; val/box_loss=0.93345; metrics/mAP50(B)=0.4946; metrics/mAP50-95(B)=0.34096
+- 2026-11-08 07:15:50 PROGRESS D: 230 min; epoch=26; train/box_loss=0.74665; val/box_loss=0.89665; metrics/mAP50(B)=0.56984; metrics/mAP50-95(B)=0.41127
+- 2026-11-08 07:19:33 PROGRESS COS: 20 min; epoch=2; train/box_loss=1.09822; val/box_loss=0.99346; metrics/mAP50(B)=0.44416; metrics/mAP50-95(B)=0.30816
+- 2026-11-08 07:25:50 PROGRESS D: 240 min; epoch=27; train/box_loss=0.73785; val/box_loss=0.89364; metrics/mAP50(B)=0.5753; metrics/mAP50-95(B)=0.41293
+- 2026-11-08 07:29:33 PROGRESS COS: 30 min; epoch=3; train/box_loss=1.09939; val/box_loss=1.00488; metrics/mAP50(B)=0.45865; metrics/mAP50-95(B)=0.316
+- 2026-11-08 07:35:50 PROGRESS D: 250 min; epoch=29; train/box_loss=0.71942; val/box_loss=0.89342; metrics/mAP50(B)=0.57299; metrics/mAP50-95(B)=0.41287
+- 2026-11-08 07:39:33 PROGRESS COS: 40 min; epoch=4; train/box_loss=1.08835; val/box_loss=1.02774; metrics/mAP50(B)=0.50557; metrics/mAP50-95(B)=0.33312
+- 2026-11-08 07:44:50 DONE train D exit 0 after 259 min; epoch=30; train/box_loss=0.71481; val/box_loss=0.89263; metrics/mAP50(B)=0.5739; metrics/mAP50-95(B)=0.41407
+- 2026-11-08 07:47:32 DONE score_p6.py exit 0 (after D)
+- 2026-11-08 07:47:35 DONE plot_p6.py exit 0 (after D)
+- 2026-11-08 07:47:35 START train B8 pid=26272
+- 2026-11-08 07:49:33 PROGRESS COS: 50 min; epoch=6; train/box_loss=1.02539; val/box_loss=0.98204; metrics/mAP50(B)=0.49672; metrics/mAP50-95(B)=0.35222
+- 07:47 D done + scored: vs C no clear difference (reserved388 7 vs 1, p 0.07); D bed question FIXED (26/128 vs 1/128, p 4e-7). B8 started 07:47.
+- 07:50 Found: round6_heldout Laying_Dim_HM is the same room as re-added Sitting_Dim/Standing_Walking_Dim -> D's round6 bed/chair numbers not evidence for new rooms (noted in REPORT). bed_sheet now prefers unseen rooms (manual plot rerun).
+- 07:52 D's 2 empty-room boxes located: TV_Lounge_2_Empty frames 327/403, sofa edge, conf 0.42/0.44.
+- 07:55 Full REPORT.md written (COS/B8 pending; supervisor will score them automatically).
+- 2026-11-08 07:57:35 PROGRESS B8: 10 min; epoch=1; train/box_loss=1.11506; val/box_loss=1.01087; metrics/mAP50(B)=0.4846; metrics/mAP50-95(B)=0.33728
+- 2026-11-08 07:59:33 PROGRESS COS: 60 min; epoch=7; train/box_loss=1.00952; val/box_loss=0.99882; metrics/mAP50(B)=0.53027; metrics/mAP50-95(B)=0.36533
+- 2026-11-08 08:07:35 PROGRESS B8: 20 min; epoch=2; train/box_loss=1.11737; val/box_loss=0.95101; metrics/mAP50(B)=0.44019; metrics/mAP50-95(B)=0.30843
+- 2026-11-08 08:09:33 PROGRESS COS: 70 min; epoch=8; train/box_loss=0.9856; val/box_loss=0.95896; metrics/mAP50(B)=0.49591; metrics/mAP50-95(B)=0.34284
+- 2026-11-08 08:17:35 PROGRESS B8: 30 min; epoch=3; train/box_loss=1.10404; val/box_loss=0.96747; metrics/mAP50(B)=0.48142; metrics/mAP50-95(B)=0.32992
+- 2026-11-08 08:19:33 PROGRESS COS: 80 min; epoch=9; train/box_loss=0.98445; val/box_loss=0.95761; metrics/mAP50(B)=0.54147; metrics/mAP50-95(B)=0.37907
+- 2026-11-08 08:27:35 PROGRESS B8: 40 min; epoch=4; train/box_loss=1.07492; val/box_loss=0.97434; metrics/mAP50(B)=0.47099; metrics/mAP50-95(B)=0.32418
+- 2026-11-08 08:29:33 PROGRESS COS: 90 min; epoch=11; train/box_loss=0.94963; val/box_loss=0.94448; metrics/mAP50(B)=0.50042; metrics/mAP50-95(B)=0.35808
+- 2026-11-08 08:37:35 PROGRESS B8: 50 min; epoch=5; train/box_loss=1.04595; val/box_loss=0.94033; metrics/mAP50(B)=0.49251; metrics/mAP50-95(B)=0.34076
+- 2026-11-08 08:39:33 PROGRESS COS: 100 min; epoch=12; train/box_loss=0.93329; val/box_loss=0.91001; metrics/mAP50(B)=0.56009; metrics/mAP50-95(B)=0.4026
+- 2026-11-08 08:47:35 PROGRESS B8: 60 min; epoch=6; train/box_loss=1.02494; val/box_loss=0.95566; metrics/mAP50(B)=0.50203; metrics/mAP50-95(B)=0.34648
+- 2026-11-08 08:49:33 PROGRESS COS: 110 min; epoch=13; train/box_loss=0.92738; val/box_loss=0.92573; metrics/mAP50(B)=0.54583; metrics/mAP50-95(B)=0.38299
+- 2026-11-08 08:57:35 PROGRESS B8: 70 min; epoch=7; train/box_loss=1.00132; val/box_loss=0.97209; metrics/mAP50(B)=0.48589; metrics/mAP50-95(B)=0.34031
+- 2026-11-08 08:59:33 PROGRESS COS: 120 min; epoch=14; train/box_loss=0.90506; val/box_loss=0.92849; metrics/mAP50(B)=0.53646; metrics/mAP50-95(B)=0.37832
+- 2026-11-08 09:07:35 PROGRESS B8: 80 min; epoch=8; train/box_loss=0.98781; val/box_loss=0.92313; metrics/mAP50(B)=0.49549; metrics/mAP50-95(B)=0.35282
+- 2026-11-08 09:09:33 PROGRESS COS: 130 min; epoch=16; train/box_loss=0.88218; val/box_loss=0.91738; metrics/mAP50(B)=0.53241; metrics/mAP50-95(B)=0.37849
+- 2026-11-08 09:17:35 PROGRESS B8: 90 min; epoch=10; train/box_loss=0.95779; val/box_loss=0.93376; metrics/mAP50(B)=0.49202; metrics/mAP50-95(B)=0.34562
+- 2026-11-08 09:19:33 PROGRESS COS: 140 min; epoch=17; train/box_loss=0.87478; val/box_loss=0.89877; metrics/mAP50(B)=0.54535; metrics/mAP50-95(B)=0.39166
+- 2026-11-08 09:27:35 PROGRESS B8: 100 min; epoch=11; train/box_loss=0.94224; val/box_loss=0.89473; metrics/mAP50(B)=0.53019; metrics/mAP50-95(B)=0.37367
+- 2026-11-08 09:29:33 PROGRESS COS: 150 min; epoch=18; train/box_loss=0.86573; val/box_loss=0.89911; metrics/mAP50(B)=0.54085; metrics/mAP50-95(B)=0.3864
+- 2026-11-08 09:37:35 PROGRESS B8: 110 min; epoch=12; train/box_loss=0.9396; val/box_loss=0.93118; metrics/mAP50(B)=0.50588; metrics/mAP50-95(B)=0.35614
+- 2026-11-08 09:39:33 PROGRESS COS: 160 min; epoch=19; train/box_loss=0.85613; val/box_loss=0.90737; metrics/mAP50(B)=0.54131; metrics/mAP50-95(B)=0.38824
+- 2026-11-08 09:47:35 PROGRESS B8: 120 min; epoch=13; train/box_loss=0.92782; val/box_loss=0.91965; metrics/mAP50(B)=0.51787; metrics/mAP50-95(B)=0.3637
+- 2026-11-08 09:49:33 PROGRESS COS: 170 min; epoch=21; train/box_loss=0.8231; val/box_loss=0.91071; metrics/mAP50(B)=0.56328; metrics/mAP50-95(B)=0.40065
+- 2026-11-08 09:57:35 PROGRESS B8: 130 min; epoch=14; train/box_loss=0.91238; val/box_loss=0.91128; metrics/mAP50(B)=0.51503; metrics/mAP50-95(B)=0.36041
+- 2026-11-08 09:59:33 PROGRESS COS: 180 min; epoch=22; train/box_loss=0.80556; val/box_loss=0.87271; metrics/mAP50(B)=0.56945; metrics/mAP50-95(B)=0.41435
+- 2026-11-08 10:07:35 PROGRESS B8: 140 min; epoch=15; train/box_loss=0.90467; val/box_loss=0.89013; metrics/mAP50(B)=0.5336; metrics/mAP50-95(B)=0.38328
+- 2026-11-08 10:09:33 PROGRESS COS: 190 min; epoch=24; train/box_loss=0.78221; val/box_loss=0.89345; metrics/mAP50(B)=0.57035; metrics/mAP50-95(B)=0.4105
+- 2026-11-08 10:17:35 PROGRESS B8: 150 min; epoch=16; train/box_loss=0.8926; val/box_loss=0.91001; metrics/mAP50(B)=0.54281; metrics/mAP50-95(B)=0.38442
+- 2026-11-08 10:19:33 PROGRESS COS: 200 min; epoch=25; train/box_loss=0.7726; val/box_loss=0.886; metrics/mAP50(B)=0.56953; metrics/mAP50-95(B)=0.41168
+- 2026-11-08 10:27:35 PROGRESS B8: 160 min; epoch=17; train/box_loss=0.88035; val/box_loss=0.87548; metrics/mAP50(B)=0.53533; metrics/mAP50-95(B)=0.38314
+- 2026-11-08 10:29:33 PROGRESS COS: 210 min; epoch=26; train/box_loss=0.76408; val/box_loss=0.88841; metrics/mAP50(B)=0.57291; metrics/mAP50-95(B)=0.41445
+- 2026-11-08 10:37:35 PROGRESS B8: 170 min; epoch=18; train/box_loss=0.87231; val/box_loss=0.88419; metrics/mAP50(B)=0.53459; metrics/mAP50-95(B)=0.38016
+- 2026-11-08 10:39:33 PROGRESS COS: 220 min; epoch=28; train/box_loss=0.75656; val/box_loss=0.89165; metrics/mAP50(B)=0.57421; metrics/mAP50-95(B)=0.41451
+- 2026-11-08 10:47:35 PROGRESS B8: 180 min; epoch=20; train/box_loss=0.85737; val/box_loss=0.87287; metrics/mAP50(B)=0.55504; metrics/mAP50-95(B)=0.3967
+- 2026-11-08 10:49:33 PROGRESS COS: 230 min; epoch=29; train/box_loss=0.7513; val/box_loss=0.89189; metrics/mAP50(B)=0.5747; metrics/mAP50-95(B)=0.41559
+- 2026-11-08 10:53:03 DONE train COS exit 0 after 233 min; epoch=30; train/box_loss=0.74997; val/box_loss=0.88891; metrics/mAP50(B)=0.57459; metrics/mAP50-95(B)=0.41582
+- 2026-11-08 10:55:47 DONE score_p6.py exit 0 (after COS)
+- 2026-11-08 10:55:52 DONE plot_p6.py exit 0 (after COS)
+- 2026-11-08 10:55:52 LANE_END lane 0
+- 2026-11-08 10:57:35 PROGRESS B8: 190 min; epoch=21; train/box_loss=0.83041; val/box_loss=0.87176; metrics/mAP50(B)=0.56436; metrics/mAP50-95(B)=0.40215
+- 10:56 COS done + scored: vs C no clear difference (round6 0 vs 1), but reserved388 39 vs 4 (p 3e-8), 34 of them in With_people_Bedroom_Fall (lying on bed); extra pillow boxes (fp 24 vs 12). Lane 0 ended.
+- 11:10 COS added to bed/lying sheets (manual plot rerun). DCOS (D data + cos_lr) pre-registered (DECISION_RULE amendment 2) and queued in lane 1 after B8. REPORT.md updated with COS.
+- 2026-11-08 11:07:35 PROGRESS B8: 200 min; epoch=22; train/box_loss=0.81735; val/box_loss=0.87388; metrics/mAP50(B)=0.56119; metrics/mAP50-95(B)=0.40611
+- 2026-11-08 11:17:35 PROGRESS B8: 210 min; epoch=24; train/box_loss=0.79631; val/box_loss=0.88644; metrics/mAP50(B)=0.58647; metrics/mAP50-95(B)=0.41847
+- 2026-11-08 11:27:35 PROGRESS B8: 220 min; epoch=26; train/box_loss=0.77503; val/box_loss=0.86687; metrics/mAP50(B)=0.56639; metrics/mAP50-95(B)=0.40784
+- 2026-11-08 11:37:35 PROGRESS B8: 230 min; epoch=27; train/box_loss=0.76643; val/box_loss=0.86805; metrics/mAP50(B)=0.57707; metrics/mAP50-95(B)=0.41361
+- 2026-11-08 11:47:35 PROGRESS B8: 240 min; epoch=29; train/box_loss=0.74968; val/box_loss=0.86257; metrics/mAP50(B)=0.57114; metrics/mAP50-95(B)=0.41053
+- 2026-11-08 11:52:35 DONE train B8 exit 0 after 245 min; epoch=30; train/box_loss=0.7403; val/box_loss=0.86511; metrics/mAP50(B)=0.57417; metrics/mAP50-95(B)=0.41324
+- 2026-11-08 11:54:33 DONE score_p6.py exit 0 (after B8)
+- 2026-11-08 11:54:37 DONE plot_p6.py exit 0 (after B8)
+- 2026-11-08 11:54:37 START train DCOS pid=24320
+- 11:57 B8 done + scored: no clear difference vs C (all p >= 0.06); fp 6 vs 12; val 0.421. DCOS started 11:54. REPORT.md updated with B8.
+- 2026-11-08 12:04:37 PROGRESS DCOS: 10 min; epoch=1; train/box_loss=1.12816; val/box_loss=0.93975; metrics/mAP50(B)=0.47589; metrics/mAP50-95(B)=0.33925
+- 2026-11-08 12:14:37 PROGRESS DCOS: 20 min; epoch=2; train/box_loss=1.10262; val/box_loss=1.01148; metrics/mAP50(B)=0.50174; metrics/mAP50-95(B)=0.34563
+- 2026-11-08 12:24:37 PROGRESS DCOS: 30 min; epoch=4; train/box_loss=1.07148; val/box_loss=0.97881; metrics/mAP50(B)=0.4737; metrics/mAP50-95(B)=0.32536
+- 2026-11-08 12:34:37 PROGRESS DCOS: 40 min; epoch=5; train/box_loss=1.02915; val/box_loss=1.02363; metrics/mAP50(B)=0.44026; metrics/mAP50-95(B)=0.30776
+- 2026-11-08 12:44:37 PROGRESS DCOS: 50 min; epoch=6; train/box_loss=1.00369; val/box_loss=0.97068; metrics/mAP50(B)=0.46893; metrics/mAP50-95(B)=0.32498
+- 2026-11-08 12:54:37 PROGRESS DCOS: 60 min; epoch=8; train/box_loss=0.96967; val/box_loss=0.9337; metrics/mAP50(B)=0.49812; metrics/mAP50-95(B)=0.3476
+- 2026-11-08 13:04:37 PROGRESS DCOS: 70 min; epoch=9; train/box_loss=0.94682; val/box_loss=0.9336; metrics/mAP50(B)=0.47496; metrics/mAP50-95(B)=0.33655
+- 2026-11-08 13:14:37 PROGRESS DCOS: 80 min; epoch=11; train/box_loss=0.92213; val/box_loss=0.95098; metrics/mAP50(B)=0.51164; metrics/mAP50-95(B)=0.35964
+- 2026-11-08 13:24:37 PROGRESS DCOS: 90 min; epoch=12; train/box_loss=0.90392; val/box_loss=0.95203; metrics/mAP50(B)=0.5102; metrics/mAP50-95(B)=0.36156
+- 2026-11-08 13:34:37 PROGRESS DCOS: 100 min; epoch=14; train/box_loss=0.87331; val/box_loss=0.92972; metrics/mAP50(B)=0.52361; metrics/mAP50-95(B)=0.37153
+- 2026-11-08 13:44:37 PROGRESS DCOS: 110 min; epoch=15; train/box_loss=0.87403; val/box_loss=0.88584; metrics/mAP50(B)=0.54051; metrics/mAP50-95(B)=0.38862
+- 2026-11-08 13:54:37 PROGRESS DCOS: 120 min; epoch=16; train/box_loss=0.85331; val/box_loss=0.91276; metrics/mAP50(B)=0.53083; metrics/mAP50-95(B)=0.37969
+- 2026-11-08 14:04:37 PROGRESS DCOS: 130 min; epoch=18; train/box_loss=0.83713; val/box_loss=0.88182; metrics/mAP50(B)=0.5473; metrics/mAP50-95(B)=0.39633
+- 2026-11-08 14:14:37 PROGRESS DCOS: 140 min; epoch=19; train/box_loss=0.8229; val/box_loss=0.88791; metrics/mAP50(B)=0.55039; metrics/mAP50-95(B)=0.39677
+- 2026-11-08 14:24:37 PROGRESS DCOS: 150 min; epoch=21; train/box_loss=0.79087; val/box_loss=0.9007; metrics/mAP50(B)=0.56863; metrics/mAP50-95(B)=0.40888
+- 2026-11-08 14:34:37 PROGRESS DCOS: 160 min; epoch=22; train/box_loss=0.77148; val/box_loss=0.89084; metrics/mAP50(B)=0.57048; metrics/mAP50-95(B)=0.41176
+- 2026-11-08 14:44:37 PROGRESS DCOS: 170 min; epoch=24; train/box_loss=0.75019; val/box_loss=0.89233; metrics/mAP50(B)=0.57443; metrics/mAP50-95(B)=0.41318
+- 2026-11-08 14:54:37 PROGRESS DCOS: 180 min; epoch=25; train/box_loss=0.7392; val/box_loss=0.88594; metrics/mAP50(B)=0.56919; metrics/mAP50-95(B)=0.4101
+- 2026-11-08 15:04:37 PROGRESS DCOS: 190 min; epoch=27; train/box_loss=0.72928; val/box_loss=0.88739; metrics/mAP50(B)=0.57341; metrics/mAP50-95(B)=0.41393
+- 2026-11-08 15:14:37 PROGRESS DCOS: 200 min; epoch=28; train/box_loss=0.72306; val/box_loss=0.8849; metrics/mAP50(B)=0.57128; metrics/mAP50-95(B)=0.41246
+- 2026-11-08 15:22:07 DONE train DCOS exit 0 after 207 min; epoch=30; train/box_loss=0.71866; val/box_loss=0.88702; metrics/mAP50(B)=0.57529; metrics/mAP50-95(B)=0.41441
+- 2026-11-08 15:23:59 DONE score_p6.py exit 0 (after DCOS)
+- 2026-11-08 15:24:03 DONE plot_p6.py exit 0 (after DCOS)
+- 2026-11-08 15:24:03 LANE_END lane 1
+- 2026-11-08 15:24:03 PIPELINE_END all lanes finished
+- 15:30 DCOS done + scored (pipeline ended 15:24): by rule no clear difference vs C (round6 3 vs 1, p 0.63), reserved388 45 vs 1 (p 1e-12), fp 4, empty-room 0, lying-on-bed one tight box with no pillow box. Beds 44/128 (mostly Bedroom_Fall). REPORT.md final: recommend DCOS.
